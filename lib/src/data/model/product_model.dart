@@ -4,6 +4,7 @@ class ProductModel extends ProductEntity {
   const ProductModel({
     required super.id,
     required super.barcode,
+    super.sku,
     required super.name,
     super.description,
     required super.price,
@@ -14,6 +15,7 @@ class ProductModel extends ProductEntity {
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
         id: json['id'] as String,
         barcode: json['barcode'] as String,
+        sku: json['sku'] as String?,
         name: json['name'] as String,
         description: json['description'] as String?,
         price: (json['price'] as num).toDouble(),

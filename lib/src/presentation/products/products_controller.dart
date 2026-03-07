@@ -28,6 +28,7 @@ class ProductsController extends GetxController {
 
   // Form controllers
   final barcodeCtrl = TextEditingController();
+  final skuCtrl = TextEditingController();
   final nameCtrl = TextEditingController();
   final descCtrl = TextEditingController();
   final priceCtrl = TextEditingController();
@@ -42,6 +43,7 @@ class ProductsController extends GetxController {
   @override
   void onClose() {
     barcodeCtrl.dispose();
+    skuCtrl.dispose();
     nameCtrl.dispose();
     descCtrl.dispose();
     priceCtrl.dispose();
@@ -64,6 +66,7 @@ class ProductsController extends GetxController {
 
   void _clearForm() {
     barcodeCtrl.clear();
+    skuCtrl.clear();
     nameCtrl.clear();
     descCtrl.clear();
     priceCtrl.clear();
@@ -81,6 +84,7 @@ class ProductsController extends GetxController {
       final product = await createProductUseCase.execute(
         storeId: store.id,
         barcode: barcode,
+        sku: skuCtrl.text.trim().isEmpty ? null : skuCtrl.text.trim(),
         name: name,
         description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
         price: price,
@@ -96,6 +100,7 @@ class ProductsController extends GetxController {
 
   void showEditDialog(ProductEntity product) {
     barcodeCtrl.text = product.barcode;
+    skuCtrl.text = product.sku ?? '';
     nameCtrl.text = product.name;
     descCtrl.text = product.description ?? '';
     priceCtrl.text = product.price.toString();
@@ -103,6 +108,7 @@ class ProductsController extends GetxController {
     _showProductSheet(isCreate: false, onSave: () async {
       final updated = await updateProductUseCase.execute(
         id: product.id,
+        sku: skuCtrl.text.trim().isEmpty ? null : skuCtrl.text.trim(),
         name: nameCtrl.text.trim(),
         description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
         price: double.tryParse(priceCtrl.text.trim()),
@@ -212,6 +218,7 @@ class ProductsController extends GetxController {
         isCreate: isCreate,
         isSaving: isSaving,
         barcodeCtrl: barcodeCtrl,
+        skuCtrl: skuCtrl,
         nameCtrl: nameCtrl,
         descCtrl: descCtrl,
         priceCtrl: priceCtrl,
@@ -240,6 +247,7 @@ class _ProductFormSheet extends StatefulWidget {
   final bool isCreate;
   final RxBool isSaving;
   final TextEditingController barcodeCtrl;
+  final TextEditingController skuCtrl;
   final TextEditingController nameCtrl;
   final TextEditingController descCtrl;
   final TextEditingController priceCtrl;
@@ -250,6 +258,7 @@ class _ProductFormSheet extends StatefulWidget {
     required this.isCreate,
     required this.isSaving,
     required this.barcodeCtrl,
+    required this.skuCtrl,
     required this.nameCtrl,
     required this.descCtrl,
     required this.priceCtrl,
@@ -372,6 +381,11 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                   ],
                 ],
               ),
+              const SizedBox(height: 10),
+
+              // SKU
+              _field(widget.skuCtrl, 'SKU (optional)',
+                  icon: Icons.qr_code_rounded),
               const SizedBox(height: 10),
 
               // Name

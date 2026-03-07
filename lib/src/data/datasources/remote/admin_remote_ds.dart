@@ -128,23 +128,23 @@ class AdminRemoteDs {
   static const _storeProductsQuery = r'''
     query StoreProducts($storeId: ID!) {
       storeProducts(storeId: $storeId) {
-        id barcode name description price stock storeId
+        id barcode sku name description price stock storeId
       }
     }
   ''';
 
   static const _createProductMutation = r'''
-    mutation CreateProduct($storeId: ID!, $barcode: String!, $name: String!, $description: String, $price: Float!, $stock: Int!) {
-      createProduct(storeId: $storeId, barcode: $barcode, name: $name, description: $description, price: $price, stock: $stock) {
-        id barcode name description price stock storeId
+    mutation CreateProduct($storeId: ID!, $barcode: String!, $sku: String, $name: String!, $description: String, $price: Float!, $stock: Int!) {
+      createProduct(storeId: $storeId, barcode: $barcode, sku: $sku, name: $name, description: $description, price: $price, stock: $stock) {
+        id barcode sku name description price stock storeId
       }
     }
   ''';
 
   static const _updateProductMutation = r'''
-    mutation UpdateProduct($id: ID!, $name: String, $description: String, $price: Float, $stock: Int) {
-      updateProduct(id: $id, name: $name, description: $description, price: $price, stock: $stock) {
-        id barcode name description price stock storeId
+    mutation UpdateProduct($id: ID!, $sku: String, $name: String, $description: String, $price: Float, $stock: Int) {
+      updateProduct(id: $id, sku: $sku, name: $name, description: $description, price: $price, stock: $stock) {
+        id barcode sku name description price stock storeId
       }
     }
   ''';
@@ -268,8 +268,8 @@ class AdminRemoteDs {
     return data;
   }
 
-  Future<Map<String, dynamic>> createProduct({required String storeId, required String barcode, required String name, String? description, required double price, required int stock}) async {
-    final vars = {'storeId': storeId, 'barcode': barcode, 'name': name, if (description != null) 'description': description, 'price': price, 'stock': stock};
+  Future<Map<String, dynamic>> createProduct({required String storeId, required String barcode, String? sku, required String name, String? description, required double price, required int stock}) async {
+    final vars = {'storeId': storeId, 'barcode': barcode, if (sku != null) 'sku': sku, 'name': name, if (description != null) 'description': description, 'price': price, 'stock': stock};
     _logRequest('createProduct', vars);
     final result = await _client.mutate(MutationOptions(document: gql(_createProductMutation), variables: vars));
     _check('createProduct', result);
@@ -278,8 +278,8 @@ class AdminRemoteDs {
     return data;
   }
 
-  Future<Map<String, dynamic>> updateProduct({required String id, String? name, String? description, double? price, int? stock}) async {
-    final vars = {'id': id, if (name != null) 'name': name, if (description != null) 'description': description, if (price != null) 'price': price, if (stock != null) 'stock': stock};
+  Future<Map<String, dynamic>> updateProduct({required String id, String? sku, String? name, String? description, double? price, int? stock}) async {
+    final vars = {'id': id, if (sku != null) 'sku': sku, if (name != null) 'name': name, if (description != null) 'description': description, if (price != null) 'price': price, if (stock != null) 'stock': stock};
     _logRequest('updateProduct', vars);
     final result = await _client.mutate(MutationOptions(document: gql(_updateProductMutation), variables: vars));
     _check('updateProduct', result);

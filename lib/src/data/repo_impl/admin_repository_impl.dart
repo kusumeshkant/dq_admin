@@ -55,14 +55,14 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<ProductEntity> createProduct({required String storeId, required String barcode, required String name, String? description, required double price, required int stock}) async {
-    final json = await ds.createProduct(storeId: storeId, barcode: barcode, name: name, description: description, price: price, stock: stock);
+  Future<ProductEntity> createProduct({required String storeId, required String barcode, String? sku, required String name, String? description, required double price, required int stock}) async {
+    final json = await ds.createProduct(storeId: storeId, barcode: barcode, sku: sku, name: name, description: description, price: price, stock: stock);
     return ProductModel.fromJson(json);
   }
 
   @override
-  Future<ProductEntity> updateProduct({required String id, String? name, String? description, double? price, int? stock}) async {
-    final json = await ds.updateProduct(id: id, name: name, description: description, price: price, stock: stock);
+  Future<ProductEntity> updateProduct({required String id, String? sku, String? name, String? description, double? price, int? stock}) async {
+    final json = await ds.updateProduct(id: id, sku: sku, name: name, description: description, price: price, stock: stock);
     return ProductModel.fromJson(json);
   }
 

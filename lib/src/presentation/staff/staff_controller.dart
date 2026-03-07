@@ -37,17 +37,22 @@ class StaffController extends GetxController {
   Future<void> loadData() async {
     isLoading.value = true;
     try {
-      final results = await Future.wait([
-        getAllStaffUseCase.execute(),
-        getAllStoresUseCase.execute(),
-      ]);
-      staff.value = results[0] as List<UserEntity>;
-      stores.value = results[1] as List<StoreEntity>;
-    } catch (_) {
+      staff.value = await getAllStaffUseCase.execute();
+    } catch (e) {
       staff.clear();
-    } finally {
-      isLoading.value = false;
+      Get.snackbar('Error', 'Failed to load staff: $e',
+          backgroundColor: Colors.red.withValues(alpha: 0.8),
+          colorText: Colors.white);
     }
+    try {
+      stores.value = await getAllStoresUseCase.execute();
+    } catch (e) {
+      stores.clear();
+      Get.snackbar('Error', 'Failed to load stores: $e',
+          backgroundColor: Colors.red.withValues(alpha: 0.8),
+          colorText: Colors.white);
+    }
+    isLoading.value = false;
   }
 
   @override
