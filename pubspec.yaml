@@ -1,0 +1,46 @@
+name: dq_admin
+description: DQ Admin app — store and inventory management for store owners.
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.8.1 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  get: ^4.7.3
+
+  # Firebase
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+
+  # GraphQL
+  graphql: ^5.2.1
+  graphql_flutter: ^5.2.1
+
+  # Local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.5.4
+
+  # Location & Map
+  geolocator: ^13.0.2
+  flutter_map: ^8.1.1
+  latlong2: ^0.9.1
+
+  # Barcode scanner
+  mobile_scanner: ^7.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
