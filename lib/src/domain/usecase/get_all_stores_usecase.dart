@@ -1,8 +1,8 @@
 import '../entity/store_entity.dart';
-import '../repo/admin_repository.dart';
+import '../repo/store_repository.dart';
 
 class GetAllStoresUseCase {
-  final AdminRepository repo;
+  final StoreRepository repo;
   GetAllStoresUseCase(this.repo);
 
   Future<List<StoreEntity>> execute() => repo.getAllStores();

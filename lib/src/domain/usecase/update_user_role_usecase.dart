@@ -1,8 +1,8 @@
 import '../entity/user_entity.dart';
-import '../repo/admin_repository.dart';
+import '../repo/staff_repository.dart';
 
 class UpdateUserRoleUseCase {
-  final AdminRepository repo;
+  final StaffRepository repo;
   UpdateUserRoleUseCase(this.repo);
 
   Future<UserEntity> execute({required String userId, required String role, String? storeId}) =>

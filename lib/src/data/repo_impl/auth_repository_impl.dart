@@ -1,5 +1,6 @@
 import '../../domain/entity/user_entity.dart';
 import '../../domain/repo/auth_repository.dart';
+import '../../service_core/networks/graphql_client_provider.dart';
 import '../datasources/remote/auth_remote_ds.dart';
 import '../model/user_model.dart';
 
@@ -18,5 +19,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signOut() => ds.signOut();
+  Future<void> signOut() async {
+    GraphQLClientProvider.reset();
+    await ds.signOut();
+  }
 }

@@ -7,6 +7,7 @@ class SessionManager extends GetxService {
   bool get isLoggedIn => currentUser.value != null;
   String? get adminName => currentUser.value?.name;
   String? get adminId => currentUser.value?.id;
+  String? get storeId => currentUser.value?.storeId;
 
   void setUser(UserEntity user) => currentUser.value = user;
   void clearUser() => currentUser.value = null;

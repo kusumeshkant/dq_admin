@@ -1,15 +1,11 @@
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../domain/entity/dashboard_entity.dart';
 import '../../domain/entity/order_entity.dart';
 import '../../service_core/auth/session_manager.dart';
-import '../../service_core/networks/graphql_client_provider.dart';
 import '../../theme/app_theme.dart';
-import '../auth/login/login_binding.dart';
-import '../auth/login/login_page.dart';
 import '../order_detail/order_detail_binding.dart';
 import '../order_detail/order_detail_page.dart';
 import '../orders/orders_binding.dart';
@@ -38,12 +34,7 @@ class DashboardPage extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.logout_rounded),
               tooltip: 'Sign out',
-              onPressed: () async {
-                session.clearUser();
-                GraphQLClientProvider.reset();
-                await FirebaseAuth.instance.signOut();
-                Get.offAll(() => const LoginPage(), binding: LoginBinding());
-              },
+              onPressed: c.logout,
             ),
           ],
         ),

@@ -1,8 +1,8 @@
 import '../entity/product_entity.dart';
-import '../repo/admin_repository.dart';
+import '../repo/product_repository.dart';
 
 class UpdateProductUseCase {
-  final AdminRepository repo;
+  final ProductRepository repo;
   UpdateProductUseCase(this.repo);
 
   Future<ProductEntity> execute({required String id, String? sku, String? name, String? description, double? price, int? stock}) =>

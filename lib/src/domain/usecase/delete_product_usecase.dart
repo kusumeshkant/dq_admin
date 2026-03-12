@@ -1,7 +1,7 @@
-import '../repo/admin_repository.dart';
+import '../repo/product_repository.dart';
 
 class DeleteProductUseCase {
-  final AdminRepository repo;
+  final ProductRepository repo;
   DeleteProductUseCase(this.repo);
 
   Future<bool> execute(String id) => repo.deleteProduct(id);

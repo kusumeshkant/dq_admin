@@ -1,8 +1,8 @@
 import '../entity/store_entity.dart';
-import '../repo/admin_repository.dart';
+import '../repo/store_repository.dart';
 
 class UpdateStoreUseCase {
-  final AdminRepository repo;
+  final StoreRepository repo;
   UpdateStoreUseCase(this.repo);
 
   Future<StoreEntity> execute({required String id, String? name, String? address, double? lat, double? lon, String? storeCode}) =>

@@ -1,8 +1,8 @@
 import '../entity/user_entity.dart';
-import '../repo/admin_repository.dart';
+import '../repo/staff_repository.dart';
 
 class GetAllStaffUseCase {
-  final AdminRepository repo;
+  final StaffRepository repo;
   GetAllStaffUseCase(this.repo);
 
   Future<List<UserEntity>> execute() => repo.getAllStaff();

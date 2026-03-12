@@ -1,8 +1,8 @@
 import '../entity/dashboard_entity.dart';
-import '../repo/admin_repository.dart';
+import '../repo/dashboard_repository.dart';
 
 class GetDashboardStatsUseCase {
-  final AdminRepository repo;
+  final DashboardRepository repo;
   GetDashboardStatsUseCase(this.repo);
 
   Future<DashboardStatsEntity> execute() => repo.getDashboardStats();

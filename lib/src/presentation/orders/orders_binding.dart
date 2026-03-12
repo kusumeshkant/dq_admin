@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
-import '../../data/datasources/remote/admin_remote_ds.dart';
-import '../../data/repo_impl/admin_repository_impl.dart';
+import '../../data/datasources/remote/order_remote_ds.dart';
+import '../../data/datasources/remote/store_remote_ds.dart';
+import '../../data/repo_impl/order_repository_impl.dart';
+import '../../data/repo_impl/store_repository_impl.dart';
 import '../../domain/usecase/get_all_orders_usecase.dart';
 import '../../domain/usecase/get_all_stores_usecase.dart';
 import 'orders_controller.dart';
@@ -8,11 +10,11 @@ import 'orders_controller.dart';
 class OrdersBinding extends Bindings {
   @override
   void dependencies() {
-    final ds = AdminRemoteDs();
-    final repo = AdminRepositoryImpl(ds);
+    final orderRepo = OrderRepositoryImpl(OrderRemoteDs());
+    final storeRepo = StoreRepositoryImpl(StoreRemoteDs());
     Get.lazyPut(() => OrdersController(
-          getAllOrdersUseCase: GetAllOrdersUseCase(repo),
-          getAllStoresUseCase: GetAllStoresUseCase(repo),
+          getAllOrdersUseCase: GetAllOrdersUseCase(orderRepo),
+          getAllStoresUseCase: GetAllStoresUseCase(storeRepo),
         ));
   }
 }

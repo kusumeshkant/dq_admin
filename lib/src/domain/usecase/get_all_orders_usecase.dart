@@ -1,8 +1,8 @@
 import '../entity/order_entity.dart';
-import '../repo/admin_repository.dart';
+import '../repo/order_repository.dart';
 
 class GetAllOrdersUseCase {
-  final AdminRepository repo;
+  final OrderRepository repo;
   GetAllOrdersUseCase(this.repo);
 
   Future<List<OrderEntity>> execute({String? storeId, String? status}) =>
