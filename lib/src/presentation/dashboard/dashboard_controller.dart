@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../domain/entity/dashboard_entity.dart';
 import '../../domain/usecase/get_dashboard_stats_usecase.dart';
+import '../../service_core/networks/app_logger.dart';
 
 class DashboardController extends GetxController {
   final GetDashboardStatsUseCase getDashboardStatsUseCase;
@@ -24,9 +24,7 @@ class DashboardController extends GetxController {
     try {
       stats.value = await getDashboardStatsUseCase.execute();
     } catch (e, st) {
-      debugPrint('╔══ [DashboardController] loadStats FAILED ══');
-      debugPrint('║  error: $e');
-      debugPrint('╚══ stacktrace: $st');
+      AppLogger.error('DashboardController.loadStats', e, st);
       errorMessage.value = e.toString();
     } finally {
       isLoading.value = false;
