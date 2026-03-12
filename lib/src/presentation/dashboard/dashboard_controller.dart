@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../domain/entity/dashboard_entity.dart';
 import '../../domain/usecase/get_dashboard_stats_usecase.dart';
@@ -22,8 +23,11 @@ class DashboardController extends GetxController {
     errorMessage.value = '';
     try {
       stats.value = await getDashboardStatsUseCase.execute();
-    } catch (e) {
-      errorMessage.value = 'Failed to load dashboard.';
+    } catch (e, st) {
+      debugPrint('╔══ [DashboardController] loadStats FAILED ══');
+      debugPrint('║  error: $e');
+      debugPrint('╚══ stacktrace: $st');
+      errorMessage.value = e.toString();
     } finally {
       isLoading.value = false;
     }

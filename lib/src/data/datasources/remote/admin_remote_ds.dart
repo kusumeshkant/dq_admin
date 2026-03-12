@@ -30,6 +30,18 @@ class AdminRemoteDs {
     }
   }
 
+  void _logResult(String method, QueryResult result) {
+    debugPrint('║  [AdminDS] $method → hasException=${result.hasException}');
+    if (result.data != null) {
+      debugPrint('║  [AdminDS] raw response: ${result.data}');
+    } else {
+      debugPrint('║  [AdminDS] response data is NULL');
+    }
+    if (result.hasException) {
+      debugPrint('║  [AdminDS] exception detail: ${result.exception}');
+    }
+  }
+
   /// Extracts a human-readable message from a GraphQL exception.
   String _errorMessage(OperationException exception) {
     if (exception.graphqlErrors.isNotEmpty) {
@@ -42,6 +54,7 @@ class AdminRemoteDs {
   }
 
   void _check(String method, QueryResult result) {
+    _logResult(method, result);
     if (result.hasException) {
       _logError(method, result.exception!);
       throw Exception(_errorMessage(result.exception!));
@@ -64,7 +77,7 @@ class AdminRemoteDs {
           orderCount
         }
         recentOrders {
-          id storeName storeId status grandTotal createdAt
+          id storeName storeId status total tax grandTotal createdAt
           items { barcode name price quantity }
           flaggedIssue { reason note staffName timestamp }
           staffActions { staffId staffName action timestamp note }
@@ -82,7 +95,7 @@ class AdminRemoteDs {
         completedOrders
         store { id storeCode name address }
         recentOrders {
-          id storeName storeId status grandTotal createdAt
+          id storeName storeId status total tax grandTotal createdAt
           items { barcode name price quantity }
           flaggedIssue { reason note staffName timestamp }
           staffActions { staffId staffName action timestamp note }
@@ -203,7 +216,7 @@ class AdminRemoteDs {
     );
     _check('getDashboardStats', result);
     final data = result.data!['dashboardStats'] as Map<String, dynamic>;
-    _logSuccess('getDashboardStats', data.keys);
+    _logSuccess('getDashboardStats', data);
     return data;
   }
 
@@ -214,7 +227,7 @@ class AdminRemoteDs {
     );
     _check('getStoreStats', result);
     final data = result.data!['storeStats'] as Map<String, dynamic>;
-    _logSuccess('getStoreStats', data.keys);
+    _logSuccess('getStoreStats', data);
     return data;
   }
 
@@ -225,7 +238,7 @@ class AdminRemoteDs {
     );
     _check('getAllStores', result);
     final data = (result.data!['stores'] as List).cast<Map<String, dynamic>>();
-    _logSuccess('getAllStores', '${data.length} stores');
+    _logSuccess('getAllStores', '${data.length} stores → ${data.map((e) => e['name']).toList()}');
     return data;
   }
 
@@ -304,7 +317,7 @@ class AdminRemoteDs {
     );
     _check('getAllOrders', result);
     final data = (result.data!['allOrders'] as List).cast<Map<String, dynamic>>();
-    _logSuccess('getAllOrders', '${data.length} orders');
+    _logSuccess('getAllOrders', '${data.length} orders → first: ${data.isNotEmpty ? data.first : 'none'}');
     return data;
   }
 
@@ -315,7 +328,7 @@ class AdminRemoteDs {
     );
     _check('getAllStaff', result);
     final data = (result.data!['allStaff'] as List).cast<Map<String, dynamic>>();
-    _logSuccess('getAllStaff', '${data.length} staff');
+    _logSuccess('getAllStaff', '${data.length} staff → ${data.map((e) => e['name']).toList()}');
     return data;
   }
 

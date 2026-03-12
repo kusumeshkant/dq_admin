@@ -28,8 +28,8 @@ class StaffActionModel extends StaffActionEntity {
   factory StaffActionModel.fromJson(Map<String, dynamic> json) => StaffActionModel(
         staffId: json['staffId'] as String?,
         staffName: json['staffName'] as String?,
-        action: json['action'] as String,
-        timestamp: json['timestamp'] as String,
+        action: (json['action'] as String?) ?? '',
+        timestamp: (json['timestamp'] as String?) ?? '',
         note: json['note'] as String?,
       );
 }
