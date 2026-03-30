@@ -6,7 +6,9 @@ import '../../domain/usecase/get_store_products_usecase.dart';
 import '../../domain/usecase/create_product_usecase.dart';
 import '../../domain/usecase/update_product_usecase.dart';
 import '../../domain/usecase/delete_product_usecase.dart';
+import '../../domain/usecase/bulk_upsert_products_usecase.dart';
 import 'barcode_scanner_page.dart';
+import 'bulk_upload_page.dart';
 
 class ProductsController extends GetxController {
   final StoreEntity store;
@@ -14,6 +16,7 @@ class ProductsController extends GetxController {
   final CreateProductUseCase createProductUseCase;
   final UpdateProductUseCase updateProductUseCase;
   final DeleteProductUseCase deleteProductUseCase;
+  final BulkUpsertProductsUseCase bulkUpsertProductsUseCase;
 
   ProductsController({
     required this.store,
@@ -21,6 +24,7 @@ class ProductsController extends GetxController {
     required this.createProductUseCase,
     required this.updateProductUseCase,
     required this.deleteProductUseCase,
+    required this.bulkUpsertProductsUseCase,
   });
 
   final isLoading = false.obs;
@@ -62,6 +66,16 @@ class ProductsController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void openBulkUpload() {
+    Get.to(
+      () => BulkUploadPage(
+        storeId: store.id,
+        storeName: store.name,
+        useCase: bulkUpsertProductsUseCase,
+      ),
+    )?.then((_) => loadProducts());
   }
 
   void _clearForm() {

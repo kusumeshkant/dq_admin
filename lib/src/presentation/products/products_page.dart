@@ -18,7 +18,16 @@ class ProductsPage extends StatelessWidget {
     return ThemedBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(title: Text('${store.name} — Products')),
+        appBar: AppBar(
+          title: Text('${store.name} — Products'),
+          actions: [
+            IconButton(
+              tooltip: 'Bulk Upload',
+              icon: const Icon(Icons.upload_file_rounded),
+              onPressed: c.openBulkUpload,
+            ),
+          ],
+        ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: AppTheme.primary,
           onPressed: c.showCreateDialog,

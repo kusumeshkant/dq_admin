@@ -34,6 +34,16 @@ class ProductRemoteDs {
     }
   ''';
 
+  static const _bulkUpsertMutation = r'''
+    mutation BulkUpsertProducts($storeId: ID!, $products: [BulkProductInput!]!) {
+      bulkUpsertProducts(storeId: $storeId, products: $products) {
+        created
+        updated
+        errors { barcode message }
+      }
+    }
+  ''';
+
   String _errorMessage(OperationException e) {
     if (e.graphqlErrors.isNotEmpty) return e.graphqlErrors.map((e) => e.message).join(', ');
     if (e.linkException != null) return 'Network error — check your connection';
@@ -70,5 +80,14 @@ class ProductRemoteDs {
     final result = await _client.mutate(MutationOptions(document: gql(_deleteProductMutation), variables: {'id': id}));
     _check(result);
     return result.data!['deleteProduct'] as bool;
+  }
+
+  Future<Map<String, dynamic>> bulkUpsertProducts({required String storeId, required List<Map<String, dynamic>> products}) async {
+    final result = await _client.mutate(MutationOptions(
+      document: gql(_bulkUpsertMutation),
+      variables: {'storeId': storeId, 'products': products},
+    ));
+    _check(result);
+    return result.data!['bulkUpsertProducts'] as Map<String, dynamic>;
   }
 }

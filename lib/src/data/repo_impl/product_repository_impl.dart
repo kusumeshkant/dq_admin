@@ -27,4 +27,37 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<bool> deleteProduct(String id) => ds.deleteProduct(id);
+
+  @override
+  Future<BulkUpsertResultEntity> bulkUpsertProducts({required String storeId, required List<BulkProductInput> products}) async {
+    final productMaps = products.map((p) {
+      final map = <String, dynamic>{
+        'barcode': p.barcode,
+        'name': p.name,
+        'price': p.price,
+        'stock': p.stock,
+      };
+      if (p.sku != null) map['sku'] = p.sku;
+      if (p.mrp != null) map['mrp'] = p.mrp;
+      if (p.brand != null) map['brand'] = p.brand;
+      if (p.gender != null) map['gender'] = p.gender;
+      if (p.color != null) map['color'] = p.color;
+      if (p.categoryMain != null) map['categoryMain'] = p.categoryMain;
+      if (p.categorySub != null) map['categorySub'] = p.categorySub;
+      if (p.sizeGarment != null) map['sizeGarment'] = p.sizeGarment;
+      if (p.sizeActual != null) map['sizeActual'] = p.sizeActual;
+      return map;
+    }).toList();
+
+    final json = await ds.bulkUpsertProducts(storeId: storeId, products: productMaps);
+    final errors = (json['errors'] as List)
+        .cast<Map<String, dynamic>>()
+        .map((e) => BulkProductErrorEntity(barcode: e['barcode'] as String, message: e['message'] as String))
+        .toList();
+    return BulkUpsertResultEntity(
+      created: json['created'] as int,
+      updated: json['updated'] as int,
+      errors: errors,
+    );
+  }
 }
