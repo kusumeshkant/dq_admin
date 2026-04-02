@@ -29,7 +29,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<bool> deleteProduct(String id) => ds.deleteProduct(id);
 
   @override
-  Future<BulkUpsertResultEntity> bulkUpsertProducts({required String storeId, required List<BulkProductInput> products}) async {
+  Future<BulkUpsertResultEntity> bulkUpsertProducts({required String storeId, required List<BulkProductInput> products, String? fileName, int? totalRows, int? totalColumns}) async {
     final productMaps = products.map((p) {
       final map = <String, dynamic>{
         'barcode': p.barcode,
@@ -49,7 +49,7 @@ class ProductRepositoryImpl implements ProductRepository {
       return map;
     }).toList();
 
-    final json = await ds.bulkUpsertProducts(storeId: storeId, products: productMaps);
+    final json = await ds.bulkUpsertProducts(storeId: storeId, products: productMaps, fileName: fileName, totalRows: totalRows, totalColumns: totalColumns);
     final errors = (json['errors'] as List)
         .cast<Map<String, dynamic>>()
         .map((e) => BulkProductErrorEntity(barcode: e['barcode'] as String, message: e['message'] as String))
@@ -57,7 +57,34 @@ class ProductRepositoryImpl implements ProductRepository {
     return BulkUpsertResultEntity(
       created: json['created'] as int,
       updated: json['updated'] as int,
+      skipped: json['skipped'] as int,
       errors: errors,
     );
+  }
+
+  @override
+  Future<List<UploadLogEntity>> getUploadLogs(String storeId) async {
+    final list = await ds.getUploadLogs(storeId);
+    return list.map((l) {
+      final errors = (l['errors'] as List? ?? [])
+          .cast<Map<String, dynamic>>()
+          .map((e) => BulkProductErrorEntity(barcode: e['barcode'] as String, message: e['message'] as String))
+          .toList();
+      return UploadLogEntity(
+        id: l['id'] as String,
+        storeId: l['storeId'] as String,
+        storeName: l['storeName'] as String?,
+        uploadedByName: l['uploadedByName'] as String? ?? 'Unknown',
+        fileName: l['fileName'] as String,
+        uploadedAt: DateTime.parse(l['uploadedAt'] as String),
+        totalRows: l['totalRows'] as int,
+        totalColumns: l['totalColumns'] as int,
+        created: l['created'] as int,
+        updated: l['updated'] as int,
+        skipped: l['skipped'] as int,
+        errorCount: l['errorCount'] as int,
+        errors: errors,
+      );
+    }).toList();
   }
 }

@@ -7,6 +7,7 @@ import '../../domain/usecase/create_product_usecase.dart';
 import '../../domain/usecase/update_product_usecase.dart';
 import '../../domain/usecase/delete_product_usecase.dart';
 import '../../domain/usecase/bulk_upsert_products_usecase.dart';
+import '../../domain/usecase/get_upload_logs_usecase.dart';
 import 'products_controller.dart';
 
 class ProductsBinding extends Bindings {
@@ -23,6 +24,7 @@ class ProductsBinding extends Bindings {
           updateProductUseCase: UpdateProductUseCase(productRepo),
           deleteProductUseCase: DeleteProductUseCase(productRepo),
           bulkUpsertProductsUseCase: BulkUpsertProductsUseCase(productRepo),
+          getUploadLogsUseCase: GetUploadLogsUseCase(productRepo),
         ));
   }
 }

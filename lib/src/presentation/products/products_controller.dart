@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../domain/entity/product_entity.dart';
@@ -7,6 +8,7 @@ import '../../domain/usecase/create_product_usecase.dart';
 import '../../domain/usecase/update_product_usecase.dart';
 import '../../domain/usecase/delete_product_usecase.dart';
 import '../../domain/usecase/bulk_upsert_products_usecase.dart';
+import '../../domain/usecase/get_upload_logs_usecase.dart';
 import 'barcode_scanner_page.dart';
 import 'bulk_upload_page.dart';
 
@@ -17,6 +19,7 @@ class ProductsController extends GetxController {
   final UpdateProductUseCase updateProductUseCase;
   final DeleteProductUseCase deleteProductUseCase;
   final BulkUpsertProductsUseCase bulkUpsertProductsUseCase;
+  final GetUploadLogsUseCase getUploadLogsUseCase;
 
   ProductsController({
     required this.store,
@@ -25,6 +28,7 @@ class ProductsController extends GetxController {
     required this.updateProductUseCase,
     required this.deleteProductUseCase,
     required this.bulkUpsertProductsUseCase,
+    required this.getUploadLogsUseCase,
   });
 
   final isLoading = false.obs;
@@ -74,6 +78,7 @@ class ProductsController extends GetxController {
         storeId: store.id,
         storeName: store.name,
         useCase: bulkUpsertProductsUseCase,
+        getLogsUseCase: getUploadLogsUseCase,
       ),
     )?.then((_) => loadProducts());
   }
@@ -120,20 +125,30 @@ class ProductsController extends GetxController {
     priceCtrl.text = product.price.toString();
     stockCtrl.text = product.stock.toString();
     _showProductSheet(isCreate: false, onSave: () async {
+      final newStock = int.tryParse(stockCtrl.text.trim());
       final updated = await updateProductUseCase.execute(
         id: product.id,
         sku: skuCtrl.text.trim().isEmpty ? null : skuCtrl.text.trim(),
         name: nameCtrl.text.trim(),
         description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
         price: double.tryParse(priceCtrl.text.trim()),
-        stock: int.tryParse(stockCtrl.text.trim()),
+        stock: newStock,
       );
       final idx = products.indexWhere((p) => p.id == product.id);
-      if (idx != -1) products[idx] = updated;
-      Get.back();
-      Get.snackbar('Done', 'Product updated',
-          backgroundColor: Colors.green.withValues(alpha: 0.8),
-          colorText: Colors.white);
+      if (newStock == 0) {
+        // Backend deleted the product — remove from list
+        if (idx != -1) products.removeAt(idx);
+        Get.back();
+        Get.snackbar('Removed', '"${product.name}" removed (stock depleted).',
+            backgroundColor: Colors.orange.withValues(alpha: 0.8),
+            colorText: Colors.white);
+      } else {
+        if (idx != -1) products[idx] = updated;
+        Get.back();
+        Get.snackbar('Done', 'Product updated',
+            backgroundColor: Colors.green.withValues(alpha: 0.8),
+            colorText: Colors.white);
+      }
     });
   }
 
@@ -368,7 +383,7 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                       readOnly: !widget.isCreate,
                     ),
                   ),
-                  if (widget.isCreate) ...[
+                  if (widget.isCreate && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) ...[
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: _scanning ? null : _scanBarcode,

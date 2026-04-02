@@ -35,10 +35,21 @@ class ProductRemoteDs {
   ''';
 
   static const _bulkUpsertMutation = r'''
-    mutation BulkUpsertProducts($storeId: ID!, $products: [BulkProductInput!]!) {
-      bulkUpsertProducts(storeId: $storeId, products: $products) {
+    mutation BulkUpsertProducts($storeId: ID!, $products: [BulkProductInput!]!, $fileName: String, $totalRows: Int, $totalColumns: Int) {
+      bulkUpsertProducts(storeId: $storeId, products: $products, fileName: $fileName, totalRows: $totalRows, totalColumns: $totalColumns) {
         created
         updated
+        skipped
+        errors { barcode message }
+      }
+    }
+  ''';
+
+  static const _uploadLogsQuery = r'''
+    query UploadLogs($storeId: ID!) {
+      uploadLogs(storeId: $storeId) {
+        id storeId storeName uploadedByName fileName uploadedAt
+        totalRows totalColumns created updated skipped errorCount
         errors { barcode message }
       }
     }
@@ -82,12 +93,26 @@ class ProductRemoteDs {
     return result.data!['deleteProduct'] as bool;
   }
 
-  Future<Map<String, dynamic>> bulkUpsertProducts({required String storeId, required List<Map<String, dynamic>> products}) async {
+  Future<Map<String, dynamic>> bulkUpsertProducts({required String storeId, required List<Map<String, dynamic>> products, String? fileName, int? totalRows, int? totalColumns}) async {
     final result = await _client.mutate(MutationOptions(
       document: gql(_bulkUpsertMutation),
-      variables: {'storeId': storeId, 'products': products},
+      variables: {
+        'storeId': storeId,
+        'products': products,
+        if (fileName != null) 'fileName': fileName,
+        if (totalRows != null) 'totalRows': totalRows,
+        if (totalColumns != null) 'totalColumns': totalColumns,
+      },
     ));
     _check(result);
     return result.data!['bulkUpsertProducts'] as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> getUploadLogs(String storeId) async {
+    final result = await _client.query(
+      QueryOptions(document: gql(_uploadLogsQuery), variables: {'storeId': storeId}, fetchPolicy: FetchPolicy.networkOnly),
+    );
+    _check(result);
+    return (result.data!['uploadLogs'] as List).cast<Map<String, dynamic>>();
   }
 }

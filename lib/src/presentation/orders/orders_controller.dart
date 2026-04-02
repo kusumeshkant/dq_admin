@@ -12,12 +12,18 @@ class OrdersController extends GetxController {
 
   final isLoading = false.obs;
   final orders = <OrderEntity>[].obs;
+  final allOrders = <OrderEntity>[].obs; // unfiltered, used for counts
   final stores = <StoreEntity>[].obs;
 
   final selectedStoreId = Rx<String?>(null);
   final selectedStatus = Rx<String?>(null);
 
   final statusOptions = ['All', 'pending', 'preparing', 'ready', 'completed', 'cancelled'];
+
+  int get activeCount => allOrders.where((o) =>
+      o.status == 'pending' || o.status == 'preparing' || o.status == 'ready').length;
+  int get completedCount => allOrders.where((o) => o.status == 'completed').length;
+  int get cancelledCount => allOrders.where((o) => o.status == 'cancelled').length;
 
   @override
   void onInit() {
@@ -39,6 +45,15 @@ class OrdersController extends GetxController {
         storeId: selectedStoreId.value,
         status: selectedStatus.value,
       );
+      // Keep allOrders updated for counts (always unfiltered by status)
+      if (selectedStatus.value == null) {
+        allOrders.assignAll(orders);
+      } else {
+        allOrders.value = await getAllOrdersUseCase.execute(
+          storeId: selectedStoreId.value,
+          status: null,
+        );
+      }
     } catch (e) {
       orders.clear();
     } finally {

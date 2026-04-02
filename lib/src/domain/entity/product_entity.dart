@@ -61,6 +61,39 @@ class BulkProductErrorEntity {
 class BulkUpsertResultEntity {
   final int created;
   final int updated;
+  final int skipped;
   final List<BulkProductErrorEntity> errors;
-  const BulkUpsertResultEntity({required this.created, required this.updated, required this.errors});
+  const BulkUpsertResultEntity({required this.created, required this.updated, required this.skipped, required this.errors});
+}
+
+class UploadLogEntity {
+  final String id;
+  final String storeId;
+  final String? storeName;
+  final String uploadedByName;
+  final String fileName;
+  final DateTime uploadedAt;
+  final int totalRows;
+  final int totalColumns;
+  final int created;
+  final int updated;
+  final int skipped;
+  final int errorCount;
+  final List<BulkProductErrorEntity> errors;
+
+  const UploadLogEntity({
+    required this.id,
+    required this.storeId,
+    this.storeName,
+    required this.uploadedByName,
+    required this.fileName,
+    required this.uploadedAt,
+    required this.totalRows,
+    required this.totalColumns,
+    required this.created,
+    required this.updated,
+    required this.skipped,
+    required this.errorCount,
+    required this.errors,
+  });
 }
