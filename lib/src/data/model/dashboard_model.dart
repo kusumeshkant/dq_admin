@@ -44,6 +44,72 @@ class DashboardStatsModel extends DashboardStatsEntity {
       );
 }
 
+class ProductStatModel extends ProductStatEntity {
+  const ProductStatModel({
+    required super.name,
+    required super.barcode,
+    required super.totalSold,
+    required super.revenue,
+  });
+
+  factory ProductStatModel.fromJson(Map<String, dynamic> json) => ProductStatModel(
+        name: json['name'] as String,
+        barcode: json['barcode'] as String,
+        totalSold: json['totalSold'] as int,
+        revenue: (json['revenue'] as num).toDouble(),
+      );
+}
+
+class DailyRevenueStatModel extends DailyRevenueStatEntity {
+  const DailyRevenueStatModel({
+    required super.date,
+    required super.revenue,
+    required super.orders,
+  });
+
+  factory DailyRevenueStatModel.fromJson(Map<String, dynamic> json) => DailyRevenueStatModel(
+        date: json['date'] as String,
+        revenue: (json['revenue'] as num).toDouble(),
+        orders: json['orders'] as int,
+      );
+}
+
+class StoreAnalyticsModel extends StoreAnalyticsEntity {
+  const StoreAnalyticsModel({
+    required super.totalRevenue,
+    required super.totalOrders,
+    required super.completedOrders,
+    required super.cancelledOrders,
+    required super.avgOrderValue,
+    required super.avgItemsPerOrder,
+    required super.totalUnitsSold,
+    required super.thisWeekRevenue,
+    required super.lastWeekRevenue,
+    required super.lowStockCount,
+    required super.topProducts,
+    required super.dailyRevenue,
+  });
+
+  factory StoreAnalyticsModel.fromJson(Map<String, dynamic> json) => StoreAnalyticsModel(
+        totalRevenue: (json['totalRevenue'] as num?)?.toDouble() ?? 0.0,
+        totalOrders: (json['totalOrders'] as num?)?.toInt() ?? 0,
+        completedOrders: (json['completedOrders'] as num?)?.toInt() ?? 0,
+        cancelledOrders: (json['cancelledOrders'] as num?)?.toInt() ?? 0,
+        avgOrderValue: (json['avgOrderValue'] as num?)?.toDouble() ?? 0.0,
+        avgItemsPerOrder: (json['avgItemsPerOrder'] as num?)?.toDouble() ?? 0.0,
+        totalUnitsSold: (json['totalUnitsSold'] as num?)?.toInt() ?? 0,
+        thisWeekRevenue: (json['thisWeekRevenue'] as num?)?.toDouble() ?? 0.0,
+        lastWeekRevenue: (json['lastWeekRevenue'] as num?)?.toDouble() ?? 0.0,
+        lowStockCount: (json['lowStockCount'] as num?)?.toInt() ?? 0,
+        topProducts: (json['topProducts'] as List<dynamic>? ?? [])
+            .map((e) => ProductStatModel.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        dailyRevenue: (json['dailyRevenue'] as List<dynamic>? ?? [])
+            .map((e) => DailyRevenueStatModel.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
 class StoreStatsModel extends StoreStatsEntity {
   const StoreStatsModel({
     super.store,

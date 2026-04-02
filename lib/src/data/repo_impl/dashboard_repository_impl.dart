@@ -18,4 +18,10 @@ class DashboardRepositoryImpl implements DashboardRepository {
     final json = await ds.getStoreStats(storeId);
     return StoreStatsModel.fromJson(json);
   }
+
+  @override
+  Future<StoreAnalyticsEntity> getStoreAnalytics(String? storeId) async {
+    final json = await ds.getStoreAnalytics(storeId);
+    return StoreAnalyticsModel.fromJson(json);
+  }
 }

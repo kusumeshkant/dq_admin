@@ -27,6 +27,20 @@ class DashboardRemoteDs {
     }
   ''';
 
+  static const _storeAnalyticsQuery = r'''
+    query StoreAnalytics($storeId: ID) {
+      storeAnalytics(storeId: $storeId) {
+        totalRevenue
+        totalOrders
+        completedOrders
+        cancelledOrders
+        avgOrderValue
+        topProducts { name barcode totalSold revenue }
+        dailyRevenue { date revenue orders }
+      }
+    }
+  ''';
+
   static const _storeStatsQuery = r'''
     query StoreStats($storeId: ID!) {
       storeStats(storeId: $storeId) {
@@ -69,5 +83,17 @@ class DashboardRemoteDs {
     );
     _check(result);
     return result.data!['storeStats'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getStoreAnalytics(String? storeId) async {
+    final result = await _client.query(
+      QueryOptions(
+        document: gql(_storeAnalyticsQuery),
+        variables: storeId != null ? {'storeId': storeId} : {},
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
+    );
+    _check(result);
+    return result.data!['storeAnalytics'] as Map<String, dynamic>;
   }
 }
