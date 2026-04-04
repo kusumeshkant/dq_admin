@@ -34,13 +34,24 @@ class ProductsController extends GetxController {
   final isLoading = false.obs;
   final products = <ProductEntity>[].obs;
 
-  // Form controllers
+  // Basic fields
   final barcodeCtrl = TextEditingController();
   final skuCtrl = TextEditingController();
   final nameCtrl = TextEditingController();
   final descCtrl = TextEditingController();
   final priceCtrl = TextEditingController();
+  final mrpCtrl = TextEditingController();
   final stockCtrl = TextEditingController();
+  final reorderLevelCtrl = TextEditingController();
+
+  // Extended fields
+  final brandCtrl = TextEditingController();
+  final genderCtrl = TextEditingController();
+  final colorCtrl = TextEditingController();
+  final categoryMainCtrl = TextEditingController();
+  final categorySubCtrl = TextEditingController();
+  final sizeGarmentCtrl = TextEditingController();
+  final sizeActualCtrl = TextEditingController();
 
   @override
   void onInit() {
@@ -50,12 +61,12 @@ class ProductsController extends GetxController {
 
   @override
   void onClose() {
-    barcodeCtrl.dispose();
-    skuCtrl.dispose();
-    nameCtrl.dispose();
-    descCtrl.dispose();
-    priceCtrl.dispose();
-    stockCtrl.dispose();
+    barcodeCtrl.dispose(); skuCtrl.dispose(); nameCtrl.dispose();
+    descCtrl.dispose(); priceCtrl.dispose(); mrpCtrl.dispose();
+    stockCtrl.dispose(); reorderLevelCtrl.dispose();
+    brandCtrl.dispose(); genderCtrl.dispose(); colorCtrl.dispose();
+    categoryMainCtrl.dispose(); categorySubCtrl.dispose();
+    sizeGarmentCtrl.dispose(); sizeActualCtrl.dispose();
     super.onClose();
   }
 
@@ -84,12 +95,12 @@ class ProductsController extends GetxController {
   }
 
   void _clearForm() {
-    barcodeCtrl.clear();
-    skuCtrl.clear();
-    nameCtrl.clear();
-    descCtrl.clear();
-    priceCtrl.clear();
-    stockCtrl.clear();
+    barcodeCtrl.clear(); skuCtrl.clear(); nameCtrl.clear();
+    descCtrl.clear(); priceCtrl.clear(); mrpCtrl.clear();
+    stockCtrl.clear(); reorderLevelCtrl.clear();
+    brandCtrl.clear(); genderCtrl.clear(); colorCtrl.clear();
+    categoryMainCtrl.clear(); categorySubCtrl.clear();
+    sizeGarmentCtrl.clear(); sizeActualCtrl.clear();
   }
 
   void showCreateDialog() {
@@ -106,8 +117,17 @@ class ProductsController extends GetxController {
         sku: skuCtrl.text.trim().isEmpty ? null : skuCtrl.text.trim(),
         name: name,
         description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
+        brand: brandCtrl.text.trim().isEmpty ? null : brandCtrl.text.trim(),
+        gender: genderCtrl.text.trim().isEmpty ? null : genderCtrl.text.trim(),
+        color: colorCtrl.text.trim().isEmpty ? null : colorCtrl.text.trim(),
+        categoryMain: categoryMainCtrl.text.trim().isEmpty ? null : categoryMainCtrl.text.trim(),
+        categorySub: categorySubCtrl.text.trim().isEmpty ? null : categorySubCtrl.text.trim(),
+        sizeGarment: sizeGarmentCtrl.text.trim().isEmpty ? null : sizeGarmentCtrl.text.trim(),
+        sizeActual: sizeActualCtrl.text.trim().isEmpty ? null : sizeActualCtrl.text.trim(),
         price: price,
+        mrp: double.tryParse(mrpCtrl.text.trim()),
         stock: stock,
+        reorderLevel: int.tryParse(reorderLevelCtrl.text.trim()),
       );
       products.add(product);
       Get.back();
@@ -122,8 +142,18 @@ class ProductsController extends GetxController {
     skuCtrl.text = product.sku ?? '';
     nameCtrl.text = product.name;
     descCtrl.text = product.description ?? '';
+    brandCtrl.text = product.brand ?? '';
+    genderCtrl.text = product.gender ?? '';
+    colorCtrl.text = product.color ?? '';
+    categoryMainCtrl.text = product.categoryMain ?? '';
+    categorySubCtrl.text = product.categorySub ?? '';
+    sizeGarmentCtrl.text = product.sizeGarment ?? '';
+    sizeActualCtrl.text = product.sizeActual ?? '';
     priceCtrl.text = product.price.toString();
+    mrpCtrl.text = product.mrp?.toString() ?? '';
     stockCtrl.text = product.stock.toString();
+    reorderLevelCtrl.text = product.reorderLevel?.toString() ?? '';
+
     _showProductSheet(isCreate: false, onSave: () async {
       final newStock = int.tryParse(stockCtrl.text.trim());
       final updated = await updateProductUseCase.execute(
@@ -131,12 +161,20 @@ class ProductsController extends GetxController {
         sku: skuCtrl.text.trim().isEmpty ? null : skuCtrl.text.trim(),
         name: nameCtrl.text.trim(),
         description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
+        brand: brandCtrl.text.trim().isEmpty ? null : brandCtrl.text.trim(),
+        gender: genderCtrl.text.trim().isEmpty ? null : genderCtrl.text.trim(),
+        color: colorCtrl.text.trim().isEmpty ? null : colorCtrl.text.trim(),
+        categoryMain: categoryMainCtrl.text.trim().isEmpty ? null : categoryMainCtrl.text.trim(),
+        categorySub: categorySubCtrl.text.trim().isEmpty ? null : categorySubCtrl.text.trim(),
+        sizeGarment: sizeGarmentCtrl.text.trim().isEmpty ? null : sizeGarmentCtrl.text.trim(),
+        sizeActual: sizeActualCtrl.text.trim().isEmpty ? null : sizeActualCtrl.text.trim(),
         price: double.tryParse(priceCtrl.text.trim()),
+        mrp: double.tryParse(mrpCtrl.text.trim()),
         stock: newStock,
+        reorderLevel: int.tryParse(reorderLevelCtrl.text.trim()),
       );
       final idx = products.indexWhere((p) => p.id == product.id);
       if (newStock == 0) {
-        // Backend deleted the product — remove from list
         if (idx != -1) products.removeAt(idx);
         Get.back();
         Get.snackbar('Removed', '"${product.name}" removed (stock depleted).',
@@ -179,10 +217,7 @@ class ProductsController extends GetxController {
             ),
             const SizedBox(height: 14),
             const Text('Delete Product',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold)),
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(
               'Are you sure you want to delete "${product.name}"?\nThis action cannot be undone.',
@@ -199,8 +234,7 @@ class ProductsController extends GetxController {
                       foregroundColor: Colors.white70,
                       side: const BorderSide(color: Colors.white24),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text('Cancel'),
                   ),
@@ -213,19 +247,16 @@ class ProductsController extends GetxController {
                       await deleteProductUseCase.execute(product.id);
                       products.removeWhere((p) => p.id == product.id);
                       Get.snackbar('Deleted', '"${product.name}" removed.',
-                          backgroundColor:
-                              Colors.green.withValues(alpha: 0.8),
+                          backgroundColor: Colors.green.withValues(alpha: 0.8),
                           colorText: Colors.white);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Delete',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -237,10 +268,7 @@ class ProductsController extends GetxController {
     );
   }
 
-  void _showProductSheet({
-    required bool isCreate,
-    required Future<void> Function() onSave,
-  }) {
+  void _showProductSheet({required bool isCreate, required Future<void> Function() onSave}) {
     final isSaving = false.obs;
     Get.bottomSheet(
       _ProductFormSheet(
@@ -250,8 +278,17 @@ class ProductsController extends GetxController {
         skuCtrl: skuCtrl,
         nameCtrl: nameCtrl,
         descCtrl: descCtrl,
+        brandCtrl: brandCtrl,
+        genderCtrl: genderCtrl,
+        colorCtrl: colorCtrl,
+        categoryMainCtrl: categoryMainCtrl,
+        categorySubCtrl: categorySubCtrl,
+        sizeGarmentCtrl: sizeGarmentCtrl,
+        sizeActualCtrl: sizeActualCtrl,
         priceCtrl: priceCtrl,
+        mrpCtrl: mrpCtrl,
         stockCtrl: stockCtrl,
+        reorderLevelCtrl: reorderLevelCtrl,
         onSave: () async {
           isSaving.value = true;
           try {
@@ -279,8 +316,17 @@ class _ProductFormSheet extends StatefulWidget {
   final TextEditingController skuCtrl;
   final TextEditingController nameCtrl;
   final TextEditingController descCtrl;
+  final TextEditingController brandCtrl;
+  final TextEditingController genderCtrl;
+  final TextEditingController colorCtrl;
+  final TextEditingController categoryMainCtrl;
+  final TextEditingController categorySubCtrl;
+  final TextEditingController sizeGarmentCtrl;
+  final TextEditingController sizeActualCtrl;
   final TextEditingController priceCtrl;
+  final TextEditingController mrpCtrl;
   final TextEditingController stockCtrl;
+  final TextEditingController reorderLevelCtrl;
   final VoidCallback onSave;
 
   const _ProductFormSheet({
@@ -290,8 +336,17 @@ class _ProductFormSheet extends StatefulWidget {
     required this.skuCtrl,
     required this.nameCtrl,
     required this.descCtrl,
+    required this.brandCtrl,
+    required this.genderCtrl,
+    required this.colorCtrl,
+    required this.categoryMainCtrl,
+    required this.categorySubCtrl,
+    required this.sizeGarmentCtrl,
+    required this.sizeActualCtrl,
     required this.priceCtrl,
+    required this.mrpCtrl,
     required this.stockCtrl,
+    required this.reorderLevelCtrl,
     required this.onSave,
   });
 
@@ -332,18 +387,13 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Handle bar
               Center(
                 child: Container(
                   width: 36, height: 4,
-                  decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(2)),
+                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Header
               Row(
                 children: [
                   Container(
@@ -352,37 +402,21 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                       color: Colors.orange.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      widget.isCreate
-                          ? Icons.add_box_rounded
-                          : Icons.edit_rounded,
-                      color: Colors.orange,
-                      size: 20,
-                    ),
+                    child: Icon(widget.isCreate ? Icons.add_box_rounded : Icons.edit_rounded, color: Colors.orange, size: 20),
                   ),
                   const SizedBox(width: 10),
                   Text(
                     widget.isCreate ? 'New Product' : 'Edit Product',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
 
-              // Barcode field + scan button
+              // Barcode + scan
               Row(
                 children: [
-                  Expanded(
-                    child: _field(
-                      widget.barcodeCtrl,
-                      'Barcode',
-                      icon: Icons.barcode_reader,
-                      readOnly: !widget.isCreate,
-                    ),
-                  ),
+                  Expanded(child: _field(widget.barcodeCtrl, 'Barcode', icon: Icons.barcode_reader, readOnly: !widget.isCreate)),
                   if (widget.isCreate && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) ...[
                     const SizedBox(width: 8),
                     GestureDetector(
@@ -393,18 +427,11 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                         decoration: BoxDecoration(
                           color: Colors.orange.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                              color: Colors.orange.withValues(alpha: 0.35)),
+                          border: Border.all(color: Colors.orange.withValues(alpha: 0.35)),
                         ),
                         child: _scanning
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.orange))
-                            : const Icon(Icons.qr_code_scanner_rounded,
-                                color: Colors.orange, size: 22),
+                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange))
+                            : const Icon(Icons.qr_code_scanner_rounded, color: Colors.orange, size: 22),
                       ),
                     ),
                   ],
@@ -412,40 +439,67 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
               ),
               const SizedBox(height: 10),
 
-              // SKU
-              _field(widget.skuCtrl, 'SKU (optional)',
-                  icon: Icons.qr_code_rounded),
+              _field(widget.skuCtrl, 'SKU (optional)', icon: Icons.qr_code_rounded),
+              const SizedBox(height: 10),
+              _field(widget.nameCtrl, 'Product Name', icon: Icons.label_rounded),
+              const SizedBox(height: 10),
+              _field(widget.descCtrl, 'Description (optional)', icon: Icons.notes_rounded),
               const SizedBox(height: 10),
 
-              // Name
-              _field(widget.nameCtrl, 'Product Name',
-                  icon: Icons.label_rounded),
-              const SizedBox(height: 10),
-
-              // Description
-              _field(widget.descCtrl, 'Description (optional)',
-                  icon: Icons.notes_rounded),
-              const SizedBox(height: 10),
-
-              // Price + Stock
+              // Price + MRP
               Row(
                 children: [
-                  Expanded(
-                    child: _field(widget.priceCtrl, 'Price (₹)',
-                        icon: Icons.currency_rupee_rounded, numeric: true),
-                  ),
+                  Expanded(child: _field(widget.priceCtrl, 'Price (₹)', icon: Icons.currency_rupee_rounded, numeric: true)),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: _field(widget.stockCtrl, 'Stock',
-                        icon: Icons.inventory_rounded,
-                        numeric: true,
-                        integer: true),
-                  ),
+                  Expanded(child: _field(widget.mrpCtrl, 'MRP ₹ (optional)', icon: Icons.price_change_rounded, numeric: true)),
                 ],
               ),
+              const SizedBox(height: 10),
+
+              // Stock + Reorder Level
+              Row(
+                children: [
+                  Expanded(child: _field(widget.stockCtrl, 'Stock', icon: Icons.inventory_rounded, numeric: true, integer: true)),
+                  const SizedBox(width: 10),
+                  Expanded(child: _field(widget.reorderLevelCtrl, 'Reorder Level', icon: Icons.warning_amber_rounded, numeric: true, integer: true)),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              _sectionLabel('Product Details'),
+              const SizedBox(height: 10),
+
+              Row(
+                children: [
+                  Expanded(child: _field(widget.brandCtrl, 'Brand (optional)', icon: Icons.business_rounded)),
+                  const SizedBox(width: 10),
+                  Expanded(child: _field(widget.colorCtrl, 'Color (optional)', icon: Icons.palette_rounded)),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              Row(
+                children: [
+                  Expanded(child: _field(widget.categoryMainCtrl, 'Category (optional)', icon: Icons.category_rounded)),
+                  const SizedBox(width: 10),
+                  Expanded(child: _field(widget.categorySubCtrl, 'Sub-category', icon: Icons.subdirectory_arrow_right_rounded)),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              Row(
+                children: [
+                  Expanded(child: _field(widget.genderCtrl, 'Gender (optional)', icon: Icons.person_rounded)),
+                  const SizedBox(width: 10),
+                  Expanded(child: _field(widget.sizeGarmentCtrl, 'Size (S/M/L/XL)', icon: Icons.straighten_rounded)),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              _field(widget.sizeActualCtrl, 'Actual Size (e.g. 42, 32x30)', icon: Icons.format_size_rounded),
               const SizedBox(height: 20),
 
-              // Action buttons
+              // Buttons
               Row(
                 children: [
                   Expanded(
@@ -455,8 +509,7 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                         foregroundColor: Colors.white70,
                         side: const BorderSide(color: Colors.white24),
                         padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       child: const Text('Cancel'),
                     ),
@@ -465,27 +518,17 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                   Expanded(
                     flex: 2,
                     child: Obx(() => ElevatedButton(
-                          onPressed:
-                              widget.isSaving.value ? null : widget.onSave,
+                          onPressed: widget.isSaving.value ? null : widget.onSave,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           child: widget.isSaving.value
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white))
-                              : Text(
-                                  widget.isCreate
-                                      ? 'Add Product'
-                                      : 'Save Changes',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
+                              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : Text(widget.isCreate ? 'Add Product' : 'Save Changes',
+                                  style: const TextStyle(fontWeight: FontWeight.bold)),
                         )),
                   ),
                 ],
@@ -497,45 +540,27 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
     );
   }
 
-  Widget _field(
-    TextEditingController ctrl,
-    String label, {
-    bool numeric = false,
-    bool integer = false,
-    bool readOnly = false,
-    IconData? icon,
-  }) {
+  Widget _sectionLabel(String label) => Text(
+        label,
+        style: const TextStyle(color: Color(0xFFCDB4DB), fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.8),
+      );
+
+  Widget _field(TextEditingController ctrl, String label, {bool numeric = false, bool integer = false, bool readOnly = false, IconData? icon}) {
     return TextField(
       controller: ctrl,
       readOnly: readOnly,
-      style: TextStyle(
-          color: readOnly ? Colors.white38 : Colors.white, fontSize: 14),
-      keyboardType: integer
-          ? TextInputType.number
-          : numeric
-              ? const TextInputType.numberWithOptions(decimal: true)
-              : TextInputType.text,
+      style: TextStyle(color: readOnly ? Colors.white38 : Colors.white, fontSize: 14),
+      keyboardType: integer ? TextInputType.number : numeric ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Color(0xFFCDB4DB), fontSize: 12),
-        prefixIcon: icon != null
-            ? Icon(icon, color: const Color(0xFFCDB4DB), size: 16)
-            : null,
+        prefixIcon: icon != null ? Icon(icon, color: const Color(0xFFCDB4DB), size: 16) : null,
         filled: true,
-        fillColor: readOnly
-            ? const Color(0x0DFFFFFF)
-            : const Color(0x1AFFFFFF),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0x33FFFFFF))),
-        enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0x33FFFFFF))),
-        focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.orange)),
+        fillColor: readOnly ? const Color(0x0DFFFFFF) : const Color(0x1AFFFFFF),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0x33FFFFFF))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0x33FFFFFF))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.orange)),
       ),
     );
   }

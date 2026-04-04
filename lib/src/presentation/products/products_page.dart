@@ -90,15 +90,39 @@ class _ProductCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(product.name,
-                    style: const TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(product.name,
+                          style: const TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13)),
+                    ),
+                    if (product.isLowStock)
+                      Container(
+                        margin: const EdgeInsets.only(left: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 10),
+                            SizedBox(width: 3),
+                            Text('Low Stock', style: TextStyle(color: Colors.red, fontSize: 9, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
                 Text('${product.barcode}  ·  ₹${product.price.toStringAsFixed(0)}  ·  Stock: ${product.stock}',
                     style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
-                if (product.description != null && product.description!.isNotEmpty)
-                  Text(product.description!,
+                if (product.brand != null && product.brand!.isNotEmpty)
+                  Text(product.brand!,
                       style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),

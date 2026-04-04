@@ -4,8 +4,18 @@ class ProductEntity {
   final String? sku;
   final String name;
   final String? description;
+  final String? brand;
+  final String? gender;
+  final String? color;
+  final String? categoryMain;
+  final String? categorySub;
+  final String? sizeGarment;
+  final String? sizeActual;
   final double price;
+  final double? mrp;
   final int stock;
+  final int? reorderLevel;
+  final bool? isAvailable;
   final String? storeId;
 
   const ProductEntity({
@@ -14,10 +24,22 @@ class ProductEntity {
     this.sku,
     required this.name,
     this.description,
+    this.brand,
+    this.gender,
+    this.color,
+    this.categoryMain,
+    this.categorySub,
+    this.sizeGarment,
+    this.sizeActual,
     required this.price,
+    this.mrp,
     required this.stock,
+    this.reorderLevel,
+    this.isAvailable,
     this.storeId,
   });
+
+  bool get isLowStock => reorderLevel != null && stock <= reorderLevel!;
 }
 
 class BulkProductInput {

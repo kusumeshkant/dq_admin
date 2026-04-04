@@ -7,23 +7,51 @@ class ProductRemoteDs {
   static const _storeProductsQuery = r'''
     query StoreProducts($storeId: ID!) {
       storeProducts(storeId: $storeId) {
-        id barcode sku name description price stock storeId
+        id barcode sku name description brand gender color
+        categoryMain categorySub sizeGarment sizeActual
+        price mrp stock reorderLevel isAvailable storeId
       }
     }
   ''';
 
   static const _createProductMutation = r'''
-    mutation CreateProduct($storeId: ID!, $barcode: String!, $sku: String, $name: String!, $description: String, $price: Float!, $stock: Int!) {
-      createProduct(storeId: $storeId, barcode: $barcode, sku: $sku, name: $name, description: $description, price: $price, stock: $stock) {
-        id barcode sku name description price stock storeId
+    mutation CreateProduct(
+      $storeId: ID!, $barcode: String!, $sku: String, $name: String!,
+      $description: String, $brand: String, $gender: String, $color: String,
+      $categoryMain: String, $categorySub: String, $sizeGarment: String, $sizeActual: String,
+      $price: Float!, $mrp: Float, $stock: Int!, $reorderLevel: Int
+    ) {
+      createProduct(
+        storeId: $storeId, barcode: $barcode, sku: $sku, name: $name,
+        description: $description, brand: $brand, gender: $gender, color: $color,
+        categoryMain: $categoryMain, categorySub: $categorySub,
+        sizeGarment: $sizeGarment, sizeActual: $sizeActual,
+        price: $price, mrp: $mrp, stock: $stock, reorderLevel: $reorderLevel
+      ) {
+        id barcode sku name description brand gender color
+        categoryMain categorySub sizeGarment sizeActual
+        price mrp stock reorderLevel isAvailable storeId
       }
     }
   ''';
 
   static const _updateProductMutation = r'''
-    mutation UpdateProduct($id: ID!, $sku: String, $name: String, $description: String, $price: Float, $stock: Int) {
-      updateProduct(id: $id, sku: $sku, name: $name, description: $description, price: $price, stock: $stock) {
-        id barcode sku name description price stock storeId
+    mutation UpdateProduct(
+      $id: ID!, $sku: String, $name: String, $description: String,
+      $brand: String, $gender: String, $color: String,
+      $categoryMain: String, $categorySub: String, $sizeGarment: String, $sizeActual: String,
+      $price: Float, $mrp: Float, $stock: Int, $reorderLevel: Int, $isAvailable: Boolean
+    ) {
+      updateProduct(
+        id: $id, sku: $sku, name: $name, description: $description,
+        brand: $brand, gender: $gender, color: $color,
+        categoryMain: $categoryMain, categorySub: $categorySub,
+        sizeGarment: $sizeGarment, sizeActual: $sizeActual,
+        price: $price, mrp: $mrp, stock: $stock, reorderLevel: $reorderLevel, isAvailable: $isAvailable
+      ) {
+        id barcode sku name description brand gender color
+        categoryMain categorySub sizeGarment sizeActual
+        price mrp stock reorderLevel isAvailable storeId
       }
     }
   ''';
@@ -73,15 +101,55 @@ class ProductRemoteDs {
     return (result.data!['storeProducts'] as List).cast<Map<String, dynamic>>();
   }
 
-  Future<Map<String, dynamic>> createProduct({required String storeId, required String barcode, String? sku, required String name, String? description, required double price, required int stock}) async {
-    final vars = {'storeId': storeId, 'barcode': barcode, if (sku != null) 'sku': sku, 'name': name, if (description != null) 'description': description, 'price': price, 'stock': stock};
+  Future<Map<String, dynamic>> createProduct({
+    required String storeId, required String barcode, String? sku, required String name,
+    String? description, String? brand, String? gender, String? color,
+    String? categoryMain, String? categorySub, String? sizeGarment, String? sizeActual,
+    required double price, double? mrp, required int stock, int? reorderLevel,
+  }) async {
+    final vars = {
+      'storeId': storeId, 'barcode': barcode, 'name': name, 'price': price, 'stock': stock,
+      if (sku != null) 'sku': sku,
+      if (description != null) 'description': description,
+      if (brand != null) 'brand': brand,
+      if (gender != null) 'gender': gender,
+      if (color != null) 'color': color,
+      if (categoryMain != null) 'categoryMain': categoryMain,
+      if (categorySub != null) 'categorySub': categorySub,
+      if (sizeGarment != null) 'sizeGarment': sizeGarment,
+      if (sizeActual != null) 'sizeActual': sizeActual,
+      if (mrp != null) 'mrp': mrp,
+      if (reorderLevel != null) 'reorderLevel': reorderLevel,
+    };
     final result = await _client.mutate(MutationOptions(document: gql(_createProductMutation), variables: vars));
     _check(result);
     return result.data!['createProduct'] as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> updateProduct({required String id, String? sku, String? name, String? description, double? price, int? stock}) async {
-    final vars = {'id': id, if (sku != null) 'sku': sku, if (name != null) 'name': name, if (description != null) 'description': description, if (price != null) 'price': price, if (stock != null) 'stock': stock};
+  Future<Map<String, dynamic>> updateProduct({
+    required String id, String? sku, String? name, String? description,
+    String? brand, String? gender, String? color,
+    String? categoryMain, String? categorySub, String? sizeGarment, String? sizeActual,
+    double? price, double? mrp, int? stock, int? reorderLevel, bool? isAvailable,
+  }) async {
+    final vars = {
+      'id': id,
+      if (sku != null) 'sku': sku,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (brand != null) 'brand': brand,
+      if (gender != null) 'gender': gender,
+      if (color != null) 'color': color,
+      if (categoryMain != null) 'categoryMain': categoryMain,
+      if (categorySub != null) 'categorySub': categorySub,
+      if (sizeGarment != null) 'sizeGarment': sizeGarment,
+      if (sizeActual != null) 'sizeActual': sizeActual,
+      if (price != null) 'price': price,
+      if (mrp != null) 'mrp': mrp,
+      if (stock != null) 'stock': stock,
+      if (reorderLevel != null) 'reorderLevel': reorderLevel,
+      if (isAvailable != null) 'isAvailable': isAvailable,
+    };
     final result = await _client.mutate(MutationOptions(document: gql(_updateProductMutation), variables: vars));
     _check(result);
     return result.data!['updateProduct'] as Map<String, dynamic>;

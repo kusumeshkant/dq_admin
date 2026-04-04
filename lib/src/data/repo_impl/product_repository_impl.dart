@@ -14,14 +14,36 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<ProductEntity> createProduct({required String storeId, required String barcode, String? sku, required String name, String? description, required double price, required int stock}) async {
-    final json = await ds.createProduct(storeId: storeId, barcode: barcode, sku: sku, name: name, description: description, price: price, stock: stock);
+  Future<ProductEntity> createProduct({
+    required String storeId, required String barcode, String? sku, required String name,
+    String? description, String? brand, String? gender, String? color,
+    String? categoryMain, String? categorySub, String? sizeGarment, String? sizeActual,
+    required double price, double? mrp, required int stock, int? reorderLevel,
+  }) async {
+    final json = await ds.createProduct(
+      storeId: storeId, barcode: barcode, sku: sku, name: name,
+      description: description, brand: brand, gender: gender, color: color,
+      categoryMain: categoryMain, categorySub: categorySub,
+      sizeGarment: sizeGarment, sizeActual: sizeActual,
+      price: price, mrp: mrp, stock: stock, reorderLevel: reorderLevel,
+    );
     return ProductModel.fromJson(json);
   }
 
   @override
-  Future<ProductEntity> updateProduct({required String id, String? sku, String? name, String? description, double? price, int? stock}) async {
-    final json = await ds.updateProduct(id: id, sku: sku, name: name, description: description, price: price, stock: stock);
+  Future<ProductEntity> updateProduct({
+    required String id, String? sku, String? name, String? description,
+    String? brand, String? gender, String? color,
+    String? categoryMain, String? categorySub, String? sizeGarment, String? sizeActual,
+    double? price, double? mrp, int? stock, int? reorderLevel, bool? isAvailable,
+  }) async {
+    final json = await ds.updateProduct(
+      id: id, sku: sku, name: name, description: description,
+      brand: brand, gender: gender, color: color,
+      categoryMain: categoryMain, categorySub: categorySub,
+      sizeGarment: sizeGarment, sizeActual: sizeActual,
+      price: price, mrp: mrp, stock: stock, reorderLevel: reorderLevel, isAvailable: isAvailable,
+    );
     return ProductModel.fromJson(json);
   }
 
