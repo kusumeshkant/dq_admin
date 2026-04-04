@@ -2,7 +2,7 @@ name: dq_admin
 description: DQ Admin app — store and inventory management for store owners.
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+4
 
 environment:
   sdk: ">=3.8.1 <4.0.0"
@@ -31,6 +31,7 @@ dependencies:
   geolocator: ^13.0.2
   flutter_map: ^8.1.1
   latlong2: ^0.9.1
+  http: ^1.2.2
 
   # Barcode scanner
   mobile_scanner: ^7.0.0

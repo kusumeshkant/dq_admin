@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -68,7 +69,19 @@ class StoresController extends GetxController {
     lonCtrl.clear();
   }
 
-  /// Suggests a store code prefix from the name (first 3 alpha chars, uppercase).
+  /// Generates a unique store code: [NAME_3]-[CITY_3]-[4_DIGITS]
+  /// e.g. Style Studio, Mumbai → STY-MUM-4821
+  static String generateStoreCode(String name, String city) {
+    final rng = Random();
+    final nameLetters = name.replaceAll(RegExp(r'[^a-zA-Z]'), '');
+    final cityLetters = city.replaceAll(RegExp(r'[^a-zA-Z]'), '');
+    final namePrefix = nameLetters.substring(0, nameLetters.length.clamp(0, 3)).toUpperCase().padRight(3, 'X');
+    final cityPrefix = cityLetters.substring(0, cityLetters.length.clamp(0, 3)).toUpperCase().padRight(3, 'X');
+    final digits = (1000 + rng.nextInt(9000)).toString();
+    return '$namePrefix-$cityPrefix-$digits';
+  }
+
+  /// Legacy: prefix-only from name (used internally for auto-suggest while typing)
   static String suggestCodePrefix(String name) {
     final letters = name.replaceAll(RegExp(r'[^a-zA-Z]'), '');
     return letters.substring(0, letters.length.clamp(0, 3)).toUpperCase().padRight(3, 'X');
@@ -358,6 +371,12 @@ class _StoreFormSheetState extends State<_StoreFormSheet> {
     if (result != null) {
       widget.latCtrl.text = result.latitude.toStringAsFixed(6);
       widget.lonCtrl.text = result.longitude.toStringAsFixed(6);
+      if (result.address.isNotEmpty &&
+          result.address != 'Could not fetch address' &&
+          result.address != 'Tap on the map to place the pin' &&
+          widget.addressCtrl.text.trim().isEmpty) {
+        widget.addressCtrl.text = result.address;
+      }
     }
   }
 
