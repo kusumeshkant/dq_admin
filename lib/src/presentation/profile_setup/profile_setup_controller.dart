@@ -7,6 +7,8 @@ import '../../domain/entity/user_entity.dart';
 import '../../data/model/user_model.dart';
 import '../dashboard/dashboard_binding.dart';
 import '../dashboard/dashboard_page.dart';
+import '../onboarding/onboarding_binding.dart';
+import '../onboarding/onboarding_page.dart';
 
 class ProfileSetupController extends GetxController {
   final nameCtrl  = TextEditingController();
@@ -61,7 +63,12 @@ class ProfileSetupController extends GetxController {
         Get.find<SessionManager>().setUser(UserModel.fromJson(data));
       }
 
-      Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
+      final storeId = Get.find<SessionManager>().storeId;
+      if (storeId == null || storeId.isEmpty) {
+        Get.offAll(() => const OnboardingPage(), binding: OnboardingBinding());
+      } else {
+        Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
+      }
     } catch (e) {
       errorMessage.value = 'Failed to save profile. Please try again.';
     } finally {

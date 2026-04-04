@@ -7,6 +7,7 @@ import '../../domain/usecase/get_all_stores_usecase.dart';
 import '../../domain/usecase/create_store_usecase.dart';
 import '../../domain/usecase/update_store_usecase.dart';
 import '../../domain/usecase/delete_store_usecase.dart';
+import '../../service_core/auth/session_manager.dart';
 import 'map_picker_page.dart';
 
 class StoresController extends GetxController {
@@ -51,7 +52,12 @@ class StoresController extends GetxController {
   Future<void> loadStores() async {
     isLoading.value = true;
     try {
-      stores.value = await getAllStoresUseCase.execute();
+      final all = await getAllStoresUseCase.execute();
+      final storeId = Get.find<SessionManager>().storeId;
+      // Scoped admin: only show their own store
+      stores.value = (storeId != null && storeId.isNotEmpty)
+          ? all.where((s) => s.id == storeId).toList()
+          : all;
     } catch (e) {
       Get.snackbar('Error', 'Failed to load stores',
           backgroundColor: Colors.red.withValues(alpha: 0.8),
