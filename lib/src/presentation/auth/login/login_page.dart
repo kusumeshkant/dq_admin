@@ -2,6 +2,8 @@ import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../theme/app_theme.dart';
+import '../signup/signup_binding.dart';
+import '../signup/signup_page.dart';
 import 'login_controller.dart';
 
 class LoginPage extends StatelessWidget {
@@ -112,6 +114,27 @@ class LoginPage extends StatelessWidget {
                                 style: TextStyle(
                                     fontSize: 16, fontWeight: FontWeight.w600)),
                       )),
+                ),
+                const SizedBox(height: 24),
+
+                // Sign up link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("New store owner? ",
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+                    GestureDetector(
+                      onTap: () => Get.to(
+                        () => const SignupPage(),
+                        binding: SignupBinding(),
+                      ),
+                      child: const Text('Create Account',
+                          style: TextStyle(
+                              color: AppTheme.primary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ],
                 ),
               ],
             ),

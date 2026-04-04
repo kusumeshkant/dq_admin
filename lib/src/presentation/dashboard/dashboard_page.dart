@@ -16,6 +16,8 @@ import '../stores/stores_binding.dart';
 import '../stores/stores_page.dart';
 import '../analytics/analytics_binding.dart';
 import '../analytics/analytics_page.dart';
+import '../staff_management/staff_management_binding.dart';
+import '../staff_management/staff_management_page.dart';
 import 'dashboard_controller.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -440,6 +442,16 @@ class _QuickAccess extends StatelessWidget {
         color: Colors.orange.shade400,
         onTap: () =>
             Get.to(() => const StaffPage(), binding: StaffBinding()),
+      ),
+      _QuickItem(
+        icon: Icons.person_add_rounded,
+        label: 'Invite Staff',
+        subtitle: 'Add team members',
+        color: Colors.teal.shade300,
+        onTap: () => Get.to(
+          () => const StaffManagementPage(),
+          binding: StaffManagementBinding(),
+        ),
       ),
       _QuickItem(
         icon: Icons.bar_chart_rounded,
