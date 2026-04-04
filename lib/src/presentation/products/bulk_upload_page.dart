@@ -2,20 +2,24 @@ import 'package:excel/excel.dart' hide Border, BorderStyle;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../domain/entity/product_entity.dart';
 import '../../domain/usecase/bulk_upsert_products_usecase.dart';
+import '../../domain/usecase/get_upload_logs_usecase.dart';
 import '../../theme/app_theme.dart';
 
 class BulkUploadPage extends StatefulWidget {
   final String storeId;
   final String storeName;
   final BulkUpsertProductsUseCase useCase;
+  final GetUploadLogsUseCase getLogsUseCase;
 
   const BulkUploadPage({
     super.key,
     required this.storeId,
     required this.storeName,
     required this.useCase,
+    required this.getLogsUseCase,
   });
 
   @override
@@ -27,6 +31,29 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
   String? _parseError;
   bool _isUploading = false;
   BulkUpsertResultEntity? _result;
+
+  // File metadata
+  String? _fileName;
+  int _totalRows = 0;
+  int _totalColumns = 0;
+
+  // Upload history
+  List<UploadLogEntity> _logs = [];
+  bool _logsLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLogs();
+  }
+
+  Future<void> _loadLogs() async {
+    setState(() => _logsLoading = true);
+    try {
+      _logs = await widget.getLogsUseCase.execute(widget.storeId);
+    } catch (_) {}
+    if (mounted) setState(() => _logsLoading = false);
+  }
 
   // ── StockReport column name → normalised key ──────────────────────────────
   static const _colMap = {
@@ -60,13 +87,17 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
         withData: true,
       );
       if (pick == null || pick.files.isEmpty) return;
-      final bytes = pick.files.first.bytes;
+      final file = pick.files.first;
+      final bytes = file.bytes;
       if (bytes == null) throw Exception('Could not read file bytes');
 
       final excel = Excel.decodeBytes(bytes);
       final sheet = excel.tables.values.first;
       final rows = sheet.rows;
       if (rows.isEmpty) throw Exception('Excel sheet is empty');
+
+      _fileName = file.name;
+      _totalColumns = rows.first.length;
 
       // Read header row
       final headerRow = rows.first;
@@ -127,6 +158,7 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
       }
 
       if (products.isEmpty) throw Exception('No valid product rows found in the file.');
+      _totalRows = rows.length - 1; // exclude header
       setState(() => _parsed = products);
     } catch (e) {
       setState(() => _parseError = e.toString());
@@ -140,8 +172,12 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
       final result = await widget.useCase.execute(
         storeId: widget.storeId,
         products: _parsed!,
+        fileName: _fileName,
+        totalRows: _totalRows,
+        totalColumns: _totalColumns,
       );
       setState(() => _result = result);
+      await _loadLogs(); // refresh history
     } catch (e) {
       Get.snackbar('Upload Failed', e.toString(),
           backgroundColor: Colors.red.withValues(alpha: 0.85),
@@ -187,6 +223,8 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
                 const SizedBox(height: 20),
                 _ResultCard(result: _result!),
               ],
+              const SizedBox(height: 32),
+              _UploadHistorySection(logs: _logs, isLoading: _logsLoading),
             ],
           ),
         ),
@@ -465,6 +503,140 @@ class _ResultCard extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+// ── Upload History ────────────────────────────────────────────────────────────
+
+class _UploadHistorySection extends StatelessWidget {
+  final List<UploadLogEntity> logs;
+  final bool isLoading;
+  const _UploadHistorySection({required this.logs, required this.isLoading});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(Icons.history_rounded, color: Color(0xFFCDB4DB), size: 16),
+            SizedBox(width: 6),
+            Text('Upload History',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (isLoading)
+          const Center(child: CircularProgressIndicator(color: AppTheme.primary, strokeWidth: 2))
+        else if (logs.isEmpty)
+          const Text('No uploads yet.', style: TextStyle(color: Color(0xFFCDB4DB), fontSize: 13))
+        else
+          ...logs.map((l) => _LogCard(log: l)),
+      ],
+    );
+  }
+}
+
+class _LogCard extends StatelessWidget {
+  final UploadLogEntity log;
+  const _LogCard({required this.log});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasErrors = log.errorCount > 0;
+    final fmt = DateFormat('dd MMM yyyy, hh:mm a');
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // File name + timestamp
+          Row(
+            children: [
+              const Icon(Icons.insert_drive_file_rounded, color: Color(0xFFCDB4DB), size: 14),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(log.fileName,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const Icon(Icons.schedule_rounded, color: Color(0xFFCDB4DB), size: 12),
+              const SizedBox(width: 4),
+              Text(fmt.format(log.uploadedAt.toLocal()),
+                  style: const TextStyle(color: Color(0xFFCDB4DB), fontSize: 11)),
+              const SizedBox(width: 12),
+              const Icon(Icons.person_outline_rounded, color: Color(0xFFCDB4DB), size: 12),
+              const SizedBox(width: 4),
+              Text(log.uploadedByName,
+                  style: const TextStyle(color: Color(0xFFCDB4DB), fontSize: 11)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Row/col info
+          Text(
+            '${log.totalRows} rows · ${log.totalColumns} columns',
+            style: const TextStyle(color: Color(0xFFCDB4DB), fontSize: 11),
+          ),
+          const SizedBox(height: 8),
+          // Stats chips
+          Row(
+            children: [
+              _MiniChip(label: '${log.created} created', color: Colors.green),
+              const SizedBox(width: 6),
+              _MiniChip(label: '${log.updated} updated', color: Colors.blue),
+              const SizedBox(width: 6),
+              if (log.skipped > 0) ...[
+                _MiniChip(label: '${log.skipped} skipped', color: Colors.orange),
+                const SizedBox(width: 6),
+              ],
+              if (hasErrors)
+                _MiniChip(label: '${log.errorCount} errors', color: Colors.red),
+            ],
+          ),
+          if (hasErrors) ...[
+            const SizedBox(height: 8),
+            ...log.errors.take(3).map((e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text('• ${e.barcode}: ${e.message}',
+                      style: const TextStyle(color: Colors.red, fontSize: 10)),
+                )),
+            if (log.errors.length > 3)
+              Text('... and ${log.errors.length - 3} more errors',
+                  style: const TextStyle(color: Colors.red, fontSize: 10)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _MiniChip({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
     );
   }
 }

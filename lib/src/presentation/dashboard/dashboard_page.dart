@@ -14,6 +14,8 @@ import '../staff/staff_binding.dart';
 import '../staff/staff_page.dart';
 import '../stores/stores_binding.dart';
 import '../stores/stores_page.dart';
+import '../analytics/analytics_binding.dart';
+import '../analytics/analytics_page.dart';
 import 'dashboard_controller.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -439,50 +441,64 @@ class _QuickAccess extends StatelessWidget {
         onTap: () =>
             Get.to(() => const StaffPage(), binding: StaffBinding()),
       ),
+      _QuickItem(
+        icon: Icons.bar_chart_rounded,
+        label: 'Analytics',
+        subtitle: 'Revenue & trends',
+        color: Colors.indigo.shade300,
+        onTap: () =>
+            Get.to(() => const AnalyticsPage(), binding: AnalyticsBinding()),
+      ),
     ];
 
-    return Row(
-      children: items
-          .map((item) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                      right: item == items.last ? 0 : 10),
-                  child: GestureDetector(
-                    onTap: item.onTap,
-                    child: AppGlassCard(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 12),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: item.color.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(item.icon,
-                                color: item.color, size: 20),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(item.label,
-                              style: const TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 2),
-                          Text(item.subtitle,
-                              style: const TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontSize: 9),
-                              textAlign: TextAlign.center),
-                        ],
-                      ),
+    Widget buildCard(_QuickItem item) => Expanded(
+          child: GestureDetector(
+            onTap: item.onTap,
+            child: AppGlassCard(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              child: Column(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: item.color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    child: Icon(item.icon, color: item.color, size: 20),
                   ),
-                ),
-              ))
-          .toList(),
+                  const SizedBox(height: 8),
+                  Text(item.label,
+                      style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(item.subtitle,
+                      style: const TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 9),
+                      textAlign: TextAlign.center),
+                ],
+              ),
+            ),
+          ),
+        );
+
+    return Column(
+      children: [
+        Row(children: [
+          buildCard(items[0]),
+          const SizedBox(width: 10),
+          buildCard(items[1]),
+        ]),
+        const SizedBox(height: 10),
+        Row(children: [
+          buildCard(items[2]),
+          const SizedBox(width: 10),
+          buildCard(items[3]),
+        ]),
+      ],
     );
   }
 }

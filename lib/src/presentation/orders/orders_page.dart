@@ -72,6 +72,42 @@ class OrdersPage extends StatelessWidget {
                 )),
             const SizedBox(height: 8),
 
+            // Stat chips
+            Obx(() => Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                  child: Row(
+                    children: [
+                      _StatChip(
+                        label: 'Active',
+                        value: c.activeCount,
+                        color: AppTheme.primary,
+                        icon: Icons.receipt_long_rounded,
+                        selected: c.selectedStatus.value == null,
+                        onTap: () => c.filterByStatus('All'),
+                      ),
+                      const SizedBox(width: 8),
+                      _StatChip(
+                        label: 'Completed',
+                        value: c.completedCount,
+                        color: Colors.teal,
+                        icon: Icons.done_all_rounded,
+                        selected: c.selectedStatus.value == 'completed',
+                        onTap: () => c.filterByStatus('completed'),
+                      ),
+                      const SizedBox(width: 8),
+                      _StatChip(
+                        label: 'Cancelled',
+                        value: c.cancelledCount,
+                        color: Colors.red,
+                        icon: Icons.cancel_rounded,
+                        selected: c.selectedStatus.value == 'cancelled',
+                        onTap: () => c.filterByStatus('cancelled'),
+                      ),
+                    ],
+                  ),
+                )),
+            const SizedBox(height: 8),
+
             // List
             Expanded(
               child: Obx(() {
@@ -103,6 +139,61 @@ class OrdersPage extends StatelessWidget {
               }),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final int value;
+  final Color color;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? color.withValues(alpha: 0.2) : color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected ? color.withValues(alpha: 0.7) : color.withValues(alpha: 0.25),
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 15),
+              const SizedBox(width: 6),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(value.toString(),
+                      style: TextStyle(
+                          color: color, fontSize: 15, fontWeight: FontWeight.bold)),
+                  Text(label,
+                      style: const TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 10)),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

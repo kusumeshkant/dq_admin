@@ -1,6 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../theme/app_theme.dart';
+
+bool get _isMobile =>
+    defaultTargetPlatform == TargetPlatform.android ||
+    defaultTargetPlatform == TargetPlatform.iOS;
 
 class BarcodeScannerPage extends StatefulWidget {
   const BarcodeScannerPage({super.key});
@@ -10,12 +15,18 @@ class BarcodeScannerPage extends StatefulWidget {
 }
 
 class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
-  final MobileScannerController _controller = MobileScannerController();
+  MobileScannerController? _controller;
   bool _scanned = false;
 
   @override
+  void initState() {
+    super.initState();
+    if (_isMobile) _controller = MobileScannerController();
+  }
+
+  @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -29,6 +40,8 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isMobile) return _DesktopScannerFallback();
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -37,7 +50,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.flash_on_rounded),
-            onPressed: _controller.toggleTorch,
+            onPressed: _controller!.toggleTorch,
             tooltip: 'Toggle flash',
           ),
         ],
@@ -45,7 +58,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
       body: Stack(
         children: [
           MobileScanner(
-            controller: _controller,
+            controller: _controller!,
             onDetect: _onDetect,
           ),
 
@@ -90,6 +103,61 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Desktop fallback — USB scanner instructions ───────────────────────────────
+
+class _DesktopScannerFallback extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D0622),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1A0D35),
+        title: const Text('Scan Product Barcode'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80, height: 80,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.usb_rounded, color: AppTheme.primary, size: 40),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Use USB Barcode Scanner',
+                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Click the Barcode field in the form,\nthen scan the product with your USB scanner.\nThe barcode will be entered automatically.',
+                style: TextStyle(color: Color(0xFFCDB4DB), fontSize: 14, height: 1.6),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white70,
+                  side: const BorderSide(color: Colors.white24),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

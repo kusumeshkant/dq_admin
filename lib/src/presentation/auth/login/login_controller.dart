@@ -6,6 +6,8 @@ import '../../../service_core/auth/session_manager.dart';
 import '../../../service_core/networks/graphql_client_provider.dart';
 import '../../dashboard/dashboard_binding.dart';
 import '../../dashboard/dashboard_page.dart';
+import '../../onboarding/onboarding_binding.dart';
+import '../../onboarding/onboarding_page.dart';
 import '../../profile_setup/profile_setup_binding.dart';
 import '../../profile_setup/profile_setup_page.dart';
 
@@ -65,6 +67,9 @@ class LoginController extends GetxController {
           () => const ProfileSetupPage(),
           binding: ProfileSetupBinding(email: email),
         );
+      } else if (user.storeId == null || user.storeId!.isEmpty) {
+        // New admin with no store yet — go through onboarding wizard
+        Get.offAll(() => const OnboardingPage(), binding: OnboardingBinding());
       } else {
         Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
       }
