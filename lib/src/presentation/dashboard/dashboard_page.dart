@@ -28,7 +28,9 @@ class DashboardPage extends StatelessWidget {
     final c = Get.find<DashboardController>();
     final session = Get.find<SessionManager>();
 
-    return ThemedBackground(
+    return PopScope(
+      canPop: false, // Dashboard is root — back button exits app, not back to onboarding
+      child: ThemedBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -123,7 +125,7 @@ class DashboardPage extends StatelessWidget {
           }),
         ),
       ),
-    );
+    ));
   }
 
   Widget _sectionTitle(String title) => Text(

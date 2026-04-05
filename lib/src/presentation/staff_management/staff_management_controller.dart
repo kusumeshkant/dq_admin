@@ -118,7 +118,17 @@ class StaffManagementController extends GetxController {
   Future<void> inviteStaff() async {
     final name  = nameCtrl.text.trim();
     final email = emailCtrl.text.trim();
-    if (name.isEmpty || email.isEmpty) return;
+    debugPrint('DQ_INVITE: tapped — name="$name" email="$email" storeId=$_storeId');
+    if (name.isEmpty) {
+      Get.snackbar('Missing Name', 'Please enter the staff member\'s name.',
+          backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
+      return;
+    }
+    if (email.isEmpty) {
+      Get.snackbar('Missing Email', 'Please enter an email address.',
+          backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
+      return;
+    }
 
     isInviting.value = true;
     try {
@@ -127,9 +137,11 @@ class StaffManagementController extends GetxController {
         variables: {'email': email, 'name': name, 'storeId': _storeId},
       ));
       if (result.hasException) {
+        debugPrint('DQ_INVITE: exception=${result.exception}');
         final msg = result.exception?.graphqlErrors.firstOrNull?.message ?? 'Invite failed';
         throw Exception(msg);
       }
+      debugPrint('DQ_INVITE: success data=${result.data}');
       final invite = PendingInvite.fromJson(result.data!['inviteStaff'] as Map<String, dynamic>);
       pendingInvites.insert(0, invite);
       nameCtrl.clear();
@@ -146,6 +158,21 @@ class StaffManagementController extends GetxController {
   }
 
   Future<void> cancelInvite(PendingInvite invite) async {
+    final confirm = await Get.dialog<bool>(AlertDialog(
+      backgroundColor: const Color(0xFF1A0D35),
+      title: const Text('Cancel Invite', style: TextStyle(color: Colors.white)),
+      content: Text('Cancel the invite for ${invite.email}?',
+          style: const TextStyle(color: Color(0xFFCDB4DB))),
+      actions: [
+        TextButton(onPressed: () => Get.back(result: false), child: const Text('No')),
+        TextButton(
+          onPressed: () => Get.back(result: true),
+          child: const Text('Yes, Cancel', style: TextStyle(color: Colors.redAccent)),
+        ),
+      ],
+    ));
+    if (confirm != true) return;
+
     final result = await _client.mutate(MutationOptions(
       document: gql(_cancelInviteMutation),
       variables: {'inviteId': invite.id},
@@ -208,15 +235,16 @@ class _AddStaffSheet extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
         decoration: const BoxDecoration(
           color: Color(0xFF1A0D35),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Center(
               child: Container(
                 width: 36, height: 4,
@@ -250,6 +278,7 @@ class _AddStaffSheet extends StatelessWidget {
                   )),
             ),
           ],
+        ),
         ),
       ),
     );

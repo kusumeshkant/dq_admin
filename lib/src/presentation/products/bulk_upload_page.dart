@@ -222,6 +222,21 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
               if (_result != null) ...[
                 const SizedBox(height: 20),
                 _ResultCard(result: _result!),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(context, true),
+                    icon: const Icon(Icons.check_circle_rounded),
+                    label: const Text('Done — Continue Setup', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
               ],
               const SizedBox(height: 32),
               _UploadHistorySection(logs: _logs, isLoading: _logsLoading),

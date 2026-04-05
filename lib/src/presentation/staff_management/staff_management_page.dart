@@ -5,13 +5,37 @@ import '../../domain/entity/user_entity.dart';
 import '../../theme/app_theme.dart';
 import 'staff_management_controller.dart';
 
-class StaffManagementPage extends StatelessWidget {
+class StaffManagementPage extends StatefulWidget {
   const StaffManagementPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final c = Get.find<StaffManagementController>();
+  State<StaffManagementPage> createState() => _StaffManagementPageState();
+}
 
+class _StaffManagementPageState extends State<StaffManagementPage>
+    with WidgetsBindingObserver {
+  late final StaffManagementController c;
+
+  @override
+  void initState() {
+    super.initState();
+    c = Get.find<StaffManagementController>();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) c.loadAll();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0621),
       appBar: AppBar(

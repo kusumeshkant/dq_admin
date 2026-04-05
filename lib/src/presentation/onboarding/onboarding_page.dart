@@ -512,7 +512,7 @@ class _StepInventory extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () async {
-                await Navigator.push(
+                final uploaded = await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
                     builder: (_) => BulkUploadPage(
@@ -523,7 +523,9 @@ class _StepInventory extends StatelessWidget {
                     ),
                   ),
                 );
-                onDone();
+                // Only advance to Done step if upload actually completed
+                // Pressing back returns null — stay on inventory step
+                if (uploaded == true) onDone();
               },
               icon: const Icon(Icons.upload_rounded),
               label: const Text('Upload Excel File', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
