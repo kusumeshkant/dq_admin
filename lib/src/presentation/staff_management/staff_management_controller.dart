@@ -232,54 +232,95 @@ class _AddStaffSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF1A0D35),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-            Center(
-              child: Container(
-                width: 36, height: 4,
-                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
-              ),
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1A0D35),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(bottom: keyboardHeight),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Scrollable form area ─────────────────────────────────────────
+          SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36, height: 4,
+                    decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text('Invite Staff Member',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                const Text(
+                    'They will receive an email with an invite code to join your store.',
+                    style: TextStyle(color: Color(0xFFCDB4DB), fontSize: 13)),
+                const SizedBox(height: 24),
+                _sheetField(controller.nameCtrl, 'Full Name',
+                    Icons.person_outline_rounded, TextCapitalization.words),
+                const SizedBox(height: 14),
+                _sheetField(
+                    controller.emailCtrl,
+                    'Email Address',
+                    Icons.email_outlined,
+                    TextCapitalization.none,
+                    TextInputType.emailAddress),
+                const SizedBox(height: 16),
+              ],
             ),
-            const SizedBox(height: 20),
-            const Text('Invite Staff Member',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            const Text('They will receive an email with an invite code to join your store.',
-                style: TextStyle(color: Color(0xFFCDB4DB), fontSize: 13)),
-            const SizedBox(height: 24),
-            _sheetField(controller.nameCtrl, 'Full Name', Icons.person_outline_rounded,
-                TextCapitalization.words),
-            const SizedBox(height: 14),
-            _sheetField(controller.emailCtrl, 'Email Address', Icons.email_outlined,
-                TextCapitalization.none, TextInputType.emailAddress),
-            const SizedBox(height: 24),
-            SizedBox(
+          ),
+
+          // ── Pinned Send Invite button — always visible above keyboard ────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 4, 24, 28),
+            child: SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 52,
               child: Obx(() => ElevatedButton(
-                    onPressed: controller.isInviting.value ? null : controller.inviteStaff,
+                    onPressed:
+                        controller.isInviting.value ? null : controller.inviteStaff,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF7B2FBE),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: const Color(0xFF7B2FBE).withValues(alpha: 0.5),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
+                    ),
                     child: controller.isInviting.value
                         ? const SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text('Send Invite',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2))
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.send_rounded, size: 18),
+                              SizedBox(width: 8),
+                              Text('Send Invite',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                   )),
             ),
-          ],
-        ),
-        ),
+          ),
+        ],
       ),
     );
   }
