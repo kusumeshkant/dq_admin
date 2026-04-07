@@ -133,3 +133,136 @@ class StoreStatsModel extends StoreStatsEntity {
             .toList(),
       );
 }
+
+class CustomerRetentionModel extends CustomerRetentionEntity {
+  const CustomerRetentionModel({
+    required super.totalCustomers,
+    required super.returningCustomers,
+    required super.retentionRate,
+    required super.avgRepeatIntervalDays,
+    required super.newCustomersThisWeek,
+    required super.newCustomersLastWeek,
+  });
+
+  factory CustomerRetentionModel.fromJson(Map<String, dynamic> json) =>
+      CustomerRetentionModel(
+        totalCustomers: (json['totalCustomers'] as num).toInt(),
+        returningCustomers: (json['returningCustomers'] as num).toInt(),
+        retentionRate: (json['retentionRate'] as num).toDouble(),
+        avgRepeatIntervalDays:
+            (json['avgRepeatIntervalDays'] as num?)?.toDouble(),
+        newCustomersThisWeek: (json['newCustomersThisWeek'] as num).toInt(),
+        newCustomersLastWeek: (json['newCustomersLastWeek'] as num).toInt(),
+      );
+}
+
+class StaffPerformanceStatModel extends StaffPerformanceStatEntity {
+  const StaffPerformanceStatModel({
+    required super.staffId,
+    required super.staffName,
+    required super.ordersCompleted,
+    required super.ordersCancelled,
+    required super.flagsRaised,
+    required super.totalOrdersHandled,
+    required super.avgFulfillmentTime,
+    required super.cancellationRate,
+  });
+
+  factory StaffPerformanceStatModel.fromJson(Map<String, dynamic> json) =>
+      StaffPerformanceStatModel(
+        staffId: json['staffId'] as String,
+        staffName: json['staffName'] as String,
+        ordersCompleted: (json['ordersCompleted'] as num).toInt(),
+        ordersCancelled: (json['ordersCancelled'] as num).toInt(),
+        flagsRaised: (json['flagsRaised'] as num).toInt(),
+        totalOrdersHandled: (json['totalOrdersHandled'] as num).toInt(),
+        avgFulfillmentTime: (json['avgFulfillmentTime'] as num?)?.toDouble(),
+        cancellationRate: (json['cancellationRate'] as num).toDouble(),
+      );
+}
+
+class BasketAbandonmentModel extends BasketAbandonmentEntity {
+  const BasketAbandonmentModel({
+    required super.totalChecks,
+    required super.convertedChecks,
+    required super.abandonedChecks,
+    required super.abandonmentRate,
+    required super.conversionRate,
+    required super.thisWeekAbandonmentRate,
+    required super.lastWeekAbandonmentRate,
+  });
+
+  factory BasketAbandonmentModel.fromJson(Map<String, dynamic> json) =>
+      BasketAbandonmentModel(
+        totalChecks: (json['totalChecks'] as num).toInt(),
+        convertedChecks: (json['convertedChecks'] as num).toInt(),
+        abandonedChecks: (json['abandonedChecks'] as num).toInt(),
+        abandonmentRate: (json['abandonmentRate'] as num).toDouble(),
+        conversionRate: (json['conversionRate'] as num).toDouble(),
+        thisWeekAbandonmentRate:
+            (json['thisWeekAbandonmentRate'] as num).toDouble(),
+        lastWeekAbandonmentRate:
+            (json['lastWeekAbandonmentRate'] as num).toDouble(),
+      );
+}
+
+class TopCustomerStatModel extends TopCustomerStatEntity {
+  const TopCustomerStatModel({
+    required super.userId,
+    required super.name,
+    required super.phone,
+    required super.totalSpend,
+    required super.totalOrders,
+  });
+
+  factory TopCustomerStatModel.fromJson(Map<String, dynamic> json) =>
+      TopCustomerStatModel(
+        userId: json['userId'] as String,
+        name: json['name'] as String,
+        phone: json['phone'] as String?,
+        totalSpend: (json['totalSpend'] as num).toDouble(),
+        totalOrders: (json['totalOrders'] as num).toInt(),
+      );
+}
+
+class CustomerLTVModel extends CustomerLTVEntity {
+  const CustomerLTVModel({
+    required super.totalCustomers,
+    required super.avgRevenuePerCustomer,
+    required super.avgOrdersPerCustomer,
+    required super.avgDaysActive,
+    required super.projectedMonthlyLTV,
+    required super.topCustomers,
+  });
+
+  factory CustomerLTVModel.fromJson(Map<String, dynamic> json) =>
+      CustomerLTVModel(
+        totalCustomers: (json['totalCustomers'] as num).toInt(),
+        avgRevenuePerCustomer:
+            (json['avgRevenuePerCustomer'] as num).toDouble(),
+        avgOrdersPerCustomer: (json['avgOrdersPerCustomer'] as num).toDouble(),
+        avgDaysActive: (json['avgDaysActive'] as num?)?.toDouble(),
+        projectedMonthlyLTV: (json['projectedMonthlyLTV'] as num?)?.toDouble(),
+        topCustomers: (json['topCustomers'] as List<dynamic>? ?? [])
+            .map((e) =>
+                TopCustomerStatModel.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class MonthlyRevenueStatModel extends MonthlyRevenueStatEntity {
+  const MonthlyRevenueStatModel({
+    required super.month,
+    required super.year,
+    required super.revenue,
+    required super.orders,
+  });
+
+  factory MonthlyRevenueStatModel.fromJson(Map<String, dynamic> json) =>
+      MonthlyRevenueStatModel(
+        month: (json['month'] as num).toInt(),
+        year: (json['year'] as num).toInt(),
+        revenue: (json['revenue'] as num).toDouble(),
+        orders: (json['orders'] as num).toInt(),
+      );
+}

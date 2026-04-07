@@ -75,9 +75,13 @@ class ProductsController extends GetxController {
     try {
       products.value = await getStoreProductsUseCase.execute(store.id);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load products',
-          backgroundColor: Colors.red.withValues(alpha: 0.8),
-          colorText: Colors.white);
+      Get.snackbar(
+        'Failed to load products',
+        e.toString().replaceAll('Exception: ', ''),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 8),
+      );
     } finally {
       isLoading.value = false;
     }

@@ -10,6 +10,7 @@ class AnalyticsBinding extends Bindings {
     final repo = DashboardRepositoryImpl(DashboardRemoteDs());
     Get.lazyPut(() => AnalyticsController(
           getStoreAnalyticsUseCase: GetStoreAnalyticsUseCase(repo),
+          repo: repo,
         ));
   }
 }

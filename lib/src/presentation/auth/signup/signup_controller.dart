@@ -22,7 +22,7 @@ class SignupController extends GetxController {
   static const _registerAdminMutation = r'''
     mutation RegisterAdmin {
       registerAdmin {
-        id name email role storeId
+        id name email role roles storeId
       }
     }
   ''';

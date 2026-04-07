@@ -108,6 +108,63 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 _TopProductsList(
                     products: a.topProducts,
                     totalRevenue: a.totalRevenue),
+                const SizedBox(height: 20),
+
+                // ── Monthly revenue chart ────────────────────────────────
+                const Text('Monthly Revenue',
+                    style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15)),
+                const SizedBox(height: 10),
+                Obx(() => _MonthlyRevenueChart(
+                    months: c.monthlyRevenue)),
+                const SizedBox(height: 20),
+
+                // ── Customer retention ───────────────────────────────────
+                const Text('Customer Retention',
+                    style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15)),
+                const SizedBox(height: 10),
+                Obx(() => c.retention.value != null
+                    ? _RetentionCard(r: c.retention.value!)
+                    : const SizedBox.shrink()),
+                const SizedBox(height: 20),
+
+                // ── Basket abandonment ───────────────────────────────────
+                const Text('Basket Abandonment',
+                    style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15)),
+                const SizedBox(height: 10),
+                Obx(() => c.basketAbandonment.value != null
+                    ? _BasketAbandonmentCard(b: c.basketAbandonment.value!)
+                    : const SizedBox.shrink()),
+                const SizedBox(height: 20),
+
+                // ── Customer LTV ─────────────────────────────────────────
+                const Text('Customer LTV',
+                    style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15)),
+                const SizedBox(height: 10),
+                Obx(() => c.customerLTV.value != null
+                    ? _CustomerLTVCard(ltv: c.customerLTV.value!)
+                    : const SizedBox.shrink()),
+                const SizedBox(height: 20),
+
+                // ── Staff performance ────────────────────────────────────
+                const Text('Staff Performance',
+                    style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15)),
+                const SizedBox(height: 10),
+                Obx(() => _StaffPerformanceList(staff: c.staffPerformance)),
               ],
             ),
           );
@@ -823,5 +880,461 @@ class _TopProductsList extends StatelessWidget {
     if (v >= 100000) return '${(v / 100000).toStringAsFixed(1)}L';
     if (v >= 1000) return '${(v / 1000).toStringAsFixed(1)}K';
     return v.toStringAsFixed(0);
+  }
+}
+
+// ── Monthly Revenue Chart ─────────────────────────────────────────────────────
+
+class _MonthlyRevenueChart extends StatelessWidget {
+  final List<MonthlyRevenueStatEntity> months;
+  const _MonthlyRevenueChart({required this.months});
+
+  static const _monthNames = [
+    'Jan','Feb','Mar','Apr','May','Jun',
+    'Jul','Aug','Sep','Oct','Nov','Dec'
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    if (months.isEmpty) {
+      return AppGlassCard(
+        child: const Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(child: Text('No monthly data yet.',
+              style: TextStyle(color: AppTheme.textSecondary))),
+        ),
+      );
+    }
+
+    final maxRev = months.fold(0.0, (m, e) => e.revenue > m ? e.revenue : m);
+    final totalRev = months.fold(0.0, (s, e) => s + e.revenue);
+    final currentMonth = DateTime.now().month;
+
+    return AppGlassCard(
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 120,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: months.map((m) {
+                final ratio = maxRev > 0 ? m.revenue / maxRev : 0.0;
+                final isCurrent = m.month == currentMonth;
+                final isPeak = m.revenue == maxRev && maxRev > 0;
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (isPeak)
+                          Text(_mfmt(m.revenue),
+                              style: const TextStyle(
+                                  color: AppTheme.primary, fontSize: 7,
+                                  fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 2),
+                        Container(
+                          height: (ratio * 90).clamp(3.0, 90.0),
+                          decoration: BoxDecoration(
+                            color: isCurrent
+                                ? Colors.amber.shade400
+                                : isPeak
+                                    ? AppTheme.primary
+                                    : AppTheme.primary.withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(_monthNames[m.month - 1],
+                            style: const TextStyle(
+                                color: AppTheme.textSecondary, fontSize: 7)),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const Divider(color: Colors.white10, height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _ChartStat(label: 'Year Total', value: '₹${_mfmt(totalRev)}'),
+              _ChartStat(
+                  label: 'Best Month',
+                  value: maxRev > 0
+                      ? '${_monthNames[months.firstWhere((m) => m.revenue == maxRev).month - 1]} · ₹${_mfmt(maxRev)}'
+                      : '—'),
+              _ChartStat(
+                  label: 'Avg / Month',
+                  value: '₹${_mfmt(totalRev / months.length)}'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _mfmt(double v) {
+    if (v >= 100000) return '${(v / 100000).toStringAsFixed(1)}L';
+    if (v >= 1000) return '${(v / 1000).toStringAsFixed(1)}K';
+    return v.toStringAsFixed(0);
+  }
+}
+
+// ── Customer Retention ────────────────────────────────────────────────────────
+
+class _RetentionCard extends StatelessWidget {
+  final CustomerRetentionEntity r;
+  const _RetentionCard({required this.r});
+
+  @override
+  Widget build(BuildContext context) {
+    final weekChange = r.newCustomersThisWeek - r.newCustomersLastWeek;
+    final weekColor = weekChange >= 0 ? Colors.greenAccent : Colors.redAccent;
+
+    return AppGlassCard(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _StatBox(label: 'Retention Rate',
+                  value: '${r.retentionRate.toStringAsFixed(1)}%',
+                  color: r.retentionRate >= 30 ? Colors.greenAccent
+                      : r.retentionRate >= 15 ? Colors.amber.shade400
+                      : Colors.redAccent),
+              const SizedBox(width: 8),
+              _StatBox(label: 'Returning', value: '${r.returningCustomers}',
+                  color: AppTheme.primary),
+              const SizedBox(width: 8),
+              _StatBox(label: 'Total Customers', value: '${r.totalCustomers}',
+                  color: Colors.blue.shade400),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _StatBox(
+                label: 'New This Week',
+                value: '${r.newCustomersThisWeek}',
+                color: Colors.teal.shade300,
+                suffix: ' (${weekChange >= 0 ? '+' : ''}$weekChange vs last)',
+                suffixColor: weekColor,
+              ),
+              const SizedBox(width: 8),
+              _StatBox(
+                label: 'Avg Repeat Interval',
+                value: r.avgRepeatIntervalDays != null
+                    ? '${r.avgRepeatIntervalDays!.toStringAsFixed(1)} days'
+                    : '—',
+                color: Colors.purple.shade300,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Basket Abandonment ────────────────────────────────────────────────────────
+
+class _BasketAbandonmentCard extends StatelessWidget {
+  final BasketAbandonmentEntity b;
+  const _BasketAbandonmentCard({required this.b});
+
+  @override
+  Widget build(BuildContext context) {
+    final weekChange = b.thisWeekAbandonmentRate - b.lastWeekAbandonmentRate;
+    final weekColor = weekChange <= 0 ? Colors.greenAccent : Colors.redAccent;
+
+    return AppGlassCard(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _StatBox(
+                label: 'Abandonment Rate',
+                value: '${b.abandonmentRate.toStringAsFixed(1)}%',
+                color: b.abandonmentRate > 50 ? Colors.redAccent
+                    : b.abandonmentRate > 30 ? Colors.amber.shade400
+                    : Colors.greenAccent,
+              ),
+              const SizedBox(width: 8),
+              _StatBox(label: 'Conversion Rate',
+                  value: '${b.conversionRate.toStringAsFixed(1)}%',
+                  color: Colors.greenAccent),
+              const SizedBox(width: 8),
+              _StatBox(label: 'Total Checks', value: '${b.totalChecks}',
+                  color: AppTheme.primary),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _StatBox(
+                label: 'This Week',
+                value: '${b.thisWeekAbandonmentRate.toStringAsFixed(1)}%',
+                color: weekColor,
+                suffix: ' (${weekChange >= 0 ? '+' : ''}${weekChange.toStringAsFixed(1)}%)',
+                suffixColor: weekColor,
+              ),
+              const SizedBox(width: 8),
+              _StatBox(label: 'Abandoned', value: '${b.abandonedChecks}',
+                  color: Colors.redAccent),
+              const SizedBox(width: 8),
+              _StatBox(label: 'Converted', value: '${b.convertedChecks}',
+                  color: Colors.teal.shade300),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Customer LTV ──────────────────────────────────────────────────────────────
+
+class _CustomerLTVCard extends StatelessWidget {
+  final CustomerLTVEntity ltv;
+  const _CustomerLTVCard({required this.ltv});
+
+  String _lfmt(double v) {
+    if (v >= 100000) return '₹${(v / 100000).toStringAsFixed(1)}L';
+    if (v >= 1000) return '₹${(v / 1000).toStringAsFixed(1)}K';
+    return '₹${v.toStringAsFixed(0)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _StatBox(label: 'Avg Revenue / Customer',
+                  value: _lfmt(ltv.avgRevenuePerCustomer),
+                  color: Colors.greenAccent),
+              const SizedBox(width: 8),
+              _StatBox(
+                label: 'Projected Monthly LTV',
+                value: ltv.projectedMonthlyLTV != null
+                    ? _lfmt(ltv.projectedMonthlyLTV!) : '—',
+                color: AppTheme.primary,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _StatBox(label: 'Avg Orders / Customer',
+                  value: ltv.avgOrdersPerCustomer.toStringAsFixed(1),
+                  color: Colors.blue.shade400),
+              const SizedBox(width: 8),
+              _StatBox(
+                label: 'Avg Days Active',
+                value: ltv.avgDaysActive != null
+                    ? '${ltv.avgDaysActive!.toStringAsFixed(0)} days' : '—',
+                color: Colors.purple.shade300,
+              ),
+              const SizedBox(width: 8),
+              _StatBox(label: 'Total Customers', value: '${ltv.totalCustomers}',
+                  color: Colors.teal.shade300),
+            ],
+          ),
+          if (ltv.topCustomers.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Text('Top Customers',
+                style: TextStyle(color: AppTheme.textSecondary,
+                    fontSize: 11, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            ...ltv.topCustomers.take(5).toList().asMap().entries.map((entry) {
+              final i = entry.key;
+              final cu = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 22, height: 22,
+                      decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.15),
+                          shape: BoxShape.circle),
+                      child: Center(child: Text('${i + 1}',
+                          style: const TextStyle(color: AppTheme.primary,
+                              fontSize: 10, fontWeight: FontWeight.bold))),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(cu.name,
+                        style: const TextStyle(
+                            color: AppTheme.textPrimary, fontSize: 12),
+                        maxLines: 1, overflow: TextOverflow.ellipsis)),
+                    Text('${cu.totalOrders} orders',
+                        style: const TextStyle(
+                            color: AppTheme.textSecondary, fontSize: 10)),
+                    const SizedBox(width: 8),
+                    Text(_lfmt(cu.totalSpend),
+                        style: const TextStyle(color: Colors.greenAccent,
+                            fontSize: 12, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Staff Performance ─────────────────────────────────────────────────────────
+
+class _StaffPerformanceList extends StatelessWidget {
+  final List<StaffPerformanceStatEntity> staff;
+  const _StaffPerformanceList({required this.staff});
+
+  @override
+  Widget build(BuildContext context) {
+    if (staff.isEmpty) {
+      return AppGlassCard(
+        child: const Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(child: Text('No staff data yet.',
+              style: TextStyle(color: AppTheme.textSecondary))),
+        ),
+      );
+    }
+
+    return Column(
+      children: staff.map((s) {
+        final cancColor = s.cancellationRate > 20 ? Colors.redAccent
+            : s.cancellationRate > 10 ? Colors.amber.shade400
+            : Colors.greenAccent;
+        return AppGlassCard(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 36, height: 36,
+                    decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.12),
+                        shape: BoxShape.circle),
+                    child: const Icon(Icons.person_rounded,
+                        color: AppTheme.primary, size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(s.staffName,
+                            style: const TextStyle(color: AppTheme.textPrimary,
+                                fontWeight: FontWeight.w600, fontSize: 13)),
+                        Text('${s.totalOrdersHandled} orders handled',
+                            style: const TextStyle(
+                                color: AppTheme.textSecondary, fontSize: 10)),
+                      ],
+                    ),
+                  ),
+                  if (s.avgFulfillmentTime != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade400.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text('⚡ ${s.avgFulfillmentTime!.toStringAsFixed(0)}m avg',
+                          style: TextStyle(color: Colors.blue.shade400,
+                              fontSize: 10, fontWeight: FontWeight.w600)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  _StatBox(label: 'Completed', value: '${s.ordersCompleted}',
+                      color: Colors.greenAccent),
+                  const SizedBox(width: 6),
+                  _StatBox(label: 'Cancelled', value: '${s.ordersCancelled}',
+                      color: cancColor),
+                  const SizedBox(width: 6),
+                  _StatBox(label: 'Flags Raised', value: '${s.flagsRaised}',
+                      color: s.flagsRaised > 0
+                          ? Colors.orange.shade400 : Colors.greenAccent),
+                  const SizedBox(width: 6),
+                  _StatBox(label: 'Cancel Rate',
+                      value: '${s.cancellationRate.toStringAsFixed(0)}%',
+                      color: cancColor),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ── Shared stat box ───────────────────────────────────────────────────────────
+
+class _StatBox extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final String? suffix;
+  final Color? suffixColor;
+
+  const _StatBox({
+    required this.label,
+    required this.value,
+    required this.color,
+    this.suffix,
+    this.suffixColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Flexible(
+                  child: Text(value,
+                      style: TextStyle(color: color, fontSize: 14,
+                          fontWeight: FontWeight.bold),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+                if (suffix != null)
+                  Text(suffix!,
+                      style: TextStyle(color: suffixColor ?? color,
+                          fontSize: 9, fontWeight: FontWeight.w600)),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(label,
+                style: const TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 9),
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -15,6 +15,7 @@ class AuthRemoteDs {
         email
         phone
         role
+        roles
         storeId
       }
     }

@@ -2,11 +2,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../domain/usecase/create_store_usecase.dart';
-import '../../domain/usecase/update_user_role_usecase.dart';
 import '../../domain/usecase/bulk_upsert_products_usecase.dart';
 import '../../domain/usecase/get_upload_logs_usecase.dart';
+import '../../data/model/user_model.dart';
 import '../../service_core/auth/session_manager.dart';
+import '../../service_core/networks/graphql_client_provider.dart';
 import '../../theme/app_theme.dart';
 import '../dashboard/dashboard_binding.dart';
 import '../dashboard/dashboard_page.dart';
@@ -22,9 +24,16 @@ class OnboardingPage extends StatefulWidget {
 
 class _OnboardingPageState extends State<OnboardingPage> {
   late final CreateStoreUseCase _createStoreUseCase = Get.find();
-  late final UpdateUserRoleUseCase _updateUserRoleUseCase = Get.find();
   late final BulkUpsertProductsUseCase _bulkUpsertProductsUseCase = Get.find();
   late final GetUploadLogsUseCase _getUploadLogsUseCase = Get.find();
+
+  static const _upgradeToAdminMutation = r'''
+    mutation UpgradeToAdmin($storeId: ID!) {
+      upgradeToAdmin(storeId: $storeId) {
+        id name email role roles storeId
+      }
+    }
+  ''';
 
   int _step = 0; // 0 = store details, 1 = inventory, 2 = done
   bool _isSaving = false;
@@ -161,15 +170,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
         storeCode: code.isNotEmpty ? code : null,
       );
 
-      // Assign storeId to current admin
-      final session = Get.find<SessionManager>();
-      final userId = session.adminId!;
-      final updatedUser = await _updateUserRoleUseCase.execute(
-        userId: userId,
-        role: 'admin',
-        storeId: store.id,
+      // Upgrade user to admin and link storeId via roles-aware mutation
+      final result = await GraphQLClientProvider.client.mutate(
+        MutationOptions(
+          document: gql(_upgradeToAdminMutation),
+          variables: {'storeId': store.id},
+        ),
       );
-      session.setUser(updatedUser);
+      if (result.hasException) throw Exception(result.exception.toString());
+      final data = result.data?['upgradeToAdmin'] as Map<String, dynamic>?;
+      if (data != null) {
+        Get.find<SessionManager>().setUser(UserModel.fromJson(data));
+      }
 
       setState(() {
         _createdStoreId = store.id;

@@ -42,14 +42,13 @@ class GraphQLClientProvider {
   static GraphQLClient? _client;
 
   static GraphQLClient get client {
-    _client ??= _build(token: null);
+    _client ??= _build();
     return _client!;
   }
 
   static Future<void> reinitWithToken() async {
-    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
     AppLogger.auth('token refreshed — rebuilding client');
-    _client = _build(token: token);
+    _client = _build();
   }
 
   static void reset() {
@@ -57,15 +56,19 @@ class GraphQLClientProvider {
     _client = null;
   }
 
-  static GraphQLClient _build({String? token}) {
+  static GraphQLClient _build() {
     final httpLink = HttpLink(AppConfig.graphqlEndpoint);
 
-    Link link = LoggingLink().concat(httpLink);
+    final authLink = AuthLink(
+      getToken: () async {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) return null;
+        final token = await user.getIdToken();
+        return token != null ? 'Bearer $token' : null;
+      },
+    );
 
-    if (token != null) {
-      final authLink = AuthLink(getToken: () async => 'Bearer $token');
-      link = LoggingLink().concat(authLink.concat(httpLink));
-    }
+    final link = LoggingLink().concat(authLink.concat(httpLink));
 
     return GraphQLClient(
       link: link,

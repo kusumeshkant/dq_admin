@@ -47,31 +47,72 @@ class LoginController extends GetxController {
       await GraphQLClientProvider.reinitWithToken();
 
       final user = await getProfileUseCase.execute();
-
-      if (!user.isAdmin) {
-        await authRepo.signOut();
-        GraphQLClientProvider.reset();
-        errorMessage.value = 'Access denied. This app is for admins only.';
-        return;
-      }
-
       Get.find<SessionManager>().setUser(user);
 
-      // If name or phone missing → collect before going to dashboard
       final profileIncomplete =
           (user.name == null || user.name!.isEmpty) ||
           (user.phone == null || user.phone!.isEmpty);
 
-      if (profileIncomplete) {
-        Get.offAll(
-          () => const ProfileSetupPage(),
-          binding: ProfileSetupBinding(email: email),
-        );
-      } else if (user.storeId == null || user.storeId!.isEmpty) {
-        // New admin with no store yet — go through onboarding wizard
-        Get.offAll(() => const OnboardingPage(), binding: OnboardingBinding());
+      if (user.isAdmin) {
+        // ── Returning store owner ────────────────────────────────────────
+        if (profileIncomplete) {
+          Get.offAll(
+            () => const ProfileSetupPage(),
+            binding: ProfileSetupBinding(email: email),
+          );
+        } else if (user.storeId == null || user.storeId!.isEmpty) {
+          Get.offAll(() => const OnboardingPage(), binding: OnboardingBinding());
+        } else {
+          Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
+        }
       } else {
-        Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
+        // ── Customer trying to use admin app — offer to upgrade ──────────
+        final confirm = await Get.dialog<bool>(
+          AlertDialog(
+            backgroundColor: const Color(0xFF1A0D35),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            title: const Text(
+              'Register as Store Owner?',
+              style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+            ),
+            content: const Text(
+              'This email is already registered as a customer on DQ.\n\nWould you like to also register as a store owner and onboard your store?',
+              style: TextStyle(color: Color(0xFFCDB4DB), fontSize: 14, height: 1.5),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(result: false),
+                child: const Text('No, Cancel', style: TextStyle(color: Colors.white54)),
+              ),
+              ElevatedButton(
+                onPressed: () => Get.back(result: true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7B2FBE),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('Yes, Register Store'),
+              ),
+            ],
+          ),
+          barrierDismissible: false,
+        );
+
+        if (confirm != true) {
+          await authRepo.signOut();
+          GraphQLClientProvider.reset();
+          return;
+        }
+
+        // Proceed through onboarding — upgradeToAdmin is called after store creation
+        if (profileIncomplete) {
+          Get.offAll(
+            () => const ProfileSetupPage(),
+            binding: ProfileSetupBinding(email: email),
+          );
+        } else {
+          Get.offAll(() => const OnboardingPage(), binding: OnboardingBinding());
+        }
       }
     } catch (e) {
       errorMessage.value = _friendlyError(e.toString());

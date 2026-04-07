@@ -101,6 +101,114 @@ class StoreAnalyticsEntity {
   }
 }
 
+class CustomerRetentionEntity {
+  final int totalCustomers;
+  final int returningCustomers;
+  final double retentionRate;
+  final double? avgRepeatIntervalDays;
+  final int newCustomersThisWeek;
+  final int newCustomersLastWeek;
+
+  const CustomerRetentionEntity({
+    required this.totalCustomers,
+    required this.returningCustomers,
+    required this.retentionRate,
+    required this.avgRepeatIntervalDays,
+    required this.newCustomersThisWeek,
+    required this.newCustomersLastWeek,
+  });
+}
+
+class StaffPerformanceStatEntity {
+  final String staffId;
+  final String staffName;
+  final int ordersCompleted;
+  final int ordersCancelled;
+  final int flagsRaised;
+  final int totalOrdersHandled;
+  final double? avgFulfillmentTime;
+  final double cancellationRate;
+
+  const StaffPerformanceStatEntity({
+    required this.staffId,
+    required this.staffName,
+    required this.ordersCompleted,
+    required this.ordersCancelled,
+    required this.flagsRaised,
+    required this.totalOrdersHandled,
+    required this.avgFulfillmentTime,
+    required this.cancellationRate,
+  });
+}
+
+class BasketAbandonmentEntity {
+  final int totalChecks;
+  final int convertedChecks;
+  final int abandonedChecks;
+  final double abandonmentRate;
+  final double conversionRate;
+  final double thisWeekAbandonmentRate;
+  final double lastWeekAbandonmentRate;
+
+  const BasketAbandonmentEntity({
+    required this.totalChecks,
+    required this.convertedChecks,
+    required this.abandonedChecks,
+    required this.abandonmentRate,
+    required this.conversionRate,
+    required this.thisWeekAbandonmentRate,
+    required this.lastWeekAbandonmentRate,
+  });
+}
+
+class TopCustomerStatEntity {
+  final String userId;
+  final String name;
+  final String? phone;
+  final double totalSpend;
+  final int totalOrders;
+
+  const TopCustomerStatEntity({
+    required this.userId,
+    required this.name,
+    required this.phone,
+    required this.totalSpend,
+    required this.totalOrders,
+  });
+}
+
+class CustomerLTVEntity {
+  final int totalCustomers;
+  final double avgRevenuePerCustomer;
+  final double avgOrdersPerCustomer;
+  final double? avgDaysActive;
+  final double? projectedMonthlyLTV;
+  final List<TopCustomerStatEntity> topCustomers;
+
+  const CustomerLTVEntity({
+    required this.totalCustomers,
+    required this.avgRevenuePerCustomer,
+    required this.avgOrdersPerCustomer,
+    required this.avgDaysActive,
+    required this.projectedMonthlyLTV,
+    required this.topCustomers,
+  });
+}
+
+class MonthlyRevenueStatEntity {
+  final int month;
+  final int year;
+  final double revenue;
+  final int orders;
+
+  const MonthlyRevenueStatEntity({
+    required this.month,
+    required this.year,
+    required this.revenue,
+    required this.orders,
+  });
+}
+
 class StoreStatsEntity {
   final StoreEntity? store;
   final double totalRevenue;

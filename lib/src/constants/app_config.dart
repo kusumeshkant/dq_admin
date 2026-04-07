@@ -1,4 +1,3 @@
 class AppConfig {
-  static const String graphqlEndpoint =
-      'https://debackend-production-b317.up.railway.app/';
+  static const String graphqlEndpoint = 'https://de-backend-iota.vercel.app/';
 }
