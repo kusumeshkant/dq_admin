@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -177,7 +178,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
           variables: {'storeId': store.id},
         ),
       );
-      if (result.hasException) throw Exception(result.exception.toString());
+      if (result.hasException) {
+        final msg = result.exception?.graphqlErrors.firstOrNull?.message
+            ?? 'Failed to set up store. Please try again.';
+        throw Exception(msg);
+      }
       final data = result.data?['upgradeToAdmin'] as Map<String, dynamic>?;
       if (data != null) {
         Get.find<SessionManager>().setUser(UserModel.fromJson(data));
@@ -189,7 +194,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         _step = 1;
       });
     } catch (e) {
-      _showError(e.toString());
+      _showError(e.toString().replaceFirst('Exception: ', ''));
     } finally {
       setState(() => _isSaving = false);
     }
@@ -599,24 +604,40 @@ class _StepDone extends StatelessWidget {
           Text(storeName, style: const TextStyle(color: AppTheme.primary, fontSize: 18, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
           const SizedBox(height: 16),
           if (storeCode.isNotEmpty) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.35)),
-              ),
-              child: Column(
-                children: [
-                  const Text('Your Store Code', style: TextStyle(color: Color(0xFFCDB4DB), fontSize: 11)),
-                  const SizedBox(height: 4),
-                  Text(storeCode, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 2)),
-                ],
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: storeCode));
+                Get.snackbar('Copied!', 'Store code copied to clipboard.',
+                    backgroundColor: Colors.green.withValues(alpha: 0.85),
+                    colorText: Colors.white,
+                    duration: const Duration(seconds: 2));
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.35)),
+                ),
+                child: Column(
+                  children: [
+                    const Text('Your Store Code', style: TextStyle(color: Color(0xFFCDB4DB), fontSize: 11)),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(storeCode, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                        const SizedBox(width: 10),
+                        const Icon(Icons.copy_rounded, color: AppTheme.primary, size: 18),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 10),
             const Text(
-              'Share this code with your staff so they can log in to the DQ Staff app.',
+              'Tap to copy — share this code with your staff so they can log in to the DQ Staff app.',
               style: TextStyle(color: Colors.white54, fontSize: 12),
               textAlign: TextAlign.center,
             ),

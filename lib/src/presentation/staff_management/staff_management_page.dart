@@ -1,5 +1,6 @@
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../domain/entity/user_entity.dart';
 import '../../theme/app_theme.dart';
@@ -272,17 +273,33 @@ class _InviteCard extends StatelessWidget {
                 Text(invite.email,
                     style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                 const SizedBox(height: 4),
-                // Invite code chip
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.white10,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.white24),
+                // Invite code chip — tap to copy
+                GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: invite.token));
+                    Get.snackbar('Copied!', 'Invite code copied to clipboard.',
+                        backgroundColor: Colors.green.withValues(alpha: 0.85),
+                        colorText: Colors.white,
+                        duration: const Duration(seconds: 2));
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(invite.token,
+                            style: const TextStyle(color: Colors.white70, fontSize: 11,
+                                fontFamily: 'monospace', letterSpacing: 1.5)),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.copy_rounded, color: Colors.white38, size: 12),
+                      ],
+                    ),
                   ),
-                  child: Text(invite.token,
-                      style: const TextStyle(color: Colors.white70, fontSize: 11,
-                          fontFamily: 'monospace', letterSpacing: 1.5)),
                 ),
               ],
             ),

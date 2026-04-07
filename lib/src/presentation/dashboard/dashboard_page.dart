@@ -422,10 +422,10 @@ class _QuickAccess extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       _QuickItem(
-        icon: Icons.store_rounded,
-        label: 'Stores',
-        subtitle: 'Manage locations',
-        color: Colors.blue.shade400,
+        icon: Icons.inventory_2_rounded,
+        label: 'Products',
+        subtitle: 'Add & manage inventory',
+        color: Colors.orange.shade400,
         onTap: () =>
             Get.to(() => const StoresPage(), binding: StoresBinding()),
       ),
@@ -436,14 +436,6 @@ class _QuickAccess extends StatelessWidget {
         color: AppTheme.primary,
         onTap: () =>
             Get.to(() => const OrdersPage(), binding: OrdersBinding()),
-      ),
-      _QuickItem(
-        icon: Icons.people_rounded,
-        label: 'Staff',
-        subtitle: 'Manage team',
-        color: Colors.orange.shade400,
-        onTap: () =>
-            Get.to(() => const StaffPage(), binding: StaffBinding()),
       ),
       _QuickItem(
         icon: Icons.person_add_rounded,
@@ -462,6 +454,22 @@ class _QuickAccess extends StatelessWidget {
         color: Colors.indigo.shade300,
         onTap: () =>
             Get.to(() => const AnalyticsPage(), binding: AnalyticsBinding()),
+      ),
+      _QuickItem(
+        icon: Icons.store_rounded,
+        label: 'Stores',
+        subtitle: 'Manage locations',
+        color: Colors.blue.shade400,
+        onTap: () =>
+            Get.to(() => const StoresPage(), binding: StoresBinding()),
+      ),
+      _QuickItem(
+        icon: Icons.people_rounded,
+        label: 'Staff',
+        subtitle: 'Manage team',
+        color: Colors.purple.shade300,
+        onTap: () =>
+            Get.to(() => const StaffPage(), binding: StaffBinding()),
       ),
     ];
 
@@ -502,15 +510,21 @@ class _QuickAccess extends StatelessWidget {
     return Column(
       children: [
         Row(children: [
-          buildCard(items[0]),
+          buildCard(items[0]), // Products
           const SizedBox(width: 10),
-          buildCard(items[1]),
+          buildCard(items[1]), // Orders
         ]),
         const SizedBox(height: 10),
         Row(children: [
-          buildCard(items[2]),
+          buildCard(items[2]), // Invite Staff
           const SizedBox(width: 10),
-          buildCard(items[3]),
+          buildCard(items[3]), // Analytics
+        ]),
+        const SizedBox(height: 10),
+        Row(children: [
+          buildCard(items[4]), // Stores
+          const SizedBox(width: 10),
+          buildCard(items[5]), // Staff
         ]),
       ],
     );

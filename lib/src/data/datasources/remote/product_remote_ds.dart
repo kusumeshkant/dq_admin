@@ -8,7 +8,8 @@ class ProductRemoteDs {
     query StoreProducts($storeId: ID!) {
       storeProducts(storeId: $storeId) {
         id barcode sku name description brand gender color
-        categoryMain categorySub sizeGarment sizeActual
+        category { main sub }
+        size { garment actual }
         price mrp stock reorderLevel isAvailable storeId
       }
     }
@@ -29,7 +30,8 @@ class ProductRemoteDs {
         price: $price, mrp: $mrp, stock: $stock, reorderLevel: $reorderLevel
       ) {
         id barcode sku name description brand gender color
-        categoryMain categorySub sizeGarment sizeActual
+        category { main sub }
+        size { garment actual }
         price mrp stock reorderLevel isAvailable storeId
       }
     }
@@ -50,7 +52,8 @@ class ProductRemoteDs {
         price: $price, mrp: $mrp, stock: $stock, reorderLevel: $reorderLevel, isAvailable: $isAvailable
       ) {
         id barcode sku name description brand gender color
-        categoryMain categorySub sizeGarment sizeActual
+        category { main sub }
+        size { garment actual }
         price mrp stock reorderLevel isAvailable storeId
       }
     }

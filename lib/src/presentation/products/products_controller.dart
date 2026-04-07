@@ -114,7 +114,12 @@ class ProductsController extends GetxController {
       final name = nameCtrl.text.trim();
       final price = double.tryParse(priceCtrl.text.trim()) ?? 0;
       final stock = int.tryParse(stockCtrl.text.trim()) ?? 0;
-      if (barcode.isEmpty || name.isEmpty) return;
+      if (barcode.isEmpty || name.isEmpty) {
+        Get.snackbar('Missing Fields', 'Barcode and Product Name are required.',
+            backgroundColor: Colors.red.withValues(alpha: 0.8),
+            colorText: Colors.white);
+        return;
+      }
       final product = await createProductUseCase.execute(
         storeId: store.id,
         barcode: barcode,
@@ -160,6 +165,24 @@ class ProductsController extends GetxController {
 
     _showProductSheet(isCreate: false, onSave: () async {
       final newStock = int.tryParse(stockCtrl.text.trim());
+      if (newStock == 0) {
+        final confirm = await Get.dialog<bool>(AlertDialog(
+          backgroundColor: const Color(0xFF1A0D35),
+          title: const Text('Remove Product?', style: TextStyle(color: Colors.white)),
+          content: Text(
+            'Setting stock to 0 will remove "${nameCtrl.text.trim()}" from your product list. Are you sure?',
+            style: const TextStyle(color: Color(0xFFCDB4DB)),
+          ),
+          actions: [
+            TextButton(onPressed: () => Get.back(result: false), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('Yes, Remove', style: TextStyle(color: Colors.redAccent)),
+            ),
+          ],
+        ));
+        if (confirm != true) return;
+      }
       final updated = await updateProductUseCase.execute(
         id: product.id,
         sku: skuCtrl.text.trim().isEmpty ? null : skuCtrl.text.trim(),

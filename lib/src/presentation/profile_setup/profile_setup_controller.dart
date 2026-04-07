@@ -42,6 +42,10 @@ class ProfileSetupController extends GetxController {
       errorMessage.value = 'Phone number is required.';
       return;
     }
+    if (phone.length < 7 || phone.length > 15) {
+      errorMessage.value = 'Please enter a valid phone number.';
+      return;
+    }
 
     isLoading.value = true;
     errorMessage.value = '';

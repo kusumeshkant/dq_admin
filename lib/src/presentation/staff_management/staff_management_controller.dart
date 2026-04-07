@@ -118,7 +118,6 @@ class StaffManagementController extends GetxController {
   Future<void> inviteStaff() async {
     final name  = nameCtrl.text.trim();
     final email = emailCtrl.text.trim();
-    debugPrint('DQ_INVITE: tapped — name="$name" email="$email" storeId=$_storeId');
     if (name.isEmpty) {
       Get.snackbar('Missing Name', 'Please enter the staff member\'s name.',
           backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
@@ -137,11 +136,9 @@ class StaffManagementController extends GetxController {
         variables: {'email': email, 'name': name, 'storeId': _storeId},
       ));
       if (result.hasException) {
-        debugPrint('DQ_INVITE: exception=${result.exception}');
         final msg = result.exception?.graphqlErrors.firstOrNull?.message ?? 'Invite failed';
         throw Exception(msg);
       }
-      debugPrint('DQ_INVITE: success data=${result.data}');
       final invite = PendingInvite.fromJson(result.data!['inviteStaff'] as Map<String, dynamic>);
       pendingInvites.insert(0, invite);
       nameCtrl.clear();

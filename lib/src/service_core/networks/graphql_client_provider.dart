@@ -1,22 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart' hide Response;
 import 'package:gql_exec/gql_exec.dart';
 import 'package:gql_link/gql_link.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../constants/app_config.dart';
+import '../auth/session_manager.dart';
 import 'app_logger.dart';
 
-/// Intercepts every GraphQL operation and logs:
-///   - Request  → cyan  (operation name + variables)
-///   - Response → green (response data)
-///   - GQL error → red  (error messages)
-///   - Link/network error → red (exception detail)
+/// Logs every GraphQL operation to the debug console.
 class LoggingLink extends Link {
   @override
   Stream<Response> request(Request req, [NextLink? forward]) async* {
-    final operation = req.operation.operationName ?? req.operation.document
-        .definitions
-        .map((d) => d.toString())
-        .firstOrNull ?? 'unknown';
+    final operation = req.operation.operationName ??
+        req.operation.document.definitions
+            .map((d) => d.toString())
+            .firstOrNull ??
+        'unknown';
 
     final vars = req.variables.isNotEmpty ? req.variables : null;
     AppLogger.request(operation, variables: vars);
@@ -59,6 +58,8 @@ class GraphQLClientProvider {
   static GraphQLClient _build() {
     final httpLink = HttpLink(AppConfig.graphqlEndpoint);
 
+    // Fetches a fresh Firebase ID token on every request.
+    // Firebase SDK transparently refreshes the token ~5 min before expiry.
     final authLink = AuthLink(
       getToken: () async {
         final user = FirebaseAuth.instance.currentUser;
@@ -68,11 +69,66 @@ class GraphQLClientProvider {
       },
     );
 
-    final link = LoggingLink().concat(authLink.concat(httpLink));
+    // Catches UNAUTHENTICATED errors (token truly expired server-side),
+    // force-refreshes the Firebase token, retries the original request once.
+    // If the retry also fails, or there is no current user, the session is
+    // expired and the user is navigated back to the login screen.
+    final errorLink = ErrorLink(
+      onGraphQLError: (request, forward, response) async* {
+        final isUnauthenticated = response.errors
+                ?.any((e) => e.extensions?['code'] == 'UNAUTHENTICATED') ??
+            false;
+
+        if (!isUnauthenticated) {
+          yield response;
+          return;
+        }
+
+        AppLogger.auth('UNAUTHENTICATED — force-refreshing token');
+
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) {
+          await _expireSession();
+          return;
+        }
+
+        try {
+          await user.getIdToken(true); // force server-side refresh
+        } catch (_) {
+          await _expireSession();
+          return;
+        }
+
+        // Retry once — AuthLink will pick up the fresh token automatically
+        await for (final result in forward(request)) {
+          if (result.errors
+                  ?.any((e) => e.extensions?['code'] == 'UNAUTHENTICATED') ??
+              false) {
+            await _expireSession();
+            return;
+          }
+          yield result;
+        }
+      },
+    );
+
+    final link = LoggingLink().concat(errorLink.concat(authLink.concat(httpLink)));
 
     return GraphQLClient(
       link: link,
-      cache: GraphQLCache(),
+      cache: GraphQLCache(store: InMemoryStore()),
     );
+  }
+
+  /// Called when token refresh fails — clears client then delegates to
+  /// SessionManager which navigates to login and shows a snackbar.
+  /// Async so that cache-clear and navigation complete before the
+  /// calling async* generator returns.
+  static Future<void> _expireSession() async {
+    AppLogger.auth('session expired — clearing client and navigating to login');
+    _client = null;
+    try {
+      await Get.find<SessionManager>().expireSession();
+    } catch (_) {}
   }
 }
