@@ -1,31 +1,26 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ Admin  |  v1.0.2+23  |  TESTING BUILD
+  DQ Admin  |  v1.0.2+24  |  TESTING BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
-    Do NOT share outside the test team.
+
+─────────────────────────────────────
+ BUG FIXES IN THIS BUILD
+─────────────────────────────────────
+• Bulk upload now correctly reads "Opening" stock column
+  from StockReport-Export files (was silently saving 0 stock)
+• Added support for more stock column names:
+  Opening, Closing, Qty, Quantity, Available, Stock on Hand, etc.
+• Upload result now shows a clear warning when nothing was saved
+  (previously showed "Upload Successful!" even for 0 products)
+• Backend: products with 0 stock now saved (were silently skipped)
+• Backend: admin product list shows all products including 0-stock items
 
 ─────────────────────────────────────
  WHAT TO TEST
 ─────────────────────────────────────
-• Register as admin → create store
-• Add products (manual + barcode)
-• Invite staff via email
-• View live orders from dashboard
-• Analytics and revenue stats
-• Remove staff → verify access revoked
-
-─────────────────────────────────────
- SECURITY FIXES IN THIS BUILD
-─────────────────────────────────────
-• Cold start validates admin role on every launch
-• Non-admin accounts blocked at login with clear message
-• Revoked sessions signed out immediately
-
-─────────────────────────────────────
- KNOWN SCOPE
-─────────────────────────────────────
-• Android only
-• Backend: https://de-backend-iota.vercel.app/
+• Upload StockReport-Export (1).xlsx → should show products created
+• Manage Products screen should show all uploaded products
+• Upload a file with wrong columns → should show clear warning
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

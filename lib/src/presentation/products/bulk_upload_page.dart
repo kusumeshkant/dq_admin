@@ -64,13 +64,26 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
     'skucode': 'sku',
     'sku': 'sku',
     'mrp': 'mrp',
+    'price': 'mrp',
+    // Stock column — covers all common export formats
     'instock': 'stock',
     'in stock': 'stock',
     'stock': 'stock',
+    'opening': 'stock',        // StockReport-Export format
+    'opening stock': 'stock',
+    'closing': 'stock',
+    'closing stock': 'stock',
+    'qty': 'stock',
+    'quantity': 'stock',
+    'available qty': 'stock',
+    'available': 'stock',
+    'stock on hand': 'stock',
+    'quantity on hand': 'stock',
     'category': 'categoryMain',
     'subcategory': 'categorySub',
     'brand': 'brand',
     'color': 'color',
+    'colour': 'color',
     'garmentsize': 'sizeGarment',
     'garment size': 'sizeGarment',
     'actualsize': 'sizeActual',
@@ -457,46 +470,70 @@ class _ResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasErrors = result.errors.isNotEmpty;
+    final nothingCreated = result.created == 0 && result.updated == 0;
+
+    final Color statusColor = hasErrors
+        ? Colors.red
+        : nothingCreated
+            ? Colors.orange
+            : Colors.green;
+
+    final IconData statusIcon = hasErrors
+        ? Icons.error_outline_rounded
+        : nothingCreated
+            ? Icons.warning_amber_rounded
+            : Icons.check_circle_rounded;
+
+    final String statusText = hasErrors
+        ? 'Upload Failed — see errors below'
+        : nothingCreated
+            ? 'Nothing saved — check column names in your file'
+            : 'Upload Successful!';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: hasErrors
-            ? Colors.orange.withValues(alpha: 0.1)
-            : Colors.green.withValues(alpha: 0.1),
+        color: statusColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: hasErrors
-              ? Colors.orange.withValues(alpha: 0.4)
-              : Colors.green.withValues(alpha: 0.4),
-        ),
+        border: Border.all(color: statusColor.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                hasErrors ? Icons.warning_amber_rounded : Icons.check_circle_rounded,
-                color: hasErrors ? Colors.orange : Colors.green,
-                size: 20,
-              ),
+              Icon(statusIcon, color: statusColor, size: 20),
               const SizedBox(width: 8),
-              Text(
-                hasErrors ? 'Upload Complete (with errors)' : 'Upload Successful!',
-                style: TextStyle(
-                  color: hasErrors ? Colors.orange : Colors.green,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  statusText,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
           ),
+          if (nothingCreated && !hasErrors) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Skipped ${result.skipped} rows. '
+              'Make sure your file has columns: Barcode, Product Name, MRP, and a stock column '
+              '(Opening / Stock / Qty / InStock).',
+              style: TextStyle(color: statusColor, fontSize: 12, height: 1.5),
+            ),
+          ],
           const SizedBox(height: 12),
           Row(
             children: [
               _StatChip(label: 'Created', value: result.created, color: Colors.green),
               const SizedBox(width: 10),
               _StatChip(label: 'Updated', value: result.updated, color: Colors.blue),
+              const SizedBox(width: 10),
+              if (result.skipped > 0)
+                _StatChip(label: 'Skipped', value: result.skipped, color: Colors.orange),
               if (hasErrors) ...[
                 const SizedBox(width: 10),
                 _StatChip(label: 'Errors', value: result.errors.length, color: Colors.red),
