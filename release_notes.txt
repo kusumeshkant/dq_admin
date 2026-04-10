@@ -1,5 +1,31 @@
-v1.0.2+22 — Security hardening: cold-start role validation
-- Admin cold start now calls validateAppAccess("ADMIN") on every launch
-- Revoked admin sessions are signed out immediately (FORBIDDEN = sign out)
-- Network failures fall back to cached profile — no spurious logouts
-- Login continues to block non-admin accounts with clear error message
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DQ Admin  |  v1.0.2+23  |  TESTING BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  This build is for internal testing only.
+    Do NOT share outside the test team.
+
+─────────────────────────────────────
+ WHAT TO TEST
+─────────────────────────────────────
+• Register as admin → create store
+• Add products (manual + barcode)
+• Invite staff via email
+• View live orders from dashboard
+• Analytics and revenue stats
+• Remove staff → verify access revoked
+
+─────────────────────────────────────
+ SECURITY FIXES IN THIS BUILD
+─────────────────────────────────────
+• Cold start validates admin role on every launch
+• Non-admin accounts blocked at login with clear message
+• Revoked sessions signed out immediately
+
+─────────────────────────────────────
+ KNOWN SCOPE
+─────────────────────────────────────
+• Android only
+• Backend: https://de-backend-iota.vercel.app/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
