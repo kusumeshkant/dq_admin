@@ -1,0 +1,5 @@
+v1.0.2+22 — Security hardening: cold-start role validation
+- Admin cold start now calls validateAppAccess("ADMIN") on every launch
+- Revoked admin sessions are signed out immediately (FORBIDDEN = sign out)
+- Network failures fall back to cached profile — no spurious logouts
+- Login continues to block non-admin accounts with clear error message

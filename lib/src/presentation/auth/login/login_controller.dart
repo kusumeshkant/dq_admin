@@ -53,30 +53,28 @@ class LoginController extends GetxController {
           (user.name == null || user.name!.isEmpty) ||
           (user.phone == null || user.phone!.isEmpty);
 
-      if (user.isAdmin) {
-        // ── Returning store owner ────────────────────────────────────────
-        if (profileIncomplete) {
-          Get.offAll(
-            () => const ProfileSetupPage(),
-            binding: ProfileSetupBinding(email: email),
-          );
-        } else if (user.storeId == null || user.storeId!.isEmpty) {
-          Get.offAll(() => const OnboardingPage(), binding: OnboardingBinding());
-        } else {
-          Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
-        }
+      if (!user.isAdmin) {
+        // This account is not a store admin. Reject immediately.
+        // Covers: customer using the wrong app, or a failed dq_admin signup
+        // where registerAdmin never completed.
+        await authRepo.signOut();
+        GraphQLClientProvider.reset();
+        errorMessage.value =
+            'This account is not registered as a store admin. '
+            'Please sign up to create a new admin account, or use the correct app.';
+        return;
+      }
+
+      // ── Confirmed admin — route based on profile + onboarding state ──────
+      if (profileIncomplete) {
+        Get.offAll(
+          () => const ProfileSetupPage(),
+          binding: ProfileSetupBinding(email: email),
+        );
+      } else if (user.storeId == null || user.storeId!.isEmpty) {
+        Get.offAll(() => const OnboardingPage(), binding: OnboardingBinding());
       } else {
-        // ── Admin role not yet set (registerAdmin failed during signup) ───
-        // Send directly to onboarding to complete store setup.
-        // upgradeToAdmin is called after store creation.
-        if (profileIncomplete) {
-          Get.offAll(
-            () => const ProfileSetupPage(),
-            binding: ProfileSetupBinding(email: email),
-          );
-        } else {
-          Get.offAll(() => const OnboardingPage(), binding: OnboardingBinding());
-        }
+        Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
       }
     } catch (e) {
       errorMessage.value = _friendlyError(e.toString());

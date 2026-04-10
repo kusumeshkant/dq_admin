@@ -19,7 +19,42 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'firebase_options.dart';
+
+/// Thrown only when the backend explicitly returns FORBIDDEN for the admin
+/// app access check. Distinguished from generic network/server errors so that
+/// the cold-start handler can sign the user out rather than falling back to
+/// the cached profile.
+class _ForbiddenException implements Exception {}
+
+/// Calls validateAppAccess("ADMIN") and throws [_ForbiddenException] if the
+/// backend rejects this session with FORBIDDEN.
+///
+/// Any non-FORBIDDEN exception (network error, 500, timeout) is rethrown as-is
+/// so the caller can treat it as a transient failure and fall back to cache.
+Future<void> _assertAdminAccess() async {
+  const query = '''
+    query ValidateAdminAccess {
+      validateAppAccess(appId: "ADMIN") { id }
+    }
+  ''';
+  final result = await GraphQLClientProvider.client.query(
+    QueryOptions(
+      document: gql(query),
+      fetchPolicy: FetchPolicy.networkOnly,
+    ),
+  );
+  if (result.hasException) {
+    final isForbidden = result.exception?.graphqlErrors
+            .any((e) => e.extensions?['code'] == 'FORBIDDEN') ??
+        false;
+    if (isForbidden) throw _ForbiddenException();
+    // Non-FORBIDDEN (network failure, server error) — propagate so the outer
+    // catch can fall back to the cached profile instead of signing out.
+    throw result.exception!;
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,9 +82,10 @@ void main() async {
 /// Cold-start routing.
 ///
 /// Priority:
-///   1. Live backend profile (if reachable)  → cache it and route
-///   2. Cached profile (if network fails)    → route from cache
-///   3. No cache + no network                → login (Firebase session kept)
+///   1. Backend FORBIDDEN          → sign out, clear cache, go to login
+///   2. Live backend profile       → validate access, cache profile, route
+///   3. Cached profile             → route from cache (network was unreachable)
+///   4. No cache + no network      → login (Firebase session kept for retry)
 Future<_StartConfig> _resolveStartPage(SessionManager session) async {
   final firebaseUser = FirebaseAuth.instance.currentUser;
 
@@ -62,6 +98,16 @@ Future<_StartConfig> _resolveStartPage(SessionManager session) async {
   try {
     await GraphQLClientProvider.reinitWithToken();
 
+    // Role gate: verify this session has admin access before routing.
+    // This catches revoked admins, staff/customer accounts using the wrong app,
+    // and any other case where the Firebase session is valid but the backend
+    // no longer grants admin access.
+    //
+    // Throws _ForbiddenException on FORBIDDEN → handled below (sign out).
+    // Throws any other exception on network/server error → falls through to
+    // the catch block where we fall back to cached profile.
+    await _assertAdminAccess();
+
     final user = await GetProfileUseCase(
       AuthRepositoryImpl(AuthRemoteDs()),
     ).execute();
@@ -69,17 +115,23 @@ Future<_StartConfig> _resolveStartPage(SessionManager session) async {
     // Cache on every successful fetch so offline cold starts work.
     await session.cacheProfile(user);
     return _routeFrom(session, user, firebaseUser.email ?? '');
+  } on _ForbiddenException {
+    // Definitive backend rejection (role revoked, wrong app, etc.).
+    // Sign out and clear cache — do not fall back to stale cached data.
+    await FirebaseAuth.instance.signOut();
+    await session.clearCache();
+    GraphQLClientProvider.reset();
+    return _StartConfig(page: const LoginPage(), binding: LoginBinding());
   } catch (_) {
-    // Network / auth error — fall back to cached profile so the user is not
-    // kicked to the login screen just because the backend was momentarily
-    // unreachable.
+    // Network / transient server error — fall back to cached profile so the
+    // user is not kicked out just because the backend was briefly unreachable.
+    // The Firebase session is valid; it will succeed once connectivity returns.
     final cached = await session.loadCachedProfile();
     if (cached != null) {
       return _routeFrom(session, cached, firebaseUser.email ?? '');
     }
-    // No cache and backend unreachable — ask user to sign in when online.
-    // Do NOT call FirebaseAuth.signOut(): the Firebase session is valid and
-    // will work again once the network recovers.
+    // No cache and backend unreachable — show login without signing out.
+    // The Firebase session is preserved for the next launch.
     return _StartConfig(page: const LoginPage(), binding: LoginBinding());
   }
 }
