@@ -12,6 +12,8 @@ import '../orders/orders_binding.dart';
 import '../orders/orders_page.dart';
 import '../staff/staff_binding.dart';
 import '../staff/staff_page.dart';
+import '../store_detail/store_detail_binding.dart';
+import '../store_detail/store_detail_page.dart';
 import '../stores/stores_binding.dart';
 import '../stores/stores_page.dart';
 import '../analytics/analytics_binding.dart';
@@ -416,16 +418,22 @@ class _MiniStatCard extends StatelessWidget {
 }
 
 // ── Quick Access ───────────────────────────────────────────────────────────────
+//
+// Products are intentionally absent here. They live inside a store:
+//   Dashboard → Stores → Store Detail → Manage Products
+//
+// 5 items — layout: 2 + 2 + 1 (Staff as full-width bottom tile)
 
 class _QuickAccess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final items = [
+    // Top 4 items — rendered as 2×2 icon cards
+    final gridItems = [
       _QuickItem(
-        icon: Icons.inventory_2_rounded,
-        label: 'Products',
-        subtitle: 'Add & manage inventory',
-        color: Colors.orange.shade400,
+        icon: Icons.store_rounded,
+        label: 'Stores',
+        subtitle: 'Manage locations & products',
+        color: Colors.blue.shade400,
         onTap: () =>
             Get.to(() => const StoresPage(), binding: StoresBinding()),
       ),
@@ -438,16 +446,6 @@ class _QuickAccess extends StatelessWidget {
             Get.to(() => const OrdersPage(), binding: OrdersBinding()),
       ),
       _QuickItem(
-        icon: Icons.person_add_rounded,
-        label: 'Invite Staff',
-        subtitle: 'Add team members',
-        color: Colors.teal.shade300,
-        onTap: () => Get.to(
-          () => const StaffManagementPage(),
-          binding: StaffManagementBinding(),
-        ),
-      ),
-      _QuickItem(
         icon: Icons.bar_chart_rounded,
         label: 'Analytics',
         subtitle: 'Revenue & trends',
@@ -456,20 +454,14 @@ class _QuickAccess extends StatelessWidget {
             Get.to(() => const AnalyticsPage(), binding: AnalyticsBinding()),
       ),
       _QuickItem(
-        icon: Icons.store_rounded,
-        label: 'Stores',
-        subtitle: 'Manage locations',
-        color: Colors.blue.shade400,
-        onTap: () =>
-            Get.to(() => const StoresPage(), binding: StoresBinding()),
-      ),
-      _QuickItem(
-        icon: Icons.people_rounded,
-        label: 'Staff',
-        subtitle: 'Manage team',
-        color: Colors.purple.shade300,
-        onTap: () =>
-            Get.to(() => const StaffPage(), binding: StaffBinding()),
+        icon: Icons.person_add_rounded,
+        label: 'Invite Staff',
+        subtitle: 'Add team members',
+        color: Colors.teal.shade300,
+        onTap: () => Get.to(
+          () => const StaffManagementPage(),
+          binding: StaffManagementBinding(),
+        ),
       ),
     ];
 
@@ -510,22 +502,26 @@ class _QuickAccess extends StatelessWidget {
     return Column(
       children: [
         Row(children: [
-          buildCard(items[0]), // Products
+          buildCard(gridItems[0]), // Stores
           const SizedBox(width: 10),
-          buildCard(items[1]), // Orders
+          buildCard(gridItems[1]), // Orders
         ]),
         const SizedBox(height: 10),
         Row(children: [
-          buildCard(items[2]), // Invite Staff
+          buildCard(gridItems[2]), // Analytics
           const SizedBox(width: 10),
-          buildCard(items[3]), // Analytics
+          buildCard(gridItems[3]), // Invite Staff
         ]),
         const SizedBox(height: 10),
-        Row(children: [
-          buildCard(items[4]), // Stores
-          const SizedBox(width: 10),
-          buildCard(items[5]), // Staff
-        ]),
+        // Staff — full-width horizontal tile (balances the 2+2+1 layout)
+        _WideQuickTile(
+          icon: Icons.people_rounded,
+          label: 'Staff',
+          subtitle: 'View and manage your team',
+          color: Colors.purple.shade300,
+          onTap: () =>
+              Get.to(() => const StaffPage(), binding: StaffBinding()),
+        ),
       ],
     );
   }
@@ -545,6 +541,65 @@ class _QuickItem {
     required this.color,
     required this.onTap,
   });
+}
+
+/// Full-width horizontal quick-access tile — used as the bottom row
+/// when the grid has an odd number of items.
+class _WideQuickTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _WideQuickTile({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AppGlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 10)),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded, color: color, size: 13),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ── Top Stores ─────────────────────────────────────────────────────────────────
@@ -570,79 +625,93 @@ class _TopStoresList extends StatelessWidget {
         final rankColor =
             i < rankColors.length ? rankColors[i] : AppTheme.textSecondary;
 
-        return AppGlassCard(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: rankColor.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: rankColor.withValues(alpha: 0.5)),
+        return GestureDetector(
+          onTap: sr.store != null
+              ? () => Get.to(
+                    () => StoreDetailPage(store: sr.store!),
+                    binding: StoreDetailBinding(store: sr.store!),
+                  )
+              : null,
+          child: AppGlassCard(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: rankColor.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: rankColor.withValues(alpha: 0.5)),
+                      ),
+                      child: Center(
+                        child: Text('${i + 1}',
+                            style: TextStyle(
+                                color: rankColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12)),
+                      ),
                     ),
-                    child: Center(
-                      child: Text('${i + 1}',
-                          style: TextStyle(
-                              color: rankColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12)),
+                    const SizedBox(width: 10),
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.store_rounded,
+                          color: AppTheme.primary, size: 16),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(sr.store?.name ?? '—',
+                              style: const TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13)),
+                          Text('${sr.orderCount} orders',
+                              style: const TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 11)),
+                        ],
+                      ),
                     ),
-                    child: const Icon(Icons.store_rounded,
-                        color: AppTheme.primary, size: 16),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(sr.store?.name ?? '—',
-                            style: const TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13)),
-                        Text('${sr.orderCount} orders',
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 11)),
-                      ],
+                    Text(
+                      '₹${_fmt(sr.revenue)}',
+                      style: const TextStyle(
+                          color: Colors.greenAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14),
                     ),
-                  ),
-                  Text(
-                    '₹${_fmt(sr.revenue)}',
-                    style: const TextStyle(
-                        color: Colors.greenAccent,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: ratio,
-                  minHeight: 4,
-                  backgroundColor: Colors.white.withValues(alpha: 0.08),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                      rankColor.withValues(alpha: 0.7)),
+                    if (sr.store != null) ...[
+                      const SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_ios_rounded,
+                          color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                          size: 11),
+                    ],
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: ratio,
+                    minHeight: 4,
+                    backgroundColor: Colors.white.withValues(alpha: 0.08),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        rankColor.withValues(alpha: 0.7)),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       }),
