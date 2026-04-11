@@ -1,26 +1,70 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ Admin  |  v1.0.2+24  |  TESTING BUILD
+  DQ Admin  |  v1.0.2+25  |  TESTING BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
 
 ─────────────────────────────────────
- BUG FIXES IN THIS BUILD
+ NEW IN THIS BUILD
 ─────────────────────────────────────
-• Bulk upload now correctly reads "Opening" stock column
-  from StockReport-Export files (was silently saving 0 stock)
-• Added support for more stock column names:
-  Opening, Closing, Qty, Quantity, Available, Stock on Hand, etc.
-• Upload result now shows a clear warning when nothing was saved
-  (previously showed "Upload Successful!" even for 0 products)
-• Backend: products with 0 stock now saved (were silently skipped)
-• Backend: admin product list shows all products including 0-stock items
+• Dynamic Column Mapping for Bulk Upload
+  The app can now accept ANY Excel file format — not just
+  StockReport-Export. If your column names differ from what
+  the app expects, a one-time mapping screen lets you assign
+  which column in your file maps to Barcode, Product Name,
+  MRP, and Stock.
+
+• Smart Auto-Detection (60+ known aliases)
+  Common column names like "Item Code", "Description",
+  "Sale Price", "Qty on Hand", "Opening", etc. are resolved
+  automatically — no manual mapping needed for most POS files.
+
+• Fuzzy Column Matching
+  Even if your column name is slightly different (e.g.
+  "Barcode Number" instead of "Barcode"), the app uses
+  similarity matching to auto-detect the right field.
+
+• Background File Parsing
+  Large Excel files are now parsed in a background thread —
+  the UI stays responsive during file reading.
+
+• Mapping Confirmation Banner
+  After mapping, a green banner shows exactly which Excel
+  column was assigned to each required product field, so you
+  can verify before uploading.
 
 ─────────────────────────────────────
  WHAT TO TEST
 ─────────────────────────────────────
-• Upload StockReport-Export (1).xlsx → should show products created
-• Manage Products screen should show all uploaded products
-• Upload a file with wrong columns → should show clear warning
+□ Upload your usual StockReport-Export file
+  → Should work exactly as before, no mapping screen shown
+
+□ Upload a file with different column names
+  (e.g. "Item Code" instead of "Barcode", "Sale Price" instead of "MRP")
+  → Mapping screen should appear with dropdowns showing your file's
+    actual column names; required fields highlighted in red if unassigned
+
+□ On the mapping screen, leave a required field unassigned
+  → "Confirm Mapping" button should stay disabled
+
+□ Map all required fields → tap Confirm
+  → Should show preview with correct product data
+
+□ Upload a file with extra columns you don't need
+  (e.g. HSN, Location, UQC)
+  → Extra columns should be silently ignored, no errors
+
+□ Try cancelling the mapping screen (X button)
+  → Should return to the file pick screen cleanly
+
+□ Upload a large file (500+ rows)
+  → UI should not freeze while the file is being read
+
+─────────────────────────────────────
+ KNOWN SCOPE
+─────────────────────────────────────
+• Column mapping is not yet saved between sessions —
+  each new file pick starts fresh (persistence in next build)
+• Only .xlsx and .xls formats supported
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
