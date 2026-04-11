@@ -52,7 +52,11 @@ class AnalyticsController extends GetxController {
       // don't block the rest of the screen from rendering.
       await Future.wait([
         _safe(() async => retention.value = await repo.getCustomerRetention(storeId)),
-        _safe(() async => staffPerformance.value = await repo.getStaffPerformance(storeId)),
+        _safe(() async {
+          final list = await repo.getStaffPerformance(storeId);
+          list.sort((a, b) => b.totalOrdersHandled.compareTo(a.totalOrdersHandled));
+          staffPerformance.value = list;
+        }),
         _safe(() async => basketAbandonment.value = await repo.getBasketAbandonment(storeId)),
         _safe(() async => customerLTV.value = await repo.getCustomerLTV(storeId)),
         _safe(() async => monthlyRevenue.value = await repo.getMonthlyRevenue(storeId, year)),

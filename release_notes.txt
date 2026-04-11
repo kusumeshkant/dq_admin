@@ -1,5 +1,5 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ Admin  |  v1.0.2+28  |  TESTING BUILD
+  DQ Admin  |  v1.0.2+29  |  TESTING BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
@@ -7,45 +7,44 @@
 ─────────────────────────────────────
  CHANGES IN THIS BUILD
 ─────────────────────────────────────
-• Monthly Revenue chart — widget-level rework
+• Staff Performance section — white screen + infinite
+  scrolling fixed (data level + widget level)
 
-  Root cause (white screen / "infinite list"):
-  Two problems in the chart widget:
+  Data level:
+  1. Reactivity miss — same RxList issue as Monthly Revenue.
+     Obx was not registering a dependency on staffPerformance,
+     so the section never rebuilt when data arrived.
+     Fix: .toList() in the Obx callback.
 
-  1. Reactivity miss — the Obx was passing the RxList
-     reference directly without reading it, so GetX did
-     not register a dependency. The chart never rebuilt
-     when monthly data loaded; it stayed on its initial
-     empty/stale state.
-     Fix: .toList() called inside the Obx callback so
-     GetX correctly tracks the list as a reactive read.
+  2. No sort order — staff appeared in arbitrary backend order.
+     Fix: sorted by totalOrdersHandled descending in the
+     controller so top performers appear first.
 
-  2. Unconstrained bar layout — bars were built as
-     Row + Expanded items. With Expanded inside Row
-     inside a ListView, Flutter can pass unconstrained
-     width down to the inner Column bars, causing a
-     zero-width or white render in release mode.
-     Fix: each bar is now a fixed-width SizedBox (28px)
-     inside a SingleChildScrollView. The chart is
-     horizontally scrollable, bars are always a
-     readable size, and the layout is fully bounded.
+  Widget level:
+  3. Infinite scroll — all staff cards rendered unconditionally
+     in a Column. With 10-20+ staff the list grew to thousands
+     of pixels, producing the "infinite scrolling" feeling.
+     Fix: shows top 5 staff by default. A "Show X more" /
+     "Show less" toggle at the bottom expands / collapses
+     the full list.
 
 ─────────────────────────────────────
  WHAT TO TEST
 ─────────────────────────────────────
-□ Navigate to Analytics → scroll to Monthly Revenue
-  → Chart should render with bars (not white/blank)
-  → Month labels (Jan–Dec) should appear below each bar
-  → Peak month bar should be primary colour (purple)
-  → Current month bar should be amber
-  → Swipe left/right on the chart if there are many months
+□ Navigate to Analytics → scroll to Staff Performance
+  → Should show staff cards (not white/blank)
+  → Top 5 staff appear, sorted by orders handled (highest first)
+  → "Show X more" button visible if store has > 5 staff
 
-□ Pull-to-refresh the Analytics screen
-  → Monthly Revenue section should update after refresh
+□ Tap "Show X more"
+  → Remaining staff cards expand below
+  → Button label changes to "Show less"
 
-□ Enter Analytics on first load (fresh navigation)
-  → Monthly Revenue should populate once data loads
-     (no longer requires screen re-entry or retry)
+□ Tap "Show less"
+  → List collapses back to top 5
+
+□ Pull-to-refresh
+  → Staff section reloads and re-sorts correctly
 
 ─────────────────────────────────────
  KNOWN SCOPE

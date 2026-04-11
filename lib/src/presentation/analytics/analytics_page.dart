@@ -164,7 +164,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         fontWeight: FontWeight.bold,
                         fontSize: 15)),
                 const SizedBox(height: 10),
-                Obx(() => _StaffPerformanceList(staff: c.staffPerformance)),
+                Obx(() => _StaffPerformanceList(staff: c.staffPerformance.toList())),
               ],
             ),
           );
@@ -1208,13 +1208,21 @@ class _CustomerLTVCard extends StatelessWidget {
 
 // ── Staff Performance ─────────────────────────────────────────────────────────
 
-class _StaffPerformanceList extends StatelessWidget {
+class _StaffPerformanceList extends StatefulWidget {
   final List<StaffPerformanceStatEntity> staff;
   const _StaffPerformanceList({required this.staff});
 
   @override
+  State<_StaffPerformanceList> createState() => _StaffPerformanceListState();
+}
+
+class _StaffPerformanceListState extends State<_StaffPerformanceList> {
+  static const _previewCount = 5;
+  bool _showAll = false;
+
+  @override
   Widget build(BuildContext context) {
-    if (staff.isEmpty) {
+    if (widget.staff.isEmpty) {
       return AppGlassCard(
         child: const Padding(
           padding: EdgeInsets.all(24),
@@ -1224,77 +1232,123 @@ class _StaffPerformanceList extends StatelessWidget {
       );
     }
 
+    final display = _showAll
+        ? widget.staff
+        : widget.staff.take(_previewCount).toList();
+    final remaining = widget.staff.length - _previewCount;
+
     return Column(
-      children: staff.map((s) {
-        final cancColor = s.cancellationRate > 20 ? Colors.redAccent
-            : s.cancellationRate > 10 ? Colors.amber.shade400
+      children: [
+        ...display.map((s) => _buildCard(s)),
+        if (widget.staff.length > _previewCount)
+          GestureDetector(
+            onTap: () => setState(() => _showAll = !_showAll),
+            child: Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _showAll
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: AppTheme.primary, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    _showAll
+                        ? 'Show less'
+                        : 'Show $remaining more',
+                    style: const TextStyle(
+                        color: AppTheme.primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildCard(StaffPerformanceStatEntity s) {
+    final cancColor = s.cancellationRate > 20
+        ? Colors.redAccent
+        : s.cancellationRate > 10
+            ? Colors.amber.shade400
             : Colors.greenAccent;
-        return AppGlassCard(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return AppGlassCard(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 36, height: 36,
-                    decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.12),
-                        shape: BoxShape.circle),
-                    child: const Icon(Icons.person_rounded,
-                        color: AppTheme.primary, size: 20),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(s.staffName,
-                            style: const TextStyle(color: AppTheme.textPrimary,
-                                fontWeight: FontWeight.w600, fontSize: 13)),
-                        Text('${s.totalOrdersHandled} orders handled',
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary, fontSize: 10)),
-                      ],
-                    ),
-                  ),
-                  if (s.avgFulfillmentTime != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade400.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text('⚡ ${s.avgFulfillmentTime!.toStringAsFixed(0)}m avg',
-                          style: TextStyle(color: Colors.blue.shade400,
-                              fontSize: 10, fontWeight: FontWeight.w600)),
-                    ),
-                ],
+              Container(
+                width: 36, height: 36,
+                decoration: BoxDecoration(
+                    color: AppTheme.primary.withValues(alpha: 0.12),
+                    shape: BoxShape.circle),
+                child: const Icon(Icons.person_rounded,
+                    color: AppTheme.primary, size: 20),
               ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  _StatBox(label: 'Completed', value: '${s.ordersCompleted}',
-                      color: Colors.greenAccent),
-                  const SizedBox(width: 6),
-                  _StatBox(label: 'Cancelled', value: '${s.ordersCancelled}',
-                      color: cancColor),
-                  const SizedBox(width: 6),
-                  _StatBox(label: 'Flags Raised', value: '${s.flagsRaised}',
-                      color: s.flagsRaised > 0
-                          ? Colors.orange.shade400 : Colors.greenAccent),
-                  const SizedBox(width: 6),
-                  _StatBox(label: 'Cancel Rate',
-                      value: '${s.cancellationRate.toStringAsFixed(0)}%',
-                      color: cancColor),
-                ],
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(s.staffName,
+                        style: const TextStyle(color: AppTheme.textPrimary,
+                            fontWeight: FontWeight.w600, fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    Text('${s.totalOrdersHandled} orders handled',
+                        style: const TextStyle(
+                            color: AppTheme.textSecondary, fontSize: 10)),
+                  ],
+                ),
               ),
+              if (s.avgFulfillmentTime != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade400.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                      '⚡ ${s.avgFulfillmentTime!.toStringAsFixed(0)}m avg',
+                      style: TextStyle(color: Colors.blue.shade400,
+                          fontSize: 10, fontWeight: FontWeight.w600)),
+                ),
             ],
           ),
-        );
-      }).toList(),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _StatBox(label: 'Completed', value: '${s.ordersCompleted}',
+                  color: Colors.greenAccent),
+              const SizedBox(width: 6),
+              _StatBox(label: 'Cancelled', value: '${s.ordersCancelled}',
+                  color: cancColor),
+              const SizedBox(width: 6),
+              _StatBox(label: 'Flags Raised', value: '${s.flagsRaised}',
+                  color: s.flagsRaised > 0
+                      ? Colors.orange.shade400 : Colors.greenAccent),
+              const SizedBox(width: 6),
+              _StatBox(label: 'Cancel Rate',
+                  value: '${s.cancellationRate.toStringAsFixed(0)}%',
+                  color: cancColor),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
