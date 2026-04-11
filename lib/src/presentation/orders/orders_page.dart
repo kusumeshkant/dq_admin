@@ -2,6 +2,11 @@ import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/responsive/app_responsive.dart';
+import '../../core/responsive/app_spacing.dart';
+import '../../core/responsive/app_sizes.dart';
+import '../../core/responsive/app_typography.dart';
+import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/order_entity.dart';
 import '../../theme/app_theme.dart';
 import '../order_detail/order_detail_binding.dart';
@@ -14,6 +19,7 @@ class OrdersPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Get.find<OrdersController>();
+    final hPad = context.pagePadding;
 
     return ThemedBackground(
       child: Scaffold(
@@ -23,46 +29,79 @@ class OrdersPage extends StatelessWidget {
           children: [
             // Filters
             Obx(() => Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  padding:
+                      EdgeInsets.fromLTRB(hPad, AppSpacing.sm, hPad, 0),
                   child: Row(
                     children: [
                       // Store filter
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: c.selectedStoreId.value,
-                          dropdownColor: const Color(0xFF1E1040),
-                          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13),
+                          dropdownColor: AppTheme.surface,
+                          style: AppTypography.bodySmall,
                           decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.sm),
                             filled: true,
                             fillColor: AppTheme.cardSurface,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.cardBorder)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.cardBorder)),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                    AppSizes.radiusMd - 2),
+                                borderSide: const BorderSide(
+                                    color: AppTheme.cardBorder)),
+                            enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                    AppSizes.radiusMd - 2),
+                                borderSide: const BorderSide(
+                                    color: AppTheme.cardBorder)),
                           ),
-                          hint: const Text('All Stores', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                          hint: Text('All Stores',
+                              style: AppTypography.bodySmall.copyWith(
+                                  color: AppTheme.textSecondary)),
                           items: [
-                            const DropdownMenuItem(value: null, child: Text('All Stores', style: TextStyle(color: AppTheme.textSecondary))),
-                            ...c.stores.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name, style: const TextStyle(color: AppTheme.textPrimary)))),
+                            DropdownMenuItem(
+                                value: null,
+                                child: Text('All Stores',
+                                    style: AppTypography.bodySmall.copyWith(
+                                        color: AppTheme.textSecondary))),
+                            ...c.stores.map((s) => DropdownMenuItem(
+                                value: s.id,
+                                child: Text(s.name,
+                                    style: AppTypography.bodySmall))),
                           ],
                           onChanged: c.filterByStore,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       // Status filter
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: c.selectedStatus.value ?? 'All',
-                          dropdownColor: const Color(0xFF1E1040),
-                          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13),
+                          dropdownColor: AppTheme.surface,
+                          style: AppTypography.bodySmall,
                           decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.sm),
                             filled: true,
                             fillColor: AppTheme.cardSurface,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.cardBorder)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.cardBorder)),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                    AppSizes.radiusMd - 2),
+                                borderSide: const BorderSide(
+                                    color: AppTheme.cardBorder)),
+                            enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                    AppSizes.radiusMd - 2),
+                                borderSide: const BorderSide(
+                                    color: AppTheme.cardBorder)),
                           ),
                           items: c.statusOptions
-                              .map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(color: AppTheme.textPrimary))))
+                              .map((s) => DropdownMenuItem(
+                                  value: s,
+                                  child: Text(s,
+                                      style: AppTypography.bodySmall)))
                               .toList(),
                           onChanged: (v) => c.filterByStatus(v),
                         ),
@@ -70,11 +109,11 @@ class OrdersPage extends StatelessWidget {
                     ],
                   ),
                 )),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
 
             // Stat chips
             Obx(() => Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                  padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 0),
                   child: Row(
                     children: [
                       _StatChip(
@@ -85,7 +124,7 @@ class OrdersPage extends StatelessWidget {
                         selected: c.selectedStatus.value == null,
                         onTap: () => c.filterByStatus('All'),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       _StatChip(
                         label: 'Completed',
                         value: c.completedCount,
@@ -94,7 +133,7 @@ class OrdersPage extends StatelessWidget {
                         selected: c.selectedStatus.value == 'completed',
                         onTap: () => c.filterByStatus('completed'),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       _StatChip(
                         label: 'Cancelled',
                         value: c.cancelledCount,
@@ -106,26 +145,25 @@ class OrdersPage extends StatelessWidget {
                     ],
                   ),
                 )),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
 
             // List
             Expanded(
               child: Obx(() {
-                if (c.isLoading.value) {
-                  return const Center(
-                      child: CircularProgressIndicator(color: AppTheme.primary));
-                }
+                if (c.isLoading.value) return const AppLoadingWidget();
                 if (c.orders.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text('No orders found.',
-                        style: TextStyle(color: AppTheme.textSecondary)),
+                        style: AppTypography.body
+                            .copyWith(color: AppTheme.textSecondary)),
                   );
                 }
                 return RefreshIndicator(
                   onRefresh: c.loadOrders,
                   color: AppTheme.primary,
                   child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
+                    padding:
+                        EdgeInsets.fromLTRB(hPad, 0, hPad, 40),
                     itemCount: c.orders.length,
                     itemBuilder: (_, i) => _OrderCard(
                       order: c.orders[i],
@@ -168,28 +206,32 @@ class _StatChip extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm + 2, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: selected ? color.withValues(alpha: 0.2) : color.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
+            color: selected
+                ? color.withValues(alpha: 0.2)
+                : color.withValues(alpha: 0.08),
+            borderRadius:
+                BorderRadius.circular(AppSizes.radiusMd - 2),
             border: Border.all(
-              color: selected ? color.withValues(alpha: 0.7) : color.withValues(alpha: 0.25),
+              color: selected
+                  ? color.withValues(alpha: 0.7)
+                  : color.withValues(alpha: 0.25),
               width: selected ? 1.5 : 1,
             ),
           ),
           child: Row(
             children: [
-              Icon(icon, color: color, size: 15),
-              const SizedBox(width: 6),
+              Icon(icon, color: color, size: AppSizes.iconSm - 3),
+              const SizedBox(width: AppSpacing.sm - 2),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(value.toString(),
-                      style: TextStyle(
-                          color: color, fontSize: 15, fontWeight: FontWeight.bold)),
-                  Text(label,
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 10)),
+                      style: AppTypography.bodyLarge
+                          .copyWith(color: color, fontWeight: FontWeight.bold)),
+                  Text(label, style: AppTypography.caption),
                 ],
               ),
             ],
@@ -211,13 +253,14 @@ class _OrderCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AppGlassCard(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
+        padding: const EdgeInsets.all(AppSpacing.md + 2),
         child: Row(
           children: [
             Container(
-              width: 10, height: 10,
-              margin: const EdgeInsets.only(right: 12),
+              width: 10,
+              height: 10,
+              margin: const EdgeInsets.only(right: AppSpacing.md),
               decoration: BoxDecoration(
                 color: _statusColor(order.status),
                 shape: BoxShape.circle,
@@ -232,23 +275,31 @@ class _OrderCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           '#${order.id.substring(order.id.length > 8 ? order.id.length - 8 : 0)}',
-                          style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                          style: AppTypography.bodySmall
+                              .copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                       if (order.isFlagged)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm - 2,
+                              vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.red.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                            borderRadius:
+                                BorderRadius.circular(AppSizes.radiusSm - 2),
+                            border: Border.all(
+                                color: Colors.red.withValues(alpha: 0.4)),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.flag_rounded, color: Colors.red, size: 11),
+                              Icon(Icons.flag_rounded,
+                                  color: Colors.red, size: 11),
                               SizedBox(width: 3),
-                              Text('Issue', style: TextStyle(color: Colors.red, fontSize: 10)),
+                              Text('Issue',
+                                  style: TextStyle(
+                                      color: Colors.red, fontSize: 10)),
                             ],
                           ),
                         ),
@@ -256,13 +307,15 @@ class _OrderCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(order.storeName ?? '—',
-                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
-                  Text('${order.items.length} item${order.items.length != 1 ? "s" : ""}  ·  ₹${order.grandTotal.toStringAsFixed(0)}  ·  ${order.formattedDate}',
-                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                      style: AppTypography.labelSmall),
+                  Text(
+                    '${order.items.length} item${order.items.length != 1 ? "s" : ""}  ·  ₹${order.grandTotal.toStringAsFixed(0)}  ·  ${order.formattedDate}',
+                    style: AppTypography.labelSmall,
+                  ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             _StatusBadge(status: order.status),
           ],
         ),
@@ -295,14 +348,16 @@ class _StatusBadge extends StatelessWidget {
       _ => Colors.grey.shade500,
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppSizes.radiusSm),
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(status,
-          style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
+          style: AppTypography.caption
+              .copyWith(color: color, fontWeight: FontWeight.w600)),
     );
   }
 }

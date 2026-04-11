@@ -2,6 +2,11 @@ import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/responsive/app_responsive.dart';
+import '../../core/responsive/app_spacing.dart';
+import '../../core/responsive/app_sizes.dart';
+import '../../core/responsive/app_typography.dart';
+import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/user_entity.dart';
 import '../../theme/app_theme.dart';
 import 'staff_controller.dart';
@@ -20,65 +25,84 @@ class StaffPage extends StatelessWidget {
         body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: EdgeInsets.fromLTRB(
+                  context.pagePadding, AppSpacing.md, context.pagePadding, 0),
               child: Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: c.searchEmailCtrl,
-                      style: const TextStyle(color: AppTheme.textPrimary),
+                      style: AppTypography.body,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: 'Find user by email…',
-                        hintStyle: const TextStyle(color: AppTheme.textSecondary),
+                        hintStyle: AppTypography.body
+                            .copyWith(color: AppTheme.textSecondary),
                         filled: true,
-                        fillColor: const Color(0x26FFFFFF),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        fillColor: AppTheme.cardSurface,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md + 2,
+                            vertical: AppSpacing.sm + 2),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0x33FFFFFF)),
+                          borderRadius:
+                              BorderRadius.circular(AppSizes.radiusMd),
+                          borderSide:
+                              const BorderSide(color: AppTheme.cardBorder),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0x33FFFFFF)),
+                          borderRadius:
+                              BorderRadius.circular(AppSizes.radiusMd),
+                          borderSide:
+                              const BorderSide(color: AppTheme.cardBorder),
                         ),
-                        prefixIcon: const Icon(Icons.search, color: AppTheme.textSecondary, size: 20),
+                        prefixIcon: const Icon(Icons.search,
+                            color: AppTheme.textSecondary,
+                            size: AppSizes.iconMd - 4),
                       ),
                       onSubmitted: (_) => c.searchByEmail(),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   Obx(() => c.isSearching.value
                       ? const SizedBox(
-                          width: 40, height: 40,
-                          child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary)),
+                          width: AppSizes.touchTarget,
+                          height: AppSizes.touchTarget,
+                          child: Center(
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppTheme.primary)),
                         )
                       : IconButton(
                           onPressed: c.searchByEmail,
-                          icon: const Icon(Icons.person_search, color: AppTheme.primary),
+                          icon: const Icon(Icons.person_search,
+                              color: AppTheme.primary),
                           tooltip: 'Find user',
                         )),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Expanded(
               child: Obx(() {
-                if (c.isLoading.value) {
-                  return const Center(
-                      child: CircularProgressIndicator(color: AppTheme.primary));
-                }
+                if (c.isLoading.value) return const AppLoadingWidget();
                 if (c.staff.isEmpty) {
-                  return const Center(
-                    child: Text('No staff users found.',
-                        style: TextStyle(color: AppTheme.textSecondary)),
+                  return Center(
+                    child: Text(
+                      'No staff users found.',
+                      style: AppTypography.body
+                          .copyWith(color: AppTheme.textSecondary),
+                    ),
                   );
                 }
                 return RefreshIndicator(
                   onRefresh: c.loadData,
                   color: AppTheme.primary,
                   child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
+                    padding: EdgeInsets.fromLTRB(
+                        context.pagePadding,
+                        AppSpacing.xs,
+                        context.pagePadding,
+                        40),
                     itemCount: c.staff.length,
                     itemBuilder: (_, i) => _StaffCard(
                       user: c.staff[i],
@@ -101,21 +125,24 @@ class _StaffCard extends StatelessWidget {
   final String storeName;
   final VoidCallback onTap;
 
-  const _StaffCard({required this.user, required this.storeName, required this.onTap});
+  const _StaffCard(
+      {required this.user, required this.storeName, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final roleColor = user.isAdmin ? Colors.purple.shade300 : Colors.blue.shade300;
+    final roleColor =
+        user.isAdmin ? Colors.purple.shade300 : Colors.blue.shade300;
 
     return GestureDetector(
       onTap: onTap,
       child: AppGlassCard(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
+        padding: const EdgeInsets.all(AppSpacing.md + 2),
         child: Row(
           children: [
             Container(
-              width: 44, height: 44,
+              width: AppSizes.avatarMd,
+              height: AppSizes.avatarMd,
               decoration: BoxDecoration(
                 color: roleColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
@@ -123,33 +150,35 @@ class _StaffCard extends StatelessWidget {
               child: Center(
                 child: Text(
                   (user.name ?? user.email ?? '?')[0].toUpperCase(),
-                  style: TextStyle(color: roleColor, fontWeight: FontWeight.bold, fontSize: 18),
+                  style: AppTypography.titleSmall.copyWith(color: roleColor),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(user.name ?? '(No name)',
-                      style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
+                      style: AppTypography.bodySmall
+                          .copyWith(fontWeight: FontWeight.bold)),
                   if (user.email != null)
-                    Text(user.email!, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
-                  Text(storeName,
-                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                    Text(user.email!, style: AppTypography.labelSmall),
+                  Text(storeName, style: AppTypography.labelSmall),
                 ],
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
                 color: roleColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSizes.radiusSm),
                 border: Border.all(color: roleColor.withValues(alpha: 0.4)),
               ),
               child: Text(user.role,
-                  style: TextStyle(color: roleColor, fontSize: 11, fontWeight: FontWeight.w600)),
+                  style: AppTypography.labelSmall.copyWith(
+                      color: roleColor, fontWeight: FontWeight.w600)),
             ),
           ],
         ),

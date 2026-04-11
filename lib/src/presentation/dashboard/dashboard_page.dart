@@ -2,6 +2,12 @@ import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/responsive/app_responsive.dart';
+import '../../core/responsive/app_spacing.dart';
+import '../../core/responsive/app_sizes.dart';
+import '../../core/responsive/app_typography.dart';
+import '../../core/widgets/app_error_widget.dart';
+import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/dashboard_entity.dart';
 import '../../domain/entity/order_entity.dart';
 import '../../service_core/auth/session_manager.dart';
@@ -50,27 +56,11 @@ class DashboardPage extends StatelessWidget {
           onRefresh: c.loadStats,
           color: AppTheme.primary,
           child: Obx(() {
-            if (c.isLoading.value) {
-              return const Center(
-                  child: CircularProgressIndicator(color: AppTheme.primary));
-            }
+            if (c.isLoading.value) return const AppLoadingWidget();
             if (c.errorMessage.value.isNotEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.cloud_off_rounded,
-                        color: AppTheme.textSecondary, size: 48),
-                    const SizedBox(height: 12),
-                    Text(c.errorMessage.value,
-                        style:
-                            const TextStyle(color: AppTheme.textSecondary)),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                        onPressed: c.loadStats,
-                        child: const Text('Retry')),
-                  ],
-                ),
+              return AppErrorWidget(
+                message: c.errorMessage.value,
+                onRetry: c.loadStats,
               );
             }
 
@@ -78,7 +68,8 @@ class DashboardPage extends StatelessWidget {
             if (s == null) return const SizedBox.shrink();
 
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
+              padding: EdgeInsets.fromLTRB(
+                  context.pagePadding, 4, context.pagePadding, 40),
               children: [
                 // ── Greeting header ──────────────────────────────────────
                 _GreetingHeader(session: session, stats: s),
@@ -130,30 +121,18 @@ class DashboardPage extends StatelessWidget {
     ));
   }
 
-  Widget _sectionTitle(String title) => Text(
-        title,
-        style: const TextStyle(
-          color: AppTheme.textPrimary,
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
-        ),
-      );
+  Widget _sectionTitle(String title) => Text(title, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold));
 
   Widget _sectionHeader(String title, {required VoidCallback onViewAll}) =>
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title,
-              style: const TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15)),
+          Text(title, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
           GestureDetector(
             onTap: onViewAll,
             child: Text('View All →',
-                style: TextStyle(
+                style: AppTypography.label.copyWith(
                     color: AppTheme.primary.withValues(alpha: 0.85),
-                    fontSize: 12,
                     fontWeight: FontWeight.w600)),
           ),
         ],
@@ -187,12 +166,13 @@ class _GreetingHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppGlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg, vertical: AppSpacing.md + 2),
       child: Row(
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: AppSizes.avatarMd,
+            height: AppSizes.avatarMd,
             decoration: BoxDecoration(
               color: AppTheme.primary.withValues(alpha: 0.2),
               shape: BoxShape.circle,
@@ -202,7 +182,7 @@ class _GreetingHeader extends StatelessWidget {
             child: const Icon(Icons.admin_panel_settings_rounded,
                 color: AppTheme.primary, size: 22),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Obx(() => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,16 +191,13 @@ class _GreetingHeader extends StatelessWidget {
                       session.adminName != null
                           ? '$_greeting, ${session.adminName}!'
                           : '$_greeting!',
-                      style: const TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15),
+                      style: AppTypography.bodyLarge
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '$_todayDate  ·  ${stats.totalOrders} orders  ·  ${stats.activeStores} stores',
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 11),
+                      style: AppTypography.caption,
                     ),
                   ],
                 )),
@@ -245,7 +222,7 @@ class _RevenueCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -255,7 +232,7 @@ class _RevenueCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSizes.radiusXl),
         border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Row(
@@ -265,19 +242,14 @@ class _RevenueCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Total Revenue',
-                    style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500)),
-                const SizedBox(height: 6),
+                Text('Total Revenue',
+                    style: AppTypography.label
+                        .copyWith(color: Colors.white70, fontWeight: FontWeight.w500)),
+                const SizedBox(height: AppSpacing.sm - 2),
                 Text(
                   '₹${_formatRevenue(stats.totalRevenue)}',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5),
+                  style: AppTypography.statLarge
+                      .copyWith(letterSpacing: -0.5),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -387,29 +359,24 @@ class _MiniStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: AppGlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md, vertical: AppSpacing.md + 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: AppSizes.iconLg,
+              height: AppSizes.iconLg,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSizes.radiusSm),
               ),
-              child: Icon(icon, color: color, size: 16),
+              child: Icon(icon, color: color, size: AppSizes.iconMd - 8),
             ),
-            const SizedBox(height: 10),
-            Text(value,
-                style: const TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20)),
+            const SizedBox(height: AppSpacing.sm + 2),
+            Text(value, style: AppTypography.statMedium),
             const SizedBox(height: 2),
-            Text(label,
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 10)),
+            Text(label, style: AppTypography.caption),
           ],
         ),
       ),
@@ -427,23 +394,20 @@ class _MiniStatCard extends StatelessWidget {
 class _QuickAccess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Top 4 items — rendered as 2×2 icon cards
-    final gridItems = [
+    final allItems = [
       _QuickItem(
         icon: Icons.store_rounded,
         label: 'Stores',
         subtitle: 'Manage locations & products',
         color: Colors.blue.shade400,
-        onTap: () =>
-            Get.to(() => const StoresPage(), binding: StoresBinding()),
+        onTap: () => Get.to(() => const StoresPage(), binding: StoresBinding()),
       ),
       _QuickItem(
         icon: Icons.receipt_long_rounded,
         label: 'Orders',
         subtitle: 'View all orders',
         color: AppTheme.primary,
-        onTap: () =>
-            Get.to(() => const OrdersPage(), binding: OrdersBinding()),
+        onTap: () => Get.to(() => const OrdersPage(), binding: OrdersBinding()),
       ),
       _QuickItem(
         icon: Icons.bar_chart_rounded,
@@ -463,35 +427,46 @@ class _QuickAccess extends StatelessWidget {
           binding: StaffManagementBinding(),
         ),
       ),
+      _QuickItem(
+        icon: Icons.people_rounded,
+        label: 'Staff',
+        subtitle: 'View and manage your team',
+        color: Colors.purple.shade300,
+        onTap: () => Get.to(() => const StaffPage(), binding: StaffBinding()),
+      ),
     ];
 
+    // On tablet+: all 5 as uniform grid cards. On mobile: 2+2+1 layout.
+    if (context.isTabletOrLarger) {
+      return _QuickAccessGrid(items: allItems, columns: context.statColumns);
+    }
+
+    // Mobile: 2×2 grid + full-width Staff tile
     Widget buildCard(_QuickItem item) => Expanded(
           child: GestureDetector(
             onTap: item.onTap,
             child: AppGlassCard(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.lg, horizontal: AppSpacing.md),
               child: Column(
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: AppSizes.iconXl - 4,
+                    height: AppSizes.iconXl - 4,
                     decoration: BoxDecoration(
                       color: item.color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                     ),
-                    child: Icon(item.icon, color: item.color, size: 20),
+                    child: Icon(item.icon, color: item.color, size: AppSizes.iconMd - 4),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(item.label,
-                      style: const TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
+                      style: AppTypography.bodySmall
+                          .copyWith(fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center),
                   const SizedBox(height: 2),
                   Text(item.subtitle,
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 9),
+                      style: AppTypography.caption,
                       textAlign: TextAlign.center),
                 ],
               ),
@@ -502,28 +477,86 @@ class _QuickAccess extends StatelessWidget {
     return Column(
       children: [
         Row(children: [
-          buildCard(gridItems[0]), // Stores
-          const SizedBox(width: 10),
-          buildCard(gridItems[1]), // Orders
+          buildCard(allItems[0]),
+          const SizedBox(width: AppSpacing.sm + 2),
+          buildCard(allItems[1]),
         ]),
-        const SizedBox(height: 10),
+        const SizedBox(height: AppSpacing.sm + 2),
         Row(children: [
-          buildCard(gridItems[2]), // Analytics
-          const SizedBox(width: 10),
-          buildCard(gridItems[3]), // Invite Staff
+          buildCard(allItems[2]),
+          const SizedBox(width: AppSpacing.sm + 2),
+          buildCard(allItems[3]),
         ]),
-        const SizedBox(height: 10),
-        // Staff — full-width horizontal tile (balances the 2+2+1 layout)
-        _WideQuickTile(
-          icon: Icons.people_rounded,
-          label: 'Staff',
-          subtitle: 'View and manage your team',
-          color: Colors.purple.shade300,
-          onTap: () =>
-              Get.to(() => const StaffPage(), binding: StaffBinding()),
-        ),
+        const SizedBox(height: AppSpacing.sm + 2),
+        _WideQuickTile(item: allItems[4]),
       ],
     );
+  }
+}
+
+/// Responsive grid for tablet — renders items in [columns] columns.
+class _QuickAccessGrid extends StatelessWidget {
+  final List<_QuickItem> items;
+  final int columns;
+
+  const _QuickAccessGrid({required this.items, required this.columns});
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    for (int i = 0; i < items.length; i += columns) {
+      final rowItems = items.skip(i).take(columns).toList();
+      rows.add(Row(
+        children: [
+          for (int j = 0; j < rowItems.length; j++) ...[
+            if (j > 0) const SizedBox(width: AppSpacing.sm + 2),
+            Expanded(
+              child: GestureDetector(
+                onTap: rowItems[j].onTap,
+                child: AppGlassCard(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.lg, horizontal: AppSpacing.md),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: AppSizes.iconXl - 4,
+                        height: AppSizes.iconXl - 4,
+                        decoration: BoxDecoration(
+                          color: rowItems[j].color.withValues(alpha: 0.15),
+                          borderRadius:
+                              BorderRadius.circular(AppSizes.radiusMd),
+                        ),
+                        child: Icon(rowItems[j].icon,
+                            color: rowItems[j].color,
+                            size: AppSizes.iconMd - 4),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(rowItems[j].label,
+                          style: AppTypography.bodySmall
+                              .copyWith(fontWeight: FontWeight.w600),
+                          textAlign: TextAlign.center),
+                      const SizedBox(height: 2),
+                      Text(rowItems[j].subtitle,
+                          style: AppTypography.caption,
+                          textAlign: TextAlign.center),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+          // Fill empty cells in the last row
+          for (int k = rowItems.length; k < columns; k++) ...[
+            const SizedBox(width: AppSpacing.sm + 2),
+            const Expanded(child: SizedBox()),
+          ],
+        ],
+      ));
+      if (i + columns < items.length) {
+        rows.add(const SizedBox(height: AppSpacing.sm + 2));
+      }
+    }
+    return Column(children: rows);
   }
 }
 
@@ -546,55 +579,42 @@ class _QuickItem {
 /// Full-width horizontal quick-access tile — used as the bottom row
 /// when the grid has an odd number of items.
 class _WideQuickTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String subtitle;
-  final Color color;
-  final VoidCallback onTap;
+  final _QuickItem item;
 
-  const _WideQuickTile({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.color,
-    required this.onTap,
-  });
+  const _WideQuickTile({required this.item});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: item.onTap,
       child: AppGlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.md + 2),
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: AppSizes.iconXl - 4,
+              height: AppSizes.iconXl - 4,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                color: item.color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(AppSizes.radiusMd),
               ),
-              child: Icon(icon, color: color, size: 20),
+              child: Icon(item.icon, color: item.color, size: AppSizes.iconMd - 4),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: AppSpacing.md + 2),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: const TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600)),
+                  Text(item.label,
+                      style: AppTypography.bodySmall
+                          .copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 10)),
+                  Text(item.subtitle, style: AppTypography.caption),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded, color: color, size: 13),
+            Icon(Icons.arrow_forward_ios_rounded, color: item.color, size: 13),
           ],
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/responsive/app_sizes.dart';
 
 class AppTheme {
   static const Color primary = Color(0xFF7C3AED); // vivid purple for admin
@@ -32,7 +33,7 @@ class AppTheme {
             backgroundColor: primary,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppSizes.radiusLg),
             ),
           ),
         ),
@@ -40,15 +41,15 @@ class AppTheme {
           filled: true,
           fillColor: cardSurface,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMd),
             borderSide: const BorderSide(color: cardBorder),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMd),
             borderSide: const BorderSide(color: cardBorder),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMd),
             borderSide: const BorderSide(color: primary, width: 2),
           ),
           labelStyle: const TextStyle(color: textSecondary),

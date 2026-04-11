@@ -2,6 +2,12 @@ import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/responsive/app_responsive.dart';
+import '../../core/responsive/app_spacing.dart';
+import '../../core/responsive/app_sizes.dart';
+import '../../core/responsive/app_typography.dart';
+import '../../core/widgets/app_error_widget.dart';
+import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/dashboard_entity.dart';
 import '../../theme/app_theme.dart';
 import 'analytics_controller.dart';
@@ -34,136 +40,107 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           ],
         ),
         body: Obx(() {
-          if (c.isLoading.value) {
-            return const Center(
-                child: CircularProgressIndicator(color: AppTheme.primary));
-          }
+          if (c.isLoading.value) return const AppLoadingWidget();
           if (c.errorMessage.value.isNotEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.cloud_off_rounded,
-                      color: AppTheme.textSecondary, size: 48),
-                  const SizedBox(height: 12),
-                  Text(c.errorMessage.value,
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 13)),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                      onPressed: c.loadAnalytics,
-                      child: const Text('Retry')),
-                ],
-              ),
+            return AppErrorWidget(
+              message: c.errorMessage.value,
+              onRetry: c.loadAnalytics,
             );
           }
           final a = c.analytics.value;
           if (a == null) return const SizedBox.shrink();
 
+          final hPad = context.pagePadding;
           return RefreshIndicator(
             onRefresh: c.loadAnalytics,
             color: AppTheme.primary,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+              padding: EdgeInsets.fromLTRB(hPad, AppSpacing.sm, hPad, 40),
               children: [
                 // ── Revenue hero ─────────────────────────────────────────
                 _RevenueHero(analytics: a),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
 
                 // ── KPI chips row ────────────────────────────────────────
                 _KpiChipsRow(analytics: a),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // ── Business insights ────────────────────────────────────
                 _BusinessInsights(analytics: a),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // ── Revenue chart ────────────────────────────────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Revenue Trend',
-                        style: TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15)),
+                    Text('Revenue Trend',
+                        style: AppTypography.bodyLarge
+                            .copyWith(fontWeight: FontWeight.bold)),
                     _PeriodSelector(
                       selected: _periodDays,
                       onChanged: (v) => setState(() => _periodDays = v),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: AppSpacing.sm + 2),
                 _RevenueChart(
                     dailyRevenue: a.dailyRevenue, periodDays: _periodDays),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // ── Top products ─────────────────────────────────────────
-                const Text('Top Products by Revenue',
-                    style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15)),
-                const SizedBox(height: 10),
+                Text('Top Products by Revenue',
+                    style: AppTypography.bodyLarge
+                        .copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.sm + 2),
                 _TopProductsList(
                     products: a.topProducts,
                     totalRevenue: a.totalRevenue),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // ── Monthly revenue chart ────────────────────────────────
-                const Text('Monthly Revenue',
-                    style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15)),
-                const SizedBox(height: 10),
+                Text('Monthly Revenue',
+                    style: AppTypography.bodyLarge
+                        .copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.sm + 2),
                 Obx(() => _MonthlyRevenueChart(
                     months: c.monthlyRevenue.toList())),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // ── Customer retention ───────────────────────────────────
-                const Text('Customer Retention',
-                    style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15)),
-                const SizedBox(height: 10),
+                Text('Customer Retention',
+                    style: AppTypography.bodyLarge
+                        .copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.sm + 2),
                 Obx(() => c.retention.value != null
                     ? _RetentionCard(r: c.retention.value!)
                     : const SizedBox.shrink()),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // ── Basket abandonment ───────────────────────────────────
-                const Text('Basket Abandonment',
-                    style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15)),
-                const SizedBox(height: 10),
+                Text('Basket Abandonment',
+                    style: AppTypography.bodyLarge
+                        .copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.sm + 2),
                 Obx(() => c.basketAbandonment.value != null
                     ? _BasketAbandonmentCard(b: c.basketAbandonment.value!)
                     : const SizedBox.shrink()),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // ── Customer LTV ─────────────────────────────────────────
-                const Text('Customer LTV',
-                    style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15)),
-                const SizedBox(height: 10),
+                Text('Customer LTV',
+                    style: AppTypography.bodyLarge
+                        .copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.sm + 2),
                 Obx(() => c.customerLTV.value != null
                     ? _CustomerLTVCard(ltv: c.customerLTV.value!)
                     : const SizedBox.shrink()),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // ── Staff performance ────────────────────────────────────
-                const Text('Staff Performance',
-                    style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15)),
-                const SizedBox(height: 10),
+                Text('Staff Performance',
+                    style: AppTypography.bodyLarge
+                        .copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.sm + 2),
                 Obx(() => _StaffPerformanceList(staff: c.staffPerformance.toList())),
               ],
             ),
@@ -195,7 +172,7 @@ class _RevenueHero extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -205,15 +182,15 @@ class _RevenueHero extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppSizes.radiusXxl - 2),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Total Revenue',
-              style: TextStyle(color: Colors.white60, fontSize: 12)),
-          const SizedBox(height: 6),
+          Text('Total Revenue',
+              style: AppTypography.label.copyWith(color: Colors.white60)),
+          const SizedBox(height: AppSpacing.sm - 2),
           Text(
             '₹${_fmt(analytics.totalRevenue)}',
             style: const TextStyle(
@@ -325,26 +302,23 @@ class _KpiChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 90,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm + 2, vertical: AppSpacing.sm + 2),
       decoration: BoxDecoration(
         color: data.color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         border: Border.all(color: data.color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(data.icon, color: data.color, size: 18),
-          const SizedBox(height: 4),
+          Icon(data.icon, color: data.color, size: AppSizes.iconSm),
+          const SizedBox(height: AppSpacing.xs),
           Text(data.value,
-              style: TextStyle(
-                  color: data.color,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold)),
+              style: AppTypography.titleSmall.copyWith(color: data.color)),
           Text(data.label,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 9),
+              style: AppTypography.caption,
               maxLines: 1,
               overflow: TextOverflow.ellipsis),
         ],
@@ -388,12 +362,10 @@ class _BusinessInsights extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Business Insights',
-              style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13)),
-          const SizedBox(height: 12),
+          Text('Business Insights',
+              style: AppTypography.bodySmall
+                  .copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: AppSpacing.md),
           // Trend
           _InsightRow(
             icon: Icons.trending_up_rounded,
@@ -484,28 +456,24 @@ class _InsightRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 30,
-          height: 30,
+          width: AppSizes.iconLg - 2,
+          height: AppSizes.iconLg - 2,
           decoration: BoxDecoration(
             color: iconColor.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppSizes.radiusSm),
           ),
-          child: Icon(icon, color: iconColor, size: 16),
+          child: Icon(icon, color: iconColor, size: AppSizes.iconMd - 8),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: AppSpacing.sm + 2),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 10)),
+              Text(label, style: AppTypography.caption),
               const SizedBox(height: 2),
               Text(value,
-                  style: TextStyle(
-                      color: valueColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500)),
+                  style: AppTypography.label.copyWith(
+                      color: valueColor, fontWeight: FontWeight.w500)),
             ],
           ),
         ),

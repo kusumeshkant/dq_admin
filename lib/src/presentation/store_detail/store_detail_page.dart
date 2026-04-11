@@ -2,6 +2,11 @@ import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/responsive/app_responsive.dart';
+import '../../core/responsive/app_spacing.dart';
+import '../../core/responsive/app_sizes.dart';
+import '../../core/responsive/app_typography.dart';
+import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/order_entity.dart';
 import '../../domain/entity/store_entity.dart';
 import '../../domain/entity/dashboard_entity.dart';
@@ -19,15 +24,16 @@ class StoreDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Get.find<StoreDetailController>();
+    // Adapt sliver header height to screen size
+    final expandedHeight =
+        context.responsive(180.0, tablet: 200.0, largeTablet: 220.0);
+    final hPad = context.pagePadding;
 
     return ThemedBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Obx(() {
-          if (c.isLoading.value) {
-            return const Center(
-                child: CircularProgressIndicator(color: AppTheme.primary));
-          }
+          if (c.isLoading.value) return const AppLoadingWidget();
           final s = c.stats.value;
           return RefreshIndicator(
             onRefresh: c.loadStats,
@@ -36,12 +42,12 @@ class StoreDetailPage extends StatelessWidget {
               slivers: [
                 // ── Collapsible store header ──────────────────────────────
                 SliverAppBar(
-                  expandedHeight: 180,
+                  expandedHeight: expandedHeight,
                   pinned: true,
                   backgroundColor: const Color(0xFF1A0D35),
                   title: Text(store.name,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold)),
+                      style: AppTypography.bodyLarge
+                          .copyWith(fontWeight: FontWeight.bold)),
                   flexibleSpace: FlexibleSpaceBar(
                     collapseMode: CollapseMode.pin,
                     background: Container(
@@ -57,7 +63,11 @@ class StoreDetailPage extends StatelessWidget {
                       ),
                       child: SafeArea(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 56, 20, 16),
+                          padding: EdgeInsets.fromLTRB(
+                              hPad,
+                              AppSizes.appBarHeight,
+                              hPad,
+                              AppSpacing.lg),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -65,30 +75,34 @@ class StoreDetailPage extends StatelessWidget {
                               Row(
                                 children: [
                                   Container(
-                                    width: 46,
-                                    height: 46,
+                                    width: AppSizes.avatarMd,
+                                    height: AppSizes.avatarMd,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(12),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(
+                                          AppSizes.radiusMd),
                                     ),
                                     child: const Icon(Icons.store_rounded,
-                                        color: Colors.white, size: 24),
+                                        color: Colors.white,
+                                        size: AppSizes.iconMd),
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: AppSpacing.md),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(store.name,
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold)),
+                                            style: AppTypography.titleSmall
+                                                .copyWith(color: Colors.white)),
                                         if (store.address != null)
                                           Text(store.address!,
-                                              style: TextStyle(
-                                                  color: Colors.white.withValues(alpha: 0.7),
-                                                  fontSize: 11),
+                                              style: AppTypography.caption
+                                                  .copyWith(
+                                                      color: Colors.white
+                                                          .withValues(
+                                                              alpha: 0.7)),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis),
                                       ],
@@ -96,51 +110,59 @@ class StoreDetailPage extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: AppSpacing.sm + 2),
                               // Store Code + coordinates row
                               Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
+                                        horizontal: AppSpacing.sm,
+                                        vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(6),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(
+                                          AppSizes.radiusSm - 2),
                                       border: Border.all(
-                                          color: Colors.white.withValues(alpha: 0.35)),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.35)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(Icons.tag_rounded,
-                                            color: Colors.white.withValues(alpha: 0.8),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.8),
                                             size: 11),
                                         const SizedBox(width: 3),
                                         Text(
                                           store.storeCode ??
                                               (store.id.length > 8
-                                                  ? store.id.substring(store.id.length - 8)
+                                                  ? store.id.substring(
+                                                      store.id.length - 8)
                                                   : store.id),
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 0.5),
+                                          style: AppTypography.caption
+                                              .copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 0.5),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  if (store.latitude != null && store.longitude != null) ...[
-                                    const SizedBox(width: 8),
+                                  if (store.latitude != null &&
+                                      store.longitude != null) ...[
+                                    const SizedBox(width: AppSpacing.sm),
                                     Icon(Icons.location_on_rounded,
-                                        color: Colors.white.withValues(alpha: 0.5),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.5),
                                         size: 12),
                                     const SizedBox(width: 3),
                                     Text(
                                       '${store.latitude!.toStringAsFixed(4)}, ${store.longitude!.toStringAsFixed(4)}',
-                                      style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.6),
-                                          fontSize: 10),
+                                      style: AppTypography.caption.copyWith(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.6)),
                                     ),
                                   ],
                                 ],
@@ -155,20 +177,16 @@ class StoreDetailPage extends StatelessWidget {
 
                 // ── Body content ─────────────────────────────────────────
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                  padding: EdgeInsets.fromLTRB(hPad, AppSpacing.lg, hPad, 40),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      // Revenue featured card
                       if (s != null) ...[
                         _RevenueCard(stats: s),
-                        const SizedBox(height: 12),
-
-                        // Stats row
+                        const SizedBox(height: AppSpacing.md),
                         _StatsRow(stats: s),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: AppSpacing.xl),
                       ],
 
-                      // Manage Products
                       _ActionTile(
                         icon: Icons.inventory_2_rounded,
                         label: 'Manage Products',
@@ -179,18 +197,14 @@ class StoreDetailPage extends StatelessWidget {
                           binding: ProductsBinding(store: store),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: AppSpacing.xl),
 
-                      // Recent orders
                       if (s != null && s.recentOrders.isNotEmpty) ...[
-                        const Text('Recent Orders',
-                            style: TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15)),
-                        const SizedBox(height: 10),
-                        ...s.recentOrders.map(
-                            (o) => _OrderRow(order: o)),
+                        Text('Recent Orders',
+                            style: AppTypography.bodyLarge
+                                .copyWith(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: AppSpacing.sm + 2),
+                        ...s.recentOrders.map((o) => _OrderRow(order: o)),
                       ],
 
                       if (s != null && s.recentOrders.isEmpty)
@@ -208,17 +222,18 @@ class StoreDetailPage extends StatelessWidget {
 
   Widget _emptyOrders() {
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
       child: AppGlassCard(
-        padding: const EdgeInsets.symmetric(vertical: 28),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl + AppSpacing.sm),
         child: Column(
           children: [
             Icon(Icons.receipt_long_rounded,
-                color: AppTheme.textSecondary.withValues(alpha: 0.4), size: 40),
-            const SizedBox(height: 10),
-            const Text('No orders yet for this store',
-                style:
-                    TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                color: AppTheme.textSecondary.withValues(alpha: 0.4),
+                size: AppSizes.iconXl - 4),
+            const SizedBox(height: AppSpacing.sm + 2),
+            Text('No orders yet for this store',
+                style: AppTypography.bodySmall
+                    .copyWith(color: AppTheme.textSecondary)),
           ],
         ),
       ),
@@ -247,7 +262,7 @@ class _RevenueCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.xl - 2),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -257,7 +272,7 @@ class _RevenueCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSizes.radiusXl),
         border: Border.all(color: Colors.green.withValues(alpha: 0.25)),
       ),
       child: Row(
@@ -267,26 +282,24 @@ class _RevenueCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Store Revenue',
-                    style: TextStyle(color: Colors.white60, fontSize: 12)),
-                const SizedBox(height: 4),
+                Text('Store Revenue',
+                    style: AppTypography.label
+                        .copyWith(color: Colors.white60)),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   _fmt(stats.totalRevenue),
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5),
+                  style: AppTypography.statLarge
+                      .copyWith(letterSpacing: -0.5),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.sm - 2),
                 Row(
                   children: [
                     const Icon(Icons.check_circle_rounded,
                         color: Colors.greenAccent, size: 13),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: AppSpacing.xs),
                     Text('$rate% completion rate',
-                        style: const TextStyle(
-                            color: Colors.greenAccent, fontSize: 11)),
+                        style: AppTypography.caption
+                            .copyWith(color: Colors.greenAccent)),
                   ],
                 ),
               ],
@@ -296,31 +309,31 @@ class _RevenueCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm + 2, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius:
+                      BorderRadius.circular(AppSizes.radiusFull),
                 ),
                 child: const Row(
                   children: [
                     Icon(Icons.store_rounded,
                         color: Colors.white70, size: 13),
-                    SizedBox(width: 4),
+                    SizedBox(width: AppSpacing.xs),
                     Text('Store',
-                        style:
-                            TextStyle(color: Colors.white60, fontSize: 11)),
+                        style: TextStyle(
+                            color: Colors.white60, fontSize: 11)),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text('${stats.completedOrders}',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold)),
-              const Text('completed',
-                  style: TextStyle(color: Colors.white54, fontSize: 10)),
+                  style: AppTypography.statMedium
+                      .copyWith(color: Colors.white, fontSize: 22)),
+              Text('completed',
+                  style: AppTypography.caption
+                      .copyWith(color: Colors.white54)),
             ],
           ),
         ],
@@ -344,13 +357,13 @@ class _StatsRow extends StatelessWidget {
             value: '${stats.totalOrders}',
             icon: Icons.receipt_long_rounded,
             color: AppTheme.primary),
-        const SizedBox(width: 10),
+        const SizedBox(width: AppSpacing.sm + 2),
         _MiniStat(
             label: 'Pending',
             value: '${stats.pendingOrders}',
             icon: Icons.hourglass_top_rounded,
             color: Colors.orange.shade400),
-        const SizedBox(width: 10),
+        const SizedBox(width: AppSpacing.sm + 2),
         _MiniStat(
             label: 'Completed',
             value: '${stats.completedOrders}',
@@ -367,38 +380,35 @@ class _MiniStat extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const _MiniStat(
-      {required this.label,
-      required this.value,
-      required this.icon,
-      required this.color});
+  const _MiniStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: AppGlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md, vertical: AppSpacing.md + 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 30,
-              height: 30,
+              width: AppSizes.iconLg - 2,
+              height: AppSizes.iconLg - 2,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSizes.radiusSm),
               ),
-              child: Icon(icon, color: color, size: 15),
+              child: Icon(icon, color: color, size: AppSizes.iconSm - 3),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(value,
-                style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20)),
-            Text(label,
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 10)),
+                style: AppTypography.statMedium.copyWith(color: color)),
+            Text(label, style: AppTypography.caption),
           ],
         ),
       ),
@@ -428,41 +438,38 @@ class _ActionTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AppGlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.md + 2),
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: AppSizes.avatarMd,
+              height: AppSizes.avatarMd,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppSizes.radiusMd),
               ),
-              child: Icon(icon, color: color, size: 22),
+              child: Icon(icon, color: color, size: AppSizes.iconMd - 2),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: AppSpacing.md + 2),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(label,
-                      style: const TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14)),
+                      style: AppTypography.body
+                          .copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 11)),
+                  Text(subtitle, style: AppTypography.labelSmall),
                 ],
               ),
             ),
             Container(
-              width: 30,
-              height: 30,
+              width: AppSizes.iconLg - 2,
+              height: AppSizes.iconLg - 2,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSizes.radiusSm),
               ),
               child: Icon(Icons.arrow_forward_ios_rounded,
                   color: color, size: 13),
@@ -491,7 +498,8 @@ class _OrderRow extends StatelessWidget {
 
   String _timeAgo(String createdAt) {
     try {
-      final diff = DateTime.now().difference(DateTime.parse(createdAt).toLocal());
+      final diff =
+          DateTime.now().difference(DateTime.parse(createdAt).toLocal());
       if (diff.inMinutes < 1) return 'just now';
       if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
       if (diff.inHours < 24) return '${diff.inHours}h ago';
@@ -511,37 +519,35 @@ class _OrderRow extends StatelessWidget {
         binding: OrderDetailBinding(order: order),
       ),
       child: AppGlassCard(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md + 2, vertical: AppSpacing.sm + 3),
         child: Row(
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: AppSizes.iconXl - 6,
+              height: AppSizes.iconXl - 6,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppSpacing.sm + 2),
               ),
-              child:
-                  Icon(Icons.receipt_rounded, color: color, size: 18),
+              child: Icon(Icons.receipt_rounded,
+                  color: color, size: AppSizes.iconMd - 6),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppSpacing.sm + 2),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '#${order.id.substring(order.id.length > 8 ? order.id.length - 8 : 0)}',
-                    style: const TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13),
+                    style: AppTypography.bodySmall
+                        .copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '${order.items.length} item${order.items.length == 1 ? '' : 's'}  ·  ${_timeAgo(order.createdAt)}',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 11),
+                    style: AppTypography.labelSmall,
                   ),
                 ],
               ),
@@ -550,24 +556,22 @@ class _OrderRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text('₹${order.grandTotal.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13)),
-                const SizedBox(height: 4),
+                    style: AppTypography.bodySmall
+                        .copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(height: AppSpacing.xs),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 7, vertical: 3),
+                      horizontal: AppSpacing.sm - 1, vertical: 3),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: color.withValues(alpha: 0.4)),
+                    borderRadius:
+                        BorderRadius.circular(AppSizes.radiusSm - 2),
+                    border:
+                        Border.all(color: color.withValues(alpha: 0.4)),
                   ),
                   child: Text(order.status,
-                      style: TextStyle(
-                          color: color,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600)),
+                      style: AppTypography.caption.copyWith(
+                          color: color, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
