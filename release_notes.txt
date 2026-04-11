@@ -1,5 +1,5 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ Admin  |  v1.0.2+26  |  TESTING BUILD
+  DQ Admin  |  v1.0.2+28  |  TESTING BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
@@ -7,37 +7,45 @@
 ─────────────────────────────────────
  CHANGES IN THIS BUILD
 ─────────────────────────────────────
-• Removed global "Products" chip from dashboard
-  Products are now only accessible inside a store:
-  Stores → Store Detail → Manage Products
+• Monthly Revenue chart — widget-level rework
 
-• Dashboard Quick Access redesigned (5 items, 2+2+1 layout)
-  - Stores is now the first and primary entry point
-  - "Stores" subtitle updated: "Manage locations & products"
-  - Staff moved to a full-width tile at the bottom
+  Root cause (white screen / "infinite list"):
+  Two problems in the chart widget:
 
-• Top Stores cards are now tappable
-  Tapping a store in the Top Stores section navigates
-  directly to that store's detail page
+  1. Reactivity miss — the Obx was passing the RxList
+     reference directly without reading it, so GetX did
+     not register a dependency. The chart never rebuilt
+     when monthly data loaded; it stayed on its initial
+     empty/stale state.
+     Fix: .toList() called inside the Obx callback so
+     GetX correctly tracks the list as a reactive read.
+
+  2. Unconstrained bar layout — bars were built as
+     Row + Expanded items. With Expanded inside Row
+     inside a ListView, Flutter can pass unconstrained
+     width down to the inner Column bars, causing a
+     zero-width or white render in release mode.
+     Fix: each bar is now a fixed-width SizedBox (28px)
+     inside a SingleChildScrollView. The chart is
+     horizontally scrollable, bars are always a
+     readable size, and the layout is fully bounded.
 
 ─────────────────────────────────────
  WHAT TO TEST
 ─────────────────────────────────────
-□ Dashboard loads with 5 Quick Access items (no Products chip)
-  → Stores, Orders, Analytics, Invite Staff, Staff
+□ Navigate to Analytics → scroll to Monthly Revenue
+  → Chart should render with bars (not white/blank)
+  → Month labels (Jan–Dec) should appear below each bar
+  → Peak month bar should be primary colour (purple)
+  → Current month bar should be amber
+  → Swipe left/right on the chart if there are many months
 
-□ Tap "Stores" → goes to Stores list
-  → Tap a store → goes to Store Detail
-  → Tap "Manage Products" → goes to Products page for that store
+□ Pull-to-refresh the Analytics screen
+  → Monthly Revenue section should update after refresh
 
-□ Top Stores section (if stores have orders)
-  → Tap a store card → should navigate to that store's detail page
-
-□ Staff tile (bottom row, full-width)
-  → Should render cleanly with no empty space next to it
-
-□ Back navigation from Store Detail → Dashboard
-  → Should work correctly
+□ Enter Analytics on first load (fresh navigation)
+  → Monthly Revenue should populate once data loads
+     (no longer requires screen re-entry or retry)
 
 ─────────────────────────────────────
  KNOWN SCOPE

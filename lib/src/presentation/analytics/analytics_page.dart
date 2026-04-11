@@ -118,7 +118,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         fontSize: 15)),
                 const SizedBox(height: 10),
                 Obx(() => _MonthlyRevenueChart(
-                    months: c.monthlyRevenue)),
+                    months: c.monthlyRevenue.toList())),
                 const SizedBox(height: 20),
 
                 // ── Customer retention ───────────────────────────────────
@@ -894,6 +894,9 @@ class _MonthlyRevenueChart extends StatelessWidget {
     'Jul','Aug','Sep','Oct','Nov','Dec'
   ];
 
+  String _safeMonthName(int month) =>
+      (month >= 1 && month <= 12) ? _monthNames[month - 1] : '?';
+
   @override
   Widget build(BuildContext context) {
     if (months.isEmpty) {
@@ -906,7 +909,12 @@ class _MonthlyRevenueChart extends StatelessWidget {
       );
     }
 
-    final maxRev = months.fold(0.0, (m, e) => e.revenue > m ? e.revenue : m);
+    // Find peak index explicitly to avoid double-equality firstWhere fragility
+    int peakIdx = 0;
+    for (int i = 1; i < months.length; i++) {
+      if (months[i].revenue > months[peakIdx].revenue) peakIdx = i;
+    }
+    final maxRev = months[peakIdx].revenue;
     final totalRev = months.fold(0.0, (s, e) => s + e.revenue);
     final currentMonth = DateTime.now().month;
 
@@ -917,44 +925,52 @@ class _MonthlyRevenueChart extends StatelessWidget {
         children: [
           SizedBox(
             height: 120,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: months.map((m) {
-                final ratio = maxRev > 0 ? m.revenue / maxRev : 0.0;
-                final isCurrent = m.month == currentMonth;
-                final isPeak = m.revenue == maxRev && maxRev > 0;
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 1.5),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (isPeak)
-                          Text(_mfmt(m.revenue),
-                              style: const TextStyle(
-                                  color: AppTheme.primary, fontSize: 7,
-                                  fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 2),
-                        Container(
-                          height: (ratio * 90).clamp(3.0, 90.0),
-                          decoration: BoxDecoration(
-                            color: isCurrent
-                                ? Colors.amber.shade400
-                                : isPeak
-                                    ? AppTheme.primary
-                                    : AppTheme.primary.withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(3),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: months.asMap().entries.map((entry) {
+                  final i = entry.key;
+                  final m = entry.value;
+                  final ratio = maxRev > 0 ? m.revenue / maxRev : 0.0;
+                  final isCurrent = m.month == currentMonth;
+                  final isPeak = i == peakIdx && maxRev > 0;
+                  return SizedBox(
+                    width: 28,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (isPeak)
+                            Text(_mfmt(m.revenue),
+                                style: const TextStyle(
+                                    color: AppTheme.primary, fontSize: 7,
+                                    fontWeight: FontWeight.bold),
+                                maxLines: 1,
+                                overflow: TextOverflow.clip),
+                          const SizedBox(height: 2),
+                          Container(
+                            height: (ratio * 86).clamp(3.0, 86.0),
+                            decoration: BoxDecoration(
+                              color: isCurrent
+                                  ? Colors.amber.shade400
+                                  : isPeak
+                                      ? AppTheme.primary
+                                      : AppTheme.primary.withValues(alpha: 0.35),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(_monthNames[m.month - 1],
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary, fontSize: 7)),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(_safeMonthName(m.month),
+                              style: const TextStyle(
+                                  color: AppTheme.textSecondary, fontSize: 7)),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
           const Divider(color: Colors.white10, height: 16),
@@ -965,7 +981,7 @@ class _MonthlyRevenueChart extends StatelessWidget {
               _ChartStat(
                   label: 'Best Month',
                   value: maxRev > 0
-                      ? '${_monthNames[months.firstWhere((m) => m.revenue == maxRev).month - 1]} · ₹${_mfmt(maxRev)}'
+                      ? '${_safeMonthName(months[peakIdx].month)} · ₹${_mfmt(maxRev)}'
                       : '—'),
               _ChartStat(
                   label: 'Avg / Month',
