@@ -1,70 +1,48 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ Admin  |  v1.0.2+25  |  TESTING BUILD
+  DQ Admin  |  v1.0.2+26  |  TESTING BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
 
 ─────────────────────────────────────
- NEW IN THIS BUILD
+ CHANGES IN THIS BUILD
 ─────────────────────────────────────
-• Dynamic Column Mapping for Bulk Upload
-  The app can now accept ANY Excel file format — not just
-  StockReport-Export. If your column names differ from what
-  the app expects, a one-time mapping screen lets you assign
-  which column in your file maps to Barcode, Product Name,
-  MRP, and Stock.
+• Removed global "Products" chip from dashboard
+  Products are now only accessible inside a store:
+  Stores → Store Detail → Manage Products
 
-• Smart Auto-Detection (60+ known aliases)
-  Common column names like "Item Code", "Description",
-  "Sale Price", "Qty on Hand", "Opening", etc. are resolved
-  automatically — no manual mapping needed for most POS files.
+• Dashboard Quick Access redesigned (5 items, 2+2+1 layout)
+  - Stores is now the first and primary entry point
+  - "Stores" subtitle updated: "Manage locations & products"
+  - Staff moved to a full-width tile at the bottom
 
-• Fuzzy Column Matching
-  Even if your column name is slightly different (e.g.
-  "Barcode Number" instead of "Barcode"), the app uses
-  similarity matching to auto-detect the right field.
-
-• Background File Parsing
-  Large Excel files are now parsed in a background thread —
-  the UI stays responsive during file reading.
-
-• Mapping Confirmation Banner
-  After mapping, a green banner shows exactly which Excel
-  column was assigned to each required product field, so you
-  can verify before uploading.
+• Top Stores cards are now tappable
+  Tapping a store in the Top Stores section navigates
+  directly to that store's detail page
 
 ─────────────────────────────────────
  WHAT TO TEST
 ─────────────────────────────────────
-□ Upload your usual StockReport-Export file
-  → Should work exactly as before, no mapping screen shown
+□ Dashboard loads with 5 Quick Access items (no Products chip)
+  → Stores, Orders, Analytics, Invite Staff, Staff
 
-□ Upload a file with different column names
-  (e.g. "Item Code" instead of "Barcode", "Sale Price" instead of "MRP")
-  → Mapping screen should appear with dropdowns showing your file's
-    actual column names; required fields highlighted in red if unassigned
+□ Tap "Stores" → goes to Stores list
+  → Tap a store → goes to Store Detail
+  → Tap "Manage Products" → goes to Products page for that store
 
-□ On the mapping screen, leave a required field unassigned
-  → "Confirm Mapping" button should stay disabled
+□ Top Stores section (if stores have orders)
+  → Tap a store card → should navigate to that store's detail page
 
-□ Map all required fields → tap Confirm
-  → Should show preview with correct product data
+□ Staff tile (bottom row, full-width)
+  → Should render cleanly with no empty space next to it
 
-□ Upload a file with extra columns you don't need
-  (e.g. HSN, Location, UQC)
-  → Extra columns should be silently ignored, no errors
-
-□ Try cancelling the mapping screen (X button)
-  → Should return to the file pick screen cleanly
-
-□ Upload a large file (500+ rows)
-  → UI should not freeze while the file is being read
+□ Back navigation from Store Detail → Dashboard
+  → Should work correctly
 
 ─────────────────────────────────────
  KNOWN SCOPE
 ─────────────────────────────────────
-• Column mapping is not yet saved between sessions —
-  each new file pick starts fresh (persistence in next build)
-• Only .xlsx and .xls formats supported
+• No backend changes in this build
+• Column mapping persistence (saving per store) coming next
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
