@@ -6,6 +6,7 @@ import '../../data/model/user_model.dart';
 import '../../domain/entity/user_entity.dart';
 import '../../presentation/auth/login/login_binding.dart';
 import '../../presentation/auth/login/login_page.dart';
+import '../subscription/subscription_manager.dart';
 
 class SessionManager extends GetxService {
   static const _cacheKey = 'dq_admin_profile_v1';
@@ -78,6 +79,7 @@ class SessionManager extends GetxService {
     _isExpiring = true;
     await clearCache();
     clearUser();
+    try { Get.find<SubscriptionManager>().clear(); } catch (_) {}
     Get.closeAllSnackbars();
     if (Get.isDialogOpen ?? false) Get.back();
     if (Get.isBottomSheetOpen ?? false) Get.back();

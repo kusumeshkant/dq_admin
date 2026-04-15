@@ -12,6 +12,7 @@ import 'package:dq_admin/src/presentation/profile_setup/profile_setup_binding.da
 import 'package:dq_admin/src/presentation/profile_setup/profile_setup_page.dart';
 import 'package:dq_admin/src/service_core/auth/session_manager.dart';
 import 'package:dq_admin/src/service_core/networks/graphql_client_provider.dart';
+import 'package:dq_admin/src/service_core/subscription/subscription_manager.dart';
 import 'package:dq_admin/src/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -70,6 +71,7 @@ void main() async {
   ));
 
   final sessionManager = Get.put(SessionManager());
+  Get.put(SubscriptionManager());
 
   final startConfig = await _resolveStartPage(sessionManager);
 
@@ -189,6 +191,10 @@ _StartConfig _routeFrom(
       binding: OnboardingBinding(),
     );
   }
+
+  // Load subscription in the background — Dashboard renders immediately,
+  // SubscriptionManager updates reactively once the fetch completes.
+  Get.find<SubscriptionManager>().load(user.storeId!);
 
   return _StartConfig(
     page: const DashboardPage(),
