@@ -11,7 +11,10 @@ import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/dashboard_entity.dart';
 import '../../domain/entity/order_entity.dart';
 import '../../service_core/auth/session_manager.dart';
+import '../../service_core/subscription/subscription_manager.dart';
 import '../../theme/app_theme.dart';
+import '../subscription/subscription_binding.dart';
+import '../subscription/subscription_page.dart';
 import '../order_detail/order_detail_binding.dart';
 import '../order_detail/order_detail_page.dart';
 import '../orders/orders_binding.dart';
@@ -73,7 +76,11 @@ class DashboardPage extends StatelessWidget {
               children: [
                 // ── Greeting header ──────────────────────────────────────
                 _GreetingHeader(session: session, stats: s),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // ── Subscription alert banner (shown when action needed) ──
+                _SubscriptionBanner(),
+                const SizedBox(height: 4),
 
                 // ── Revenue featured card ────────────────────────────────
                 _RevenueCard(stats: s),
@@ -184,23 +191,28 @@ class _GreetingHeader extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Obx(() => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      session.adminName != null
-                          ? '$_greeting, ${session.adminName}!'
-                          : '$_greeting!',
-                      style: AppTypography.bodyLarge
-                          .copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$_todayDate  ·  ${stats.totalOrders} orders  ·  ${stats.activeStores} stores',
-                      style: AppTypography.caption,
-                    ),
-                  ],
-                )),
+            child: Obx(() {
+              final sub = Get.find<SubscriptionManager>();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    session.adminName != null
+                        ? '$_greeting, ${session.adminName}!'
+                        : '$_greeting!',
+                    style: AppTypography.bodyLarge
+                        .copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$_todayDate  ·  ${stats.totalOrders} orders  ·  ${stats.activeStores} stores',
+                    style: AppTypography.caption,
+                  ),
+                  const SizedBox(height: 6),
+                  _PlanBadge(info: sub.info),
+                ],
+              );
+            }),
           ),
         ],
       ),
@@ -389,7 +401,7 @@ class _MiniStatCard extends StatelessWidget {
 // Products are intentionally absent here. They live inside a store:
 //   Dashboard → Stores → Store Detail → Manage Products
 //
-// 5 items — layout: 2 + 2 + 1 (Staff as full-width bottom tile)
+// 6 items — layout: 2 + 2 + 2 on mobile, uniform grid on tablet
 
 class _QuickAccess extends StatelessWidget {
   @override
@@ -433,6 +445,16 @@ class _QuickAccess extends StatelessWidget {
         subtitle: 'View and manage your team',
         color: Colors.purple.shade300,
         onTap: () => Get.to(() => const StaffPage(), binding: StaffBinding()),
+      ),
+      _QuickItem(
+        icon: Icons.workspace_premium_rounded,
+        label: 'Subscription',
+        subtitle: 'Plan, features & usage',
+        color: Colors.amber.shade400,
+        onTap: () => Get.to(
+          () => const SubscriptionPage(),
+          binding: SubscriptionBinding(),
+        ),
       ),
     ];
 
@@ -488,7 +510,11 @@ class _QuickAccess extends StatelessWidget {
           buildCard(allItems[3]),
         ]),
         const SizedBox(height: AppSpacing.sm + 2),
-        _WideQuickTile(item: allItems[4]),
+        Row(children: [
+          buildCard(allItems[4]),
+          const SizedBox(width: AppSpacing.sm + 2),
+          buildCard(allItems[5]),
+        ]),
       ],
     );
   }
@@ -576,51 +602,6 @@ class _QuickItem {
   });
 }
 
-/// Full-width horizontal quick-access tile — used as the bottom row
-/// when the grid has an odd number of items.
-class _WideQuickTile extends StatelessWidget {
-  final _QuickItem item;
-
-  const _WideQuickTile({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: item.onTap,
-      child: AppGlassCard(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg, vertical: AppSpacing.md + 2),
-        child: Row(
-          children: [
-            Container(
-              width: AppSizes.iconXl - 4,
-              height: AppSizes.iconXl - 4,
-              decoration: BoxDecoration(
-                color: item.color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-              ),
-              child: Icon(item.icon, color: item.color, size: AppSizes.iconMd - 4),
-            ),
-            const SizedBox(width: AppSpacing.md + 2),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.label,
-                      style: AppTypography.bodySmall
-                          .copyWith(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
-                  Text(item.subtitle, style: AppTypography.caption),
-                ],
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios_rounded, color: item.color, size: 13),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ── Top Stores ─────────────────────────────────────────────────────────────────
 
@@ -839,6 +820,149 @@ class _RecentOrdersList extends StatelessWidget {
     } catch (_) {
       return '';
     }
+  }
+}
+
+// ── Plan Badge ─────────────────────────────────────────────────────────────────
+
+class _PlanBadge extends StatelessWidget {
+  final dynamic info; // SubscriptionInfo
+
+  const _PlanBadge({required this.info});
+
+  @override
+  Widget build(BuildContext context) {
+    if (info.status == 'loading' || info.planName.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final color = _badgeColor(info.status);
+    final label = info.planDisplayName.isNotEmpty
+        ? info.planDisplayName
+        : _fmt(info.planName);
+    final suffix = info.isTrial && info.trialDaysLeft != null
+        ? ' · ${info.trialDaysLeft}d left'
+        : '';
+
+    return GestureDetector(
+      onTap: () => Get.to(
+        () => const SubscriptionPage(),
+        binding: SubscriptionBinding(),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.45)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.workspace_premium_rounded, color: color, size: 11),
+            const SizedBox(width: 4),
+            Text(
+              '$label$suffix',
+              style: TextStyle(
+                  color: color, fontSize: 10, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _badgeColor(String status) => switch (status) {
+        'trial'          => Colors.blue.shade400,
+        'active'         => Colors.green.shade400,
+        'grace_period'   => Colors.orange.shade400,
+        'expired'        => Colors.red.shade400,
+        'cancelled'      => Colors.red.shade300,
+        'admin_override' => Colors.purple.shade300,
+        'grandfathered'  => Colors.amber.shade400,
+        _                => Colors.grey.shade400,
+      };
+
+  String _fmt(String name) {
+    if (name.isEmpty) return '';
+    return name[0].toUpperCase() + name.substring(1);
+  }
+}
+
+// ── Subscription Banner ────────────────────────────────────────────────────────
+
+class _SubscriptionBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final sub = Get.find<SubscriptionManager>();
+    return Obx(() {
+      final info = sub.info;
+
+      String? message;
+      Color? color;
+      IconData? icon;
+
+      if (info.isExpired) {
+        message = 'Your subscription has expired. Renew to restore access.';
+        color = Colors.red.shade700;
+        icon = Icons.error_rounded;
+      } else if (info.isGracePeriod) {
+        final days = info.gracePeriodEndsAt != null
+            ? info.gracePeriodEndsAt!.difference(DateTime.now()).inDays
+            : 0;
+        message =
+            'Payment overdue — $days day${days == 1 ? '' : 's'} of grace period remaining.';
+        color = Colors.orange.shade700;
+        icon = Icons.warning_rounded;
+      } else if (info.isTrial && (info.trialDaysLeft ?? 99) <= 5) {
+        final d = info.trialDaysLeft!;
+        message = d == 0
+            ? 'Your trial expires today — upgrade to keep access.'
+            : 'Trial expires in $d day${d == 1 ? '' : 's'} — upgrade to continue.';
+        color = Colors.blue.shade700;
+        icon = Icons.info_rounded;
+      }
+
+      if (message == null) return const SizedBox.shrink();
+
+      return GestureDetector(
+        onTap: () => Get.to(
+          () => const SubscriptionPage(),
+          binding: SubscriptionBinding(),
+        ),
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          decoration: BoxDecoration(
+            color: color!.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+            border: Border.all(color: color.withValues(alpha: 0.45)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text('View →',
+                  style: TextStyle(
+                      color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
 

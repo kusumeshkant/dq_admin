@@ -1,4 +1,4 @@
-/// Local model for the subscription data returned by featureAccessMap + storeSubscription queries.
+// Local model for the subscription data returned by featureAccessMap + storeSubscription queries.
 
 class FeatureAccessMap {
   final bool coupons;
