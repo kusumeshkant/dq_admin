@@ -1,78 +1,12 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ Admin  |  v1.0.2+30  |  TESTING BUILD
+  DQ Admin  |  v1.0.2+31  |  TESTING BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
 
-─────────────────────────────────────
- CHANGES IN THIS BUILD
-─────────────────────────────────────
-• Responsive design system — full pass across all screens
+🔧 Infrastructure
+  • Backend migrated from Vercel → Azure Container Apps
+  • Faster cold starts, better reliability
+  • No feature changes — all flows unchanged
 
-  Core framework (new files in lib/src/core/):
-  1. AppSpacing — spacing tokens (xs=4 … massive=56)
-  2. AppSizes — icon/avatar/radius/button size tokens
-  3. AppTypography — all text styles in one place
-  4. AppResponsive — BuildContext extension with breakpoints,
-     responsive<T>(), pagePadding, maxContentWidth, gridColumns
-  5. ResponsiveLayout — typed widget switcher by DeviceType
-  6. AppErrorWidget — standardised error+retry used on all screens
-  7. AppLoadingWidget — standardised spinner used on all screens
-
-  Shared widgets:
-  8. AppGlassCard — radius/padding now uses AppSizes/AppSpacing tokens
-  9. AppTheme — button/input radii now reference AppSizes tokens
-
-  Screen updates (all 8 screens):
-  10. Login — ConstrainedBox(maxWidth: 440) + centred for tablet;
-      responsive horizontal padding
-  11. Dashboard — AppLoadingWidget/AppErrorWidget; Quick Access grid
-      adapts to 3-col on tablet; tokens throughout
-  12. Stores — tablet shows 2-column GridView; AppLoadingWidget
-  13. Products — tablet shows GridView; AppLoadingWidget;
-      PopupMenu color uses AppTheme.surface (not hardcoded)
-  14. Orders — dropdowns/chips use AppTheme.surface; AppLoadingWidget
-  15. Staff — raw Color literals replaced with AppTheme tokens;
-      responsive padding; AppLoadingWidget
-  16. Store Detail — adaptive expandedHeight; responsive padding;
-      AppLoadingWidget; tokens throughout
-  17. Analytics — AppLoadingWidget/AppErrorWidget; responsive padding;
-      AppTypography section headers
-
-─────────────────────────────────────
- WHAT TO TEST
-─────────────────────────────────────
-□ All screens load without white-screen or layout errors
-□ Login — on a wide screen/tablet: form is centred and max-width capped
-
-□ Dashboard
-  → Quick Access shows 2+2+1 on phone
-  → On tablet: Quick Access shows 3-column grid
-  → Loading spinner appears on data fetch
-  → Error state shows "Try Again" button
-
-□ Stores / Products / Staff
-  → Lists load and scroll normally on phone
-  → On tablet: Stores and Products show 2-column grid
-  → Staff search box uses theme colours (no white background flash)
-
-□ Orders
-  → Store + Status dropdowns open with correct dark background
-  → Stat chips render without overflow
-
-□ Analytics
-  → Revenue hero, KPI chips, charts all render correctly
-  → Section headers use consistent typography
-  → Error/loading states match other screens
-
-□ Store Detail
-  → Collapsible header expands/collapses on scroll
-  → Content area padding matches other screens
-
-─────────────────────────────────────
- KNOWN SCOPE
-─────────────────────────────────────
-• No backend changes in this build
-• Column mapping persistence (saving per store) coming next
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Please test store management, product upload, and analytics as normal.
