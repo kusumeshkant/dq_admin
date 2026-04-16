@@ -122,11 +122,27 @@ class GraphQLClientProvider {
 
   /// Called when token refresh fails — clears client then delegates to
   /// SessionManager which navigates to login and shows a snackbar.
-  /// Async so that cache-clear and navigation complete before the
-  /// calling async* generator returns.
+  ///
+  /// Guard: if there is no active session (SessionManager.currentUser == null)
+  /// we are in a context where no user is logged in — e.g. a brand-new account's
+  /// first registerAdmin call during signup. Navigating to LoginPage here would
+  /// silently interrupt the signup flow. In that case, just clear the client and
+  /// return so the calling code (signup retry loop / ErrorLink) handles it.
   static Future<void> _expireSession() async {
-    AppLogger.auth('session expired — clearing client and navigating to login');
     _client = null;
+    try {
+      final session = Get.find<SessionManager>();
+      if (session.currentUser.value == null) {
+        // No active session — nothing to expire. Do NOT navigate to LoginPage
+        // as this would hijack flows like signup that run before setUser().
+        AppLogger.auth('_expireSession called with no active session — skipping navigation');
+        return;
+      }
+    } catch (_) {
+      // SessionManager not registered yet (very early boot) — safe to skip.
+      return;
+    }
+    AppLogger.auth('session expired — clearing client and navigating to login');
     try {
       await Get.find<SessionManager>().expireSession();
     } catch (_) {}

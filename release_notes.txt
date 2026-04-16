@@ -1,11 +1,32 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ Admin  |  v1.0.2+35  |  PHASE 2A — DEV BUILD
+  DQ Admin  |  v1.0.2+36  |  PHASE 2A — DEV BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
     DO NOT share outside the team.
 
 🔗 Backend: DEV (https://de-backend-iota.vercel.app/graphql)
+
+━━━ BUG FIX IN THIS BUILD ━━━
+
+  Signup recovery flow — root causes fixed:
+
+  1. Signup retry now makes 3 attempts (was 2) with progressive back-off
+     (3 s, then 6 s). This covers Vercel cold-start delays that were
+     causing both previous attempts to fail silently.
+
+  2. Stale Firebase session cleared before new account creation.
+     Prevents edge case where a deleted user's cached session interfered
+     with fresh signup flow after offline → online recovery.
+
+  3. ErrorLink no longer navigates to LoginPage when there is no active
+     session. Previously it could hijack the SignupPage and send the user
+     back to Login mid-registration if an UNAUTHENTICATED error occurred
+     during brand-new account setup.
+
+  4. Error messages now distinguish between no-network and server-timeout.
+     "Please check your connection" is no longer shown when the connection
+     is actually fine (was a Vercel cold-start timeout).
 
 ━━━ WHAT'S NEW IN THIS BUILD ━━━
 

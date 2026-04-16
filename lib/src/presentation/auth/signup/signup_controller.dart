@@ -60,6 +60,13 @@ class SignupController extends GetxController {
 
     try {
       // ── Step 1: Firebase account ─────────────────────────────────────────
+      // Sign out any stale session first (handles deleted-user edge case where
+      // FirebaseAuth still has a cached currentUser for the deleted account).
+      if (FirebaseAuth.instance.currentUser != null) {
+        AppLogger.auth('signup: signing out stale Firebase session before creating new account');
+        try { await FirebaseAuth.instance.signOut(); } catch (_) {}
+      }
+
       AppLogger.auth('signup: creating Firebase account for $email');
       final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
@@ -76,11 +83,12 @@ class SignupController extends GetxController {
       final userData = await _registerAdminWithRetry();
 
       if (userData == null) {
-        // Both attempts failed — roll back Firebase to keep state consistent.
-        AppLogger.auth('signup: registerAdmin failed after retry — rolling back Firebase user');
+        // All attempts failed — roll back Firebase to keep state consistent.
+        AppLogger.auth('signup: registerAdmin failed after all retries — rolling back Firebase user');
         await _rollbackFirebase(firebaseUser);
         errorMessage.value =
-            'Account setup failed. Please check your connection and try again.';
+            'Account setup failed. The server took too long to respond. '
+            'Please tap "Create Account" to try again.';
         return;
       }
 
@@ -99,17 +107,28 @@ class SignupController extends GetxController {
       AppLogger.auth('signup: unexpected error — $e');
       // Roll back Firebase if it was already created.
       if (firebaseUser != null) await _rollbackFirebase(firebaseUser);
-      errorMessage.value =
-          'Account setup failed. Please check your connection and try again.';
+      final isNetworkIssue = e.toString().toLowerCase().contains('network') ||
+          e.toString().toLowerCase().contains('socket') ||
+          e.toString().toLowerCase().contains('connection');
+      errorMessage.value = isNetworkIssue
+          ? 'No internet connection. Please check your network and try again.'
+          : 'Account setup failed. The server took too long to respond. '
+            'Please tap "Create Account" to try again.';
     } finally {
       isLoading.value = false;
     }
   }
 
-  // ── registerAdmin with one retry (handles Vercel/backend cold-start) ───────
+  // ── registerAdmin with retries (handles Vercel cold-start + token propagation)
+  //
+  // 3 attempts with progressive back-off: 3 s, then 6 s.
+  // Total worst-case wait before giving up: ~9 s, enough for Vercel cold-starts
+  // and Firebase token propagation delays on brand-new accounts.
+
+  static const _retryDelays = [3, 6]; // seconds before attempt 2, then attempt 3
 
   Future<Map<String, dynamic>?> _registerAdminWithRetry() async {
-    for (int attempt = 1; attempt <= 2; attempt++) {
+    for (int attempt = 1; attempt <= 3; attempt++) {
       try {
         AppLogger.auth('signup: registerAdmin attempt $attempt');
 
@@ -120,13 +139,10 @@ class SignupController extends GetxController {
         if (result.hasException) {
           final msg = result.exception?.graphqlErrors.firstOrNull?.message
               ?? result.exception.toString();
-          AppLogger.auth('signup: registerAdmin attempt $attempt GraphQL error — $msg');
+          AppLogger.auth('signup: attempt $attempt error — $msg');
 
-          if (attempt == 1) {
-            // Brief pause then force-refresh token before retry.
-            // This handles: backend cold-start, transient network hiccup,
-            // Firebase token propagation delay on newly created account.
-            await Future.delayed(const Duration(seconds: 2));
+          if (attempt < 3) {
+            await Future.delayed(Duration(seconds: _retryDelays[attempt - 1]));
             await GraphQLClientProvider.reinitWithToken();
             continue;
           }
@@ -137,9 +153,9 @@ class SignupController extends GetxController {
         AppLogger.auth('signup: registerAdmin attempt $attempt succeeded');
         return data;
       } catch (e) {
-        AppLogger.auth('signup: registerAdmin attempt $attempt threw — $e');
-        if (attempt == 1) {
-          await Future.delayed(const Duration(seconds: 2));
+        AppLogger.auth('signup: attempt $attempt threw — $e');
+        if (attempt < 3) {
+          await Future.delayed(Duration(seconds: _retryDelays[attempt - 1]));
           await GraphQLClientProvider.reinitWithToken();
           continue;
         }
