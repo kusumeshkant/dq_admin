@@ -1,12 +1,44 @@
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ Admin  |  v1.0.2+31  |  TESTING BUILD
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DQ Admin  |  v1.0.2+34  |  PHASE 2A TESTING BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
+    DO NOT share outside the team.
 
-🔧 Infrastructure
-  • Backend migrated from Vercel → Azure Container Apps
-  • Faster cold starts, better reliability
-  • No feature changes — all flows unchanged
+━━━ WHAT'S NEW IN THIS BUILD ━━━
 
-Please test store management, product upload, and analytics as normal.
+Phase 2A — Subscription Engine (Testing Only)
+
+  • Subscription plan badge on dashboard (shows plan name + status)
+  • Trial/grace/expired alert banner on dashboard
+  • New "Subscription" tile in Quick Access (6-item grid)
+  • Full Subscription page:
+      - Plan status card with trial progress bar
+      - 9-feature checklist (what your plan includes)
+      - Upgrade CTA (coming soon placeholder)
+  • Backend: auto-assigns 14-day trial to every new store on creation
+  • Backend: subscription kill switch in place (SUBSCRIPTION_ENABLED env var)
+
+━━━ WHAT TO TEST ━━━
+
+  Phase 2A (new):
+  □ Dashboard loads without errors — plan badge visible
+  □ Plan badge shows correct plan name (Trial / Starter / Growth / Pro)
+  □ Banner shows correctly for trial ≤ 5 days remaining
+  □ Subscription tile navigates to Subscription page
+  □ Subscription page shows plan details and feature list correctly
+
+  Phase 1 regression (must still work):
+  □ Login and store selection
+  □ Product browse, search, and filter
+  □ Create / edit / delete product
+  □ Bulk product upload
+  □ Order list and order status update
+  □ Staff management (invite, remove)
+  □ Analytics screens (dashboard, monthly revenue, staff performance)
+
+━━━ KNOWN SCOPE ━━━
+
+  - Upgrade flow is not implemented yet (shows "coming soon")
+  - Usage counters section on Subscription page is a placeholder
+  - Plan limits are NOT enforced on any existing feature in this build
