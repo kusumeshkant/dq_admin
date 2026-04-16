@@ -2,7 +2,7 @@ name: dq_admin
 description: DQ Admin app — store and inventory management for store owners.
 publish_to: 'none'
 
-version: 1.0.2+34
+version: 1.0.2+35
 
 environment:
   sdk: ">=3.8.1 <4.0.0"

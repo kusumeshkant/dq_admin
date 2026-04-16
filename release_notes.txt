@@ -1,9 +1,11 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  DQ Admin  |  v1.0.2+34  |  PHASE 2A TESTING BUILD
+  DQ Admin  |  v1.0.2+35  |  PHASE 2A — DEV BUILD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  This build is for internal testing only.
     DO NOT share outside the team.
+
+🔗 Backend: DEV (https://de-backend-iota.vercel.app/graphql)
 
 ━━━ WHAT'S NEW IN THIS BUILD ━━━
 
