@@ -33,6 +33,16 @@ class SubscriptionRemoteDs {
         plan {
           name
           displayName
+          limits {
+            maxStaff
+            maxOrdersPerMonth
+            maxStores
+          }
+        }
+        usageCounters {
+          staffCount
+          ordersThisMonth
+          storeCount
         }
       }
     }
@@ -76,11 +86,16 @@ class SubscriptionRemoteDs {
       );
     }
 
+    final usageJson  = subJson['usageCounters'] as Map<String, dynamic>? ?? {};
+    final limitsJson = subJson['plan']?['limits']  as Map<String, dynamic>? ?? {};
+
     return SubscriptionInfo(
       status:            subJson['status'] as String? ?? 'none',
       planName:          subJson['plan']?['name'] as String? ?? '',
       planDisplayName:   subJson['plan']?['displayName'] as String? ?? '',
       features:          features,
+      usage:             UsageCounters.fromJson(usageJson),
+      limits:            PlanLimitValues.fromJson(limitsJson),
       trialEndsAt:       _parseDate(subJson['trialEndsAt']),
       gracePeriodEndsAt: _parseDate(subJson['gracePeriodEndsAt']),
       currentPeriodEnd:  _parseDate(subJson['currentPeriodEnd']),

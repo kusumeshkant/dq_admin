@@ -1,0 +1,32 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DQ Admin  |  v1.0.2+37  |  PHASE 2A — DEV BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  This build is for internal testing only.
+    DO NOT share outside the team.
+
+🔗 Backend: DEV (https://de-backend-iota.vercel.app/graphql)
+
+━━━ WHAT'S NEW IN THIS BUILD ━━━
+
+Phase 2A — Subscription Limits (admin only)
+
+  • Subscription usage section now shows LIVE data:
+      - Staff count vs plan limit (with progress bar)
+      - Orders this month vs plan limit (with progress bar)
+      - Stores count vs plan limit (with progress bar)
+  • Progress bars turn orange when usage >= 80% of limit
+  • Subscription removed from dq_app and dq_staff (admin only)
+
+━━━ WHAT TO TEST ━━━
+
+  □ Subscription page loads without errors
+  □ Staff usage row shows correct count and progress bar
+  □ Orders this month row shows correct count
+  □ Stores row shows correct count
+  □ Progress bar turns orange when near limit
+
+━━━ KNOWN SCOPE ━━━
+
+  - Upgrade flow not implemented (shows "coming soon")
+  - Feature gating (FeatureGuard on screens) not yet wired

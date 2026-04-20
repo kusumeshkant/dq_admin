@@ -1,5 +1,59 @@
 // Local model for the subscription data returned by featureAccessMap + storeSubscription queries.
 
+class UsageCounters {
+  final int staffCount;
+  final int ordersThisMonth;
+  final int storeCount;
+
+  const UsageCounters({
+    required this.staffCount,
+    required this.ordersThisMonth,
+    required this.storeCount,
+  });
+
+  const UsageCounters.empty()
+      : staffCount = 0,
+        ordersThisMonth = 0,
+        storeCount = 0;
+
+  factory UsageCounters.fromJson(Map<String, dynamic> json) {
+    return UsageCounters(
+      staffCount:      (json['staffCount'] as num?)?.toInt() ?? 0,
+      ordersThisMonth: (json['ordersThisMonth'] as num?)?.toInt() ?? 0,
+      storeCount:      (json['storeCount'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+class PlanLimitValues {
+  final int maxStaff;
+  final int maxOrdersPerMonth;
+  final int maxStores;
+
+  const PlanLimitValues({
+    required this.maxStaff,
+    required this.maxOrdersPerMonth,
+    required this.maxStores,
+  });
+
+  const PlanLimitValues.unlimited()
+      : maxStaff = -1,
+        maxOrdersPerMonth = -1,
+        maxStores = -1;
+
+  factory PlanLimitValues.fromJson(Map<String, dynamic> json) {
+    return PlanLimitValues(
+      maxStaff:           (json['maxStaff'] as num?)?.toInt() ?? -1,
+      maxOrdersPerMonth:  (json['maxOrdersPerMonth'] as num?)?.toInt() ?? -1,
+      maxStores:          (json['maxStores'] as num?)?.toInt() ?? -1,
+    );
+  }
+
+  bool get isStaffUnlimited          => maxStaff < 0;
+  bool get isOrdersUnlimited         => maxOrdersPerMonth < 0;
+  bool get isStoresUnlimited         => maxStores < 0;
+}
+
 class FeatureAccessMap {
   final bool coupons;
   final bool analytics;
@@ -78,6 +132,8 @@ class SubscriptionInfo {
   final DateTime? trialEndsAt;
   final DateTime? gracePeriodEndsAt;
   final FeatureAccessMap features;
+  final UsageCounters usage;
+  final PlanLimitValues limits;
 
   const SubscriptionInfo({
     required this.status,
@@ -87,15 +143,19 @@ class SubscriptionInfo {
     this.currentPeriodEnd,
     this.trialEndsAt,
     this.gracePeriodEndsAt,
+    this.usage = const UsageCounters.empty(),
+    this.limits = const PlanLimitValues.unlimited(),
   });
 
   const SubscriptionInfo.loading()
-      : status           = 'loading',
-        planName         = '',
-        planDisplayName  = '',
-        features         = const FeatureAccessMap.locked(),
-        currentPeriodEnd = null,
-        trialEndsAt      = null,
+      : status            = 'loading',
+        planName          = '',
+        planDisplayName   = '',
+        features          = const FeatureAccessMap.locked(),
+        usage             = const UsageCounters.empty(),
+        limits            = const PlanLimitValues.unlimited(),
+        currentPeriodEnd  = null,
+        trialEndsAt       = null,
         gracePeriodEndsAt = null;
 
   bool get isAccessible => const [

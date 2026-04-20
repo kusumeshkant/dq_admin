@@ -297,8 +297,6 @@ class _UsageSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Usage counters are not loaded from featureAccessMap — they're in storeSubscription
-    // For now show a placeholder; Phase 2A-6 will wire real counter data.
     return AppGlassCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -307,18 +305,27 @@ class _UsageSection extends StatelessWidget {
             icon: Icons.people_rounded,
             label: 'Staff',
             color: Colors.blue.shade400,
-          ),
-          const Divider(height: 20, color: Colors.white10),
-          _UsageRow(
-            icon: Icons.inventory_2_rounded,
-            label: 'Products',
-            color: Colors.green.shade400,
+            used: info.usage.staffCount,
+            limit: info.limits.maxStaff,
+            isUnlimited: info.limits.isStaffUnlimited,
           ),
           const Divider(height: 20, color: Colors.white10),
           _UsageRow(
             icon: Icons.receipt_long_rounded,
             label: 'Orders this month',
             color: AppTheme.primary,
+            used: info.usage.ordersThisMonth,
+            limit: info.limits.maxOrdersPerMonth,
+            isUnlimited: info.limits.isOrdersUnlimited,
+          ),
+          const Divider(height: 20, color: Colors.white10),
+          _UsageRow(
+            icon: Icons.storefront_rounded,
+            label: 'Stores',
+            color: Colors.purple.shade300,
+            used: info.usage.storeCount,
+            limit: info.limits.maxStores,
+            isUnlimited: info.limits.isStoresUnlimited,
           ),
         ],
       ),
@@ -330,35 +337,68 @@ class _UsageRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final int used;
+  final int limit;
+  final bool isUnlimited;
 
   const _UsageRow({
     required this.icon,
     required this.label,
     required this.color,
+    required this.used,
+    required this.limit,
+    required this.isUnlimited,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final usageText = isUnlimited ? '$used / ∞' : '$used / $limit';
+    final double progress = (isUnlimited || limit <= 0) ? 0.0 : (used / limit).clamp(0.0, 1.0);
+    final bool nearLimit = !isUnlimited && limit > 0 && progress >= 0.8;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
+        Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 16),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(label,
+                  style: AppTypography.bodySmall
+                      .copyWith(color: AppTheme.textPrimary)),
+            ),
+            Text(
+              usageText,
+              style: AppTypography.label.copyWith(
+                color: nearLimit ? Colors.orange.shade300 : AppTheme.textSecondary,
+                fontWeight: nearLimit ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+        if (!isUnlimited) ...[
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 4,
+              backgroundColor: Colors.white10,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                nearLimit ? Colors.orange.shade400 : color,
+              ),
+            ),
           ),
-          child: Icon(icon, color: color, size: 16),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(label,
-              style: AppTypography.bodySmall
-                  .copyWith(color: AppTheme.textPrimary)),
-        ),
-        Text('—',
-            style: AppTypography.label
-                .copyWith(color: AppTheme.textSecondary)),
+        ],
       ],
     );
   }

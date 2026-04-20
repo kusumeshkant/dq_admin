@@ -29,6 +29,15 @@ abstract class FeatureKeys {
   ];
 }
 
+/// Plan limit keys — mirrors PLAN_LIMITS on backend.
+abstract class PlanLimits {
+  PlanLimits._();
+
+  static const String maxStaff           = 'maxStaff';
+  static const String maxOrdersPerMonth  = 'maxOrdersPerMonth';
+  static const String maxStores          = 'maxStores';
+}
+
 /// Canonical subscription status values — mirrors SUBSCRIPTION_STATUS on backend.
 abstract class SubscriptionStatus {
   SubscriptionStatus._();
