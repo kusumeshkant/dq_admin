@@ -1,73 +1,65 @@
 import 'package:get/get.dart';
+import '../../core/pagination/page_result.dart';
+import '../../core/pagination/paginated_controller.dart';
 import '../../domain/entity/order_entity.dart';
 import '../../domain/entity/store_entity.dart';
-import '../../domain/usecase/get_all_orders_usecase.dart';
+import '../../domain/repo/order_repository.dart';
 import '../../domain/usecase/get_all_stores_usecase.dart';
 
-class OrdersController extends GetxController {
-  final GetAllOrdersUseCase getAllOrdersUseCase;
+class OrdersController extends PaginatedController<OrderEntity> {
+  final OrderRepository _repo;
   final GetAllStoresUseCase getAllStoresUseCase;
 
-  OrdersController({required this.getAllOrdersUseCase, required this.getAllStoresUseCase});
+  OrdersController({required OrderRepository repo, required this.getAllStoresUseCase})
+      : _repo = repo;
 
-  final isLoading = false.obs;
-  final orders = <OrderEntity>[].obs;
-  final allOrders = <OrderEntity>[].obs; // unfiltered, used for counts
   final stores = <StoreEntity>[].obs;
 
+  // Selected values for the UI dropdowns (mirrors filters map)
   final selectedStoreId = Rx<String?>(null);
-  final selectedStatus = Rx<String?>(null);
+  final selectedStatus  = Rx<String?>(null);
 
   final statusOptions = ['All', 'pending', 'preparing', 'ready', 'completed', 'cancelled'];
 
-  int get activeCount => allOrders.where((o) =>
-      o.status == 'pending' || o.status == 'preparing' || o.status == 'ready').length;
-  int get completedCount => allOrders.where((o) => o.status == 'completed').length;
-  int get cancelledCount => allOrders.where((o) => o.status == 'cancelled').length;
+  // Counts from the backend — updated on every initial load
+  int get activeCount    => _activeCountRx.value;
+  int get completedCount => _completedCountRx.value;
+  int get cancelledCount => _cancelledCountRx.value;
+
+  final _activeCountRx    = 0.obs;
+  final _completedCountRx = 0.obs;
+  final _cancelledCountRx = 0.obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadStores();
-    loadOrders();
+    _loadStores();
   }
 
-  Future<void> loadStores() async {
-    try {
-      stores.value = await getAllStoresUseCase.execute();
-    } catch (_) {}
+  Future<void> _loadStores() async {
+    try { stores.value = await getAllStoresUseCase.execute(); } catch (_) {}
   }
 
-  Future<void> loadOrders() async {
-    isLoading.value = true;
-    try {
-      orders.value = await getAllOrdersUseCase.execute(
-        storeId: selectedStoreId.value,
-        status: selectedStatus.value,
-      );
-      // Keep allOrders updated for counts (always unfiltered by status)
-      if (selectedStatus.value == null) {
-        allOrders.assignAll(orders);
-      } else {
-        allOrders.value = await getAllOrdersUseCase.execute(
-          storeId: selectedStoreId.value,
-          status: null,
-        );
-      }
-    } catch (e) {
-      orders.clear();
-    } finally {
-      isLoading.value = false;
+  @override
+  Future<PageResult<OrderEntity>> fetchPage(PageParams params) async {
+    final storeId = params.filters['storeId'] as String?;
+    final result  = await _repo.getOrdersPage(storeId: storeId, params: params);
+    if (params.cursor == null) {
+      _activeCountRx.value    = result.activeCount;
+      _completedCountRx.value = result.completedCount;
+      _cancelledCountRx.value = result.cancelledCount;
     }
+    return result.page;
   }
 
   void filterByStore(String? storeId) {
     selectedStoreId.value = storeId;
-    loadOrders();
+    applyFilter('storeId', storeId);
   }
 
   void filterByStatus(String? status) {
-    selectedStatus.value = (status == null || status == 'All') ? null : status;
-    loadOrders();
+    final resolved       = (status == null || status == 'All') ? null : status;
+    selectedStatus.value = resolved;
+    applyFilter('status', resolved);
   }
 }

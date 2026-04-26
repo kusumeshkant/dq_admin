@@ -1,5 +1,6 @@
 import '../../domain/entity/product_entity.dart';
 import '../../domain/repo/product_repository.dart';
+import '../../core/pagination/page_result.dart';
 import '../datasources/remote/product_remote_ds.dart';
 import '../model/product_model.dart';
 
@@ -11,6 +12,18 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<List<ProductEntity>> getStoreProducts(String storeId) async {
     final list = await ds.getStoreProducts(storeId);
     return list.map((e) => ProductModel.fromJson(e)).toList();
+  }
+
+  @override
+  Future<PageResult<ProductEntity>> getStoreProductsPage(
+      String storeId, PageParams params) async {
+    final page = await ds.fetchProductsPage(storeId, params);
+    return PageResult(
+      items:      page.items.map(ProductModel.fromJson).toList(),
+      hasNext:    page.hasNext,
+      nextCursor: page.nextCursor,
+      totalCount: page.totalCount,
+    );
   }
 
   @override

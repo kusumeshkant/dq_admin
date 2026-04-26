@@ -1,5 +1,6 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../../service_core/networks/graphql_client_provider.dart';
+import '../../../core/pagination/page_result.dart';
 
 class ProductRemoteDs {
   GraphQLClient get _client => GraphQLClientProvider.client;
@@ -72,6 +73,46 @@ class ProductRemoteDs {
         updated
         skipped
         errors { barcode message }
+      }
+    }
+  ''';
+
+  static const _storeProductsPaginatedQuery = r'''
+    query StoreProductsPaginated(
+      $storeId:  ID!
+      $first:    Int
+      $after:    String
+      $search:   String
+      $sortBy:   String
+      $sortDir:  String
+      $brand:        String
+      $gender:       String
+      $categoryMain: String
+      $inStock:      Boolean
+      $lowStock:     Boolean
+    ) {
+      storeProductsPaginated(
+        storeId:  $storeId
+        first:    $first
+        after:    $after
+        search:   $search
+        sortBy:   $sortBy
+        sortDir:  $sortDir
+        filters: {
+          brand:        $brand
+          gender:       $gender
+          categoryMain: $categoryMain
+          inStock:      $inStock
+          lowStock:     $lowStock
+        }
+      ) {
+        items {
+          id barcode sku name description brand gender color
+          category { main sub }
+          size { garment actual }
+          price mrp stock reorderLevel isAvailable storeId
+        }
+        meta { hasNext nextCursor totalCount }
       }
     }
   ''';
@@ -165,18 +206,64 @@ class ProductRemoteDs {
   }
 
   Future<Map<String, dynamic>> bulkUpsertProducts({required String storeId, required List<Map<String, dynamic>> products, String? fileName, int? totalRows, int? totalColumns}) async {
-    final result = await _client.mutate(MutationOptions(
-      document: gql(_bulkUpsertMutation),
-      variables: {
-        'storeId': storeId,
-        'products': products,
-        if (fileName != null) 'fileName': fileName,
-        if (totalRows != null) 'totalRows': totalRows,
-        if (totalColumns != null) 'totalColumns': totalColumns,
-      },
+    const chunkSize = 200;
+    int created = 0, updated = 0, skipped = 0;
+    final errors = <Map<String, dynamic>>[];
+
+    for (int i = 0; i < products.length; i += chunkSize) {
+      final chunk = products.sublist(i, (i + chunkSize).clamp(0, products.length));
+      // Only send fileName/totalRows on first chunk so the upload log isn't duplicated
+      final result = await _client.mutate(MutationOptions(
+        document: gql(_bulkUpsertMutation),
+        variables: {
+          'storeId': storeId,
+          'products': chunk,
+          if (i == 0 && fileName != null) 'fileName': fileName,
+          if (i == 0 && totalRows != null) 'totalRows': totalRows,
+          if (i == 0 && totalColumns != null) 'totalColumns': totalColumns,
+        },
+      ));
+      _check(result);
+      final r = result.data!['bulkUpsertProducts'] as Map<String, dynamic>;
+      created += (r['created'] as int? ?? 0);
+      updated += (r['updated'] as int? ?? 0);
+      skipped += (r['skipped'] as int? ?? 0);
+      errors.addAll((r['errors'] as List? ?? []).cast<Map<String, dynamic>>());
+    }
+
+    return {'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors};
+  }
+
+  Future<PageResult<Map<String, dynamic>>> fetchProductsPage(
+      String storeId, PageParams params) async {
+    final vars = <String, dynamic>{'storeId': storeId, 'first': params.limit};
+    if (params.cursor != null)   vars['after']   = params.cursor;
+    if (params.search != null)   vars['search']  = params.search;
+    if (params.sortBy != null)   vars['sortBy']  = params.sortBy;
+    if (params.sortDir.isNotEmpty) vars['sortDir'] = params.sortDir;
+    // Unpack filters into individual variables (schema uses inline input object)
+    final f = params.filters;
+    if (f['brand'] != null)        vars['brand']        = f['brand'];
+    if (f['gender'] != null)       vars['gender']       = f['gender'];
+    if (f['categoryMain'] != null) vars['categoryMain'] = f['categoryMain'];
+    if (f['inStock'] != null)      vars['inStock']      = f['inStock'];
+    if (f['lowStock'] != null)     vars['lowStock']     = f['lowStock'];
+
+    final result = await _client.query(QueryOptions(
+      document: gql(_storeProductsPaginatedQuery),
+      variables: vars,
+      fetchPolicy: FetchPolicy.networkOnly,
     ));
     _check(result);
-    return result.data!['bulkUpsertProducts'] as Map<String, dynamic>;
+
+    final page = result.data!['storeProductsPaginated'] as Map<String, dynamic>;
+    final meta = page['meta'] as Map<String, dynamic>;
+    return PageResult(
+      items:      (page['items'] as List).cast<Map<String, dynamic>>(),
+      hasNext:    meta['hasNext'] as bool,
+      nextCursor: meta['nextCursor'] as String?,
+      totalCount: meta['totalCount'] as int?,
+    );
   }
 
   Future<List<Map<String, dynamic>>> getUploadLogs(String storeId) async {

@@ -9,7 +9,11 @@ import '../../core/responsive/app_typography.dart';
 import '../../core/widgets/app_error_widget.dart';
 import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/dashboard_entity.dart';
+import '../../service_core/subscription/feature_keys.dart';
+import '../../service_core/subscription/subscription_manager.dart';
 import '../../theme/app_theme.dart';
+import '../plans/plans_binding.dart';
+import '../plans/plans_page.dart';
 import 'analytics_controller.dart';
 
 class AnalyticsPage extends StatefulWidget {
@@ -40,6 +44,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           ],
         ),
         body: Obx(() {
+          if (!Get.find<SubscriptionManager>().canUse(FeatureKeys.analytics)) {
+            return _LockedFeatureBody(
+              featureName: 'Analytics Dashboard',
+              description:
+                  'Upgrade to Starter or higher to access revenue trends, top products, and staff insights.',
+            );
+          }
           if (c.isLoading.value) return const AppLoadingWidget();
           if (c.errorMessage.value.isNotEmpty) {
             return AppErrorWidget(
@@ -1370,6 +1381,67 @@ class _StatBox extends StatelessWidget {
                 style: const TextStyle(
                     color: AppTheme.textSecondary, fontSize: 9),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Locked feature placeholder ─────────────────────────────────────────────────
+
+class _LockedFeatureBody extends StatelessWidget {
+  final String featureName;
+  final String description;
+  const _LockedFeatureBody({required this.featureName, required this.description});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.lock_rounded,
+                  color: AppTheme.primary, size: 28),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(featureName,
+                style: AppTypography.titleMedium
+                    .copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(description,
+                style: AppTypography.body
+                    .copyWith(color: AppTheme.textSecondary, height: 1.5),
+                textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.lg),
+            ElevatedButton.icon(
+              onPressed: () => Get.to(
+                () => const PlansPage(),
+                binding: PlansBinding(),
+                transition: Transition.rightToLeft,
+              ),
+              icon: const Icon(Icons.workspace_premium_rounded, size: 16),
+              label: const Text('View Plans',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMd)),
+              ),
+            ),
           ],
         ),
       ),

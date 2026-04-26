@@ -2,11 +2,11 @@ import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/pagination/paginated_list_view.dart';
 import '../../core/responsive/app_responsive.dart';
 import '../../core/responsive/app_spacing.dart';
 import '../../core/responsive/app_sizes.dart';
 import '../../core/responsive/app_typography.dart';
-import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/order_entity.dart';
 import '../../theme/app_theme.dart';
 import '../order_detail/order_detail_binding.dart';
@@ -18,7 +18,7 @@ class OrdersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.find<OrdersController>();
+    final c    = Get.find<OrdersController>();
     final hPad = context.pagePadding;
 
     return ThemedBackground(
@@ -27,38 +27,20 @@ class OrdersPage extends StatelessWidget {
         appBar: AppBar(title: const Text('All Orders')),
         body: Column(
           children: [
-            // Filters
+            // Store + Status filters
             Obx(() => Padding(
-                  padding:
-                      EdgeInsets.fromLTRB(hPad, AppSpacing.sm, hPad, 0),
+                  padding: EdgeInsets.fromLTRB(hPad, AppSpacing.sm, hPad, 0),
                   child: Row(
                     children: [
-                      // Store filter
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: c.selectedStoreId.value,
                           dropdownColor: AppTheme.surface,
                           style: AppTypography.bodySmall,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                                vertical: AppSpacing.sm),
-                            filled: true,
-                            fillColor: AppTheme.cardSurface,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                    AppSizes.radiusMd - 2),
-                                borderSide: const BorderSide(
-                                    color: AppTheme.cardBorder)),
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                    AppSizes.radiusMd - 2),
-                                borderSide: const BorderSide(
-                                    color: AppTheme.cardBorder)),
-                          ),
+                          decoration: _dropdownDecoration,
                           hint: Text('All Stores',
-                              style: AppTypography.bodySmall.copyWith(
-                                  color: AppTheme.textSecondary)),
+                              style: AppTypography.bodySmall
+                                  .copyWith(color: AppTheme.textSecondary)),
                           items: [
                             DropdownMenuItem(
                                 value: null,
@@ -74,29 +56,12 @@ class OrdersPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      // Status filter
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: c.selectedStatus.value ?? 'All',
                           dropdownColor: AppTheme.surface,
                           style: AppTypography.bodySmall,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                                vertical: AppSpacing.sm),
-                            filled: true,
-                            fillColor: AppTheme.cardSurface,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                    AppSizes.radiusMd - 2),
-                                borderSide: const BorderSide(
-                                    color: AppTheme.cardBorder)),
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                    AppSizes.radiusMd - 2),
-                                borderSide: const BorderSide(
-                                    color: AppTheme.cardBorder)),
-                          ),
+                          decoration: _dropdownDecoration,
                           items: c.statusOptions
                               .map((s) => DropdownMenuItem(
                                   value: s,
@@ -147,40 +112,39 @@ class OrdersPage extends StatelessWidget {
                 )),
             const SizedBox(height: AppSpacing.sm),
 
-            // List
+            // Paginated list
             Expanded(
-              child: Obx(() {
-                if (c.isLoading.value) return const AppLoadingWidget();
-                if (c.orders.isEmpty) {
-                  return Center(
-                    child: Text('No orders found.',
-                        style: AppTypography.body
-                            .copyWith(color: AppTheme.textSecondary)),
-                  );
-                }
-                return RefreshIndicator(
-                  onRefresh: c.loadOrders,
-                  color: AppTheme.primary,
-                  child: ListView.builder(
-                    padding:
-                        EdgeInsets.fromLTRB(hPad, 0, hPad, 40),
-                    itemCount: c.orders.length,
-                    itemBuilder: (_, i) => _OrderCard(
-                      order: c.orders[i],
-                      onTap: () => Get.to(
-                        () => OrderDetailPage(order: c.orders[i]),
-                        binding: OrderDetailBinding(order: c.orders[i]),
-                      ),
-                    ),
+              child: AppPaginatedListView<OrderEntity>(
+                controller: c,
+                emptyTitle: 'No orders found',
+                padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 40),
+                itemBuilder: (_, order, __) => _OrderCard(
+                  order: order,
+                  onTap: () => Get.to(
+                    () => OrderDetailPage(order: order),
+                    binding: OrderDetailBinding(order: order),
                   ),
-                );
-              }),
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
+  static const _dropdownDecoration = InputDecoration(
+    contentPadding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+    filled: true,
+    fillColor: AppTheme.cardSurface,
+    border: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppSizes.radiusMd - 2)),
+        borderSide: BorderSide(color: AppTheme.cardBorder)),
+    enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppSizes.radiusMd - 2)),
+        borderSide: BorderSide(color: AppTheme.cardBorder)),
+  );
 }
 
 class _StatChip extends StatelessWidget {
@@ -212,8 +176,7 @@ class _StatChip extends StatelessWidget {
             color: selected
                 ? color.withValues(alpha: 0.2)
                 : color.withValues(alpha: 0.08),
-            borderRadius:
-                BorderRadius.circular(AppSizes.radiusMd - 2),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMd - 2),
             border: Border.all(
               color: selected
                   ? color.withValues(alpha: 0.7)
@@ -282,8 +245,7 @@ class _OrderCard extends StatelessWidget {
                       if (order.isFlagged)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.sm - 2,
-                              vertical: 2),
+                              horizontal: AppSpacing.sm - 2, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.red.withValues(alpha: 0.15),
                             borderRadius:
@@ -298,16 +260,15 @@ class _OrderCard extends StatelessWidget {
                                   color: Colors.red, size: 11),
                               SizedBox(width: 3),
                               Text('Issue',
-                                  style: TextStyle(
-                                      color: Colors.red, fontSize: 10)),
+                                  style:
+                                      TextStyle(color: Colors.red, fontSize: 10)),
                             ],
                           ),
                         ),
                     ],
                   ),
                   const SizedBox(height: 3),
-                  Text(order.storeName ?? '—',
-                      style: AppTypography.labelSmall),
+                  Text(order.storeName ?? '—', style: AppTypography.labelSmall),
                   Text(
                     '${order.items.length} item${order.items.length != 1 ? "s" : ""}  ·  ₹${order.grandTotal.toStringAsFixed(0)}  ·  ${order.formattedDate}',
                     style: AppTypography.labelSmall,
@@ -324,12 +285,12 @@ class _OrderCard extends StatelessWidget {
   }
 
   Color _statusColor(String status) => switch (status.toLowerCase()) {
-        'pending' => Colors.grey.shade400,
+        'pending'   => Colors.grey.shade400,
         'preparing' => Colors.orange.shade400,
-        'ready' => Colors.blue.shade400,
+        'ready'     => Colors.blue.shade400,
         'completed' => Colors.green.shade400,
         'cancelled' => Colors.red.shade400,
-        _ => Colors.orange.shade300,
+        _           => Colors.orange.shade300,
       };
 }
 
@@ -340,12 +301,12 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (status.toLowerCase()) {
-      'pending' => Colors.grey.shade500,
+      'pending'   => Colors.grey.shade500,
       'preparing' => Colors.orange.shade600,
-      'ready' => Colors.blue.shade500,
+      'ready'     => Colors.blue.shade500,
       'completed' => Colors.green.shade600,
       'cancelled' => Colors.red.shade600,
-      _ => Colors.grey.shade500,
+      _           => Colors.grey.shade500,
     };
     return Container(
       padding: const EdgeInsets.symmetric(

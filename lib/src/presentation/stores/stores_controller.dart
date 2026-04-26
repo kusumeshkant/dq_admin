@@ -2,42 +2,35 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import '../../core/pagination/page_result.dart';
+import '../../core/pagination/paginated_controller.dart';
 import '../../domain/entity/store_entity.dart';
-import '../../domain/usecase/get_all_stores_usecase.dart';
+import '../../domain/repo/store_repository.dart';
 import '../../domain/usecase/create_store_usecase.dart';
 import '../../domain/usecase/update_store_usecase.dart';
 import '../../domain/usecase/delete_store_usecase.dart';
 import '../../service_core/auth/session_manager.dart';
 import 'map_picker_page.dart';
 
-class StoresController extends GetxController {
-  final GetAllStoresUseCase getAllStoresUseCase;
+class StoresController extends PaginatedController<StoreEntity> {
+  final StoreRepository _repo;
   final CreateStoreUseCase createStoreUseCase;
   final UpdateStoreUseCase updateStoreUseCase;
   final DeleteStoreUseCase deleteStoreUseCase;
 
   StoresController({
-    required this.getAllStoresUseCase,
+    required StoreRepository repo,
     required this.createStoreUseCase,
     required this.updateStoreUseCase,
     required this.deleteStoreUseCase,
-  });
-
-  final isLoading = false.obs;
-  final stores = <StoreEntity>[].obs;
+  }) : _repo = repo;
 
   // Form fields
-  final nameCtrl = TextEditingController();
+  final nameCtrl      = TextEditingController();
   final storeCodeCtrl = TextEditingController();
-  final addressCtrl = TextEditingController();
-  final latCtrl = TextEditingController();
-  final lonCtrl = TextEditingController();
-
-  @override
-  void onInit() {
-    super.onInit();
-    loadStores();
-  }
+  final addressCtrl   = TextEditingController();
+  final latCtrl       = TextEditingController();
+  final lonCtrl       = TextEditingController();
 
   @override
   void onClose() {
@@ -49,23 +42,17 @@ class StoresController extends GetxController {
     super.onClose();
   }
 
-  Future<void> loadStores() async {
-    isLoading.value = true;
-    try {
-      final all = await getAllStoresUseCase.execute();
-      final storeId = Get.find<SessionManager>().storeId;
-      // Scoped admin: only show their own store
-      stores.value = (storeId != null && storeId.isNotEmpty)
-          ? all.where((s) => s.id == storeId).toList()
-          : all;
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to load stores',
-          backgroundColor: Colors.red.withValues(alpha: 0.8),
-          colorText: Colors.white);
-    } finally {
-      isLoading.value = false;
-    }
+  @override
+  Future<PageResult<StoreEntity>> fetchPage(PageParams params) {
+    final scopedId = Get.find<SessionManager>().storeId;
+    return _repo.getStoresPage(
+      params: params,
+      storeId: (scopedId != null && scopedId.isNotEmpty) ? scopedId : null,
+    );
   }
+
+  // Keep loadStores as alias for callers that use it after returning from store detail
+  Future<void> loadStores() => loadInitial();
 
   void _clearForm() {
     nameCtrl.clear();
@@ -105,7 +92,7 @@ class StoresController extends GetxController {
       final store = await createStoreUseCase.execute(
           name: name, address: address, lat: lat, lon: lon,
           storeCode: code.isNotEmpty ? code : null);
-      stores.add(store);
+      items.insert(0, store);
       Get.back();
       Get.snackbar('Done', 'Store created  ·  ${store.storeCode ?? ''}',
           backgroundColor: Colors.green.withValues(alpha: 0.8), colorText: Colors.white);
@@ -127,8 +114,8 @@ class StoresController extends GetxController {
         lon: double.tryParse(lonCtrl.text.trim()),
         storeCode: storeCodeCtrl.text.trim().isNotEmpty ? storeCodeCtrl.text.trim() : null,
       );
-      final idx = stores.indexWhere((s) => s.id == store.id);
-      if (idx != -1) stores[idx] = updated;
+      final idx = items.indexWhere((s) => s.id == store.id);
+      if (idx != -1) items[idx] = updated;
       Get.back();
       Get.snackbar('Done', 'Store updated', backgroundColor: Colors.green.withValues(alpha: 0.8), colorText: Colors.white);
     });
@@ -191,7 +178,7 @@ class StoresController extends GetxController {
                     onPressed: () async {
                       Get.back();
                       await deleteStoreUseCase.execute(store.id);
-                      stores.removeWhere((s) => s.id == store.id);
+                      items.removeWhere((s) => s.id == store.id);
                       Get.snackbar('Deleted', '"${store.name}" has been removed.',
                           backgroundColor: Colors.green.withValues(alpha: 0.8),
                           colorText: Colors.white);

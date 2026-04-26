@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/pagination/page_result.dart';
+import '../../core/pagination/paginated_controller.dart';
 import '../../domain/entity/product_entity.dart';
 import '../../domain/entity/store_entity.dart';
-import '../../domain/usecase/get_store_products_usecase.dart';
+import '../../domain/repo/product_repository.dart';
 import '../../domain/usecase/create_product_usecase.dart';
 import '../../domain/usecase/update_product_usecase.dart';
 import '../../domain/usecase/delete_product_usecase.dart';
@@ -12,9 +14,9 @@ import '../../domain/usecase/get_upload_logs_usecase.dart';
 import 'barcode_scanner_page.dart';
 import 'bulk_upload_page.dart';
 
-class ProductsController extends GetxController {
+class ProductsController extends PaginatedController<ProductEntity> {
   final StoreEntity store;
-  final GetStoreProductsUseCase getStoreProductsUseCase;
+  final ProductRepository repo;
   final CreateProductUseCase createProductUseCase;
   final UpdateProductUseCase updateProductUseCase;
   final DeleteProductUseCase deleteProductUseCase;
@@ -23,7 +25,7 @@ class ProductsController extends GetxController {
 
   ProductsController({
     required this.store,
-    required this.getStoreProductsUseCase,
+    required this.repo,
     required this.createProductUseCase,
     required this.updateProductUseCase,
     required this.deleteProductUseCase,
@@ -31,33 +33,31 @@ class ProductsController extends GetxController {
     required this.getUploadLogsUseCase,
   });
 
-  final isLoading = false.obs;
-  final products = <ProductEntity>[].obs;
+  // ── Form controllers (CRUD) ───────────────────────────────────────────────
 
-  // Basic fields
-  final barcodeCtrl = TextEditingController();
-  final skuCtrl = TextEditingController();
-  final nameCtrl = TextEditingController();
-  final descCtrl = TextEditingController();
-  final priceCtrl = TextEditingController();
-  final mrpCtrl = TextEditingController();
-  final stockCtrl = TextEditingController();
-  final reorderLevelCtrl = TextEditingController();
+  final barcodeCtrl       = TextEditingController();
+  final skuCtrl           = TextEditingController();
+  final nameCtrl          = TextEditingController();
+  final descCtrl          = TextEditingController();
+  final priceCtrl         = TextEditingController();
+  final mrpCtrl           = TextEditingController();
+  final stockCtrl         = TextEditingController();
+  final reorderLevelCtrl  = TextEditingController();
+  final brandCtrl         = TextEditingController();
+  final genderCtrl        = TextEditingController();
+  final colorCtrl         = TextEditingController();
+  final categoryMainCtrl  = TextEditingController();
+  final categorySubCtrl   = TextEditingController();
+  final sizeGarmentCtrl   = TextEditingController();
+  final sizeActualCtrl    = TextEditingController();
 
-  // Extended fields
-  final brandCtrl = TextEditingController();
-  final genderCtrl = TextEditingController();
-  final colorCtrl = TextEditingController();
-  final categoryMainCtrl = TextEditingController();
-  final categorySubCtrl = TextEditingController();
-  final sizeGarmentCtrl = TextEditingController();
-  final sizeActualCtrl = TextEditingController();
+  // ── PaginatedController override ─────────────────────────────────────────
 
   @override
-  void onInit() {
-    super.onInit();
-    loadProducts();
-  }
+  Future<PageResult<ProductEntity>> fetchPage(PageParams params) =>
+      repo.getStoreProductsPage(store.id, params);
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   @override
   void onClose() {
@@ -70,23 +70,6 @@ class ProductsController extends GetxController {
     super.onClose();
   }
 
-  Future<void> loadProducts() async {
-    isLoading.value = true;
-    try {
-      products.value = await getStoreProductsUseCase.execute(store.id);
-    } catch (e) {
-      Get.snackbar(
-        'Failed to load products',
-        e.toString().replaceAll('Exception: ', ''),
-        backgroundColor: Colors.red.withValues(alpha: 0.8),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 8),
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
   void openBulkUpload() {
     Get.to(
       () => BulkUploadPage(
@@ -95,7 +78,7 @@ class ProductsController extends GetxController {
         useCase: bulkUpsertProductsUseCase,
         getLogsUseCase: getUploadLogsUseCase,
       ),
-    )?.then((_) => loadProducts());
+    )?.then((_) => loadInitial());
   }
 
   void _clearForm() {
@@ -138,7 +121,7 @@ class ProductsController extends GetxController {
         stock: stock,
         reorderLevel: int.tryParse(reorderLevelCtrl.text.trim()),
       );
-      products.add(product);
+      items.insert(0, product);
       Get.back();
       Get.snackbar('Done', 'Product added',
           backgroundColor: Colors.green.withValues(alpha: 0.8),
@@ -200,15 +183,15 @@ class ProductsController extends GetxController {
         stock: newStock,
         reorderLevel: int.tryParse(reorderLevelCtrl.text.trim()),
       );
-      final idx = products.indexWhere((p) => p.id == product.id);
+      final idx = items.indexWhere((p) => p.id == product.id);
       if (newStock == 0) {
-        if (idx != -1) products.removeAt(idx);
+        if (idx != -1) items.removeAt(idx);
         Get.back();
         Get.snackbar('Removed', '"${product.name}" removed (stock depleted).',
             backgroundColor: Colors.orange.withValues(alpha: 0.8),
             colorText: Colors.white);
       } else {
-        if (idx != -1) products[idx] = updated;
+        if (idx != -1) items[idx] = updated;
         Get.back();
         Get.snackbar('Done', 'Product updated',
             backgroundColor: Colors.green.withValues(alpha: 0.8),
@@ -272,7 +255,7 @@ class ProductsController extends GetxController {
                     onPressed: () async {
                       Get.back();
                       await deleteProductUseCase.execute(product.id);
-                      products.removeWhere((p) => p.id == product.id);
+                      items.removeWhere((p) => p.id == product.id);
                       Get.snackbar('Deleted', '"${product.name}" removed.',
                           backgroundColor: Colors.green.withValues(alpha: 0.8),
                           colorText: Colors.white);

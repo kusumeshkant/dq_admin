@@ -1,4 +1,5 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
+import '../../../core/pagination/page_result.dart';
 import '../../../service_core/networks/graphql_client_provider.dart';
 
 class StaffRemoteDs {
@@ -16,6 +17,15 @@ class StaffRemoteDs {
     query UserByEmail($email: String!) {
       userByEmail(email: $email) {
         id name email phone role storeId
+      }
+    }
+  ''';
+
+  static const _staffPageQuery = r'''
+    query AllStaffPaginated($first: Int, $after: String, $search: String) {
+      allStaffPaginated(first: $first, after: $after, search: $search) {
+        items { id name email phone role storeId }
+        meta  { hasNext nextCursor totalCount }
       }
     }
   ''';
@@ -44,6 +54,19 @@ class StaffRemoteDs {
     );
     _check(result);
     return (result.data!['allStaff'] as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> fetchStaffPage(PageParams params) async {
+    final vars = <String, dynamic>{
+      'first': params.limit,
+      if (params.cursor != null) 'after': params.cursor,
+      if (params.search != null) 'search': params.search,
+    };
+    final result = await _client.query(
+      QueryOptions(document: gql(_staffPageQuery), variables: vars, fetchPolicy: FetchPolicy.networkOnly),
+    );
+    _check(result);
+    return result.data!['allStaffPaginated'] as Map<String, dynamic>;
   }
 
   Future<Map<String, dynamic>?> getUserByEmail(String email) async {

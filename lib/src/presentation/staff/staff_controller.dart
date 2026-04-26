@@ -1,28 +1,28 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import '../../core/pagination/page_result.dart';
+import '../../core/pagination/paginated_controller.dart';
 import '../../domain/entity/store_entity.dart';
 import '../../domain/entity/user_entity.dart';
-import '../../domain/usecase/get_all_staff_usecase.dart';
+import '../../domain/repo/staff_repository.dart';
 import '../../domain/usecase/get_all_stores_usecase.dart';
 import '../../domain/usecase/get_user_by_email_usecase.dart';
 import '../../domain/usecase/update_user_role_usecase.dart';
 
-class StaffController extends GetxController {
-  final GetAllStaffUseCase getAllStaffUseCase;
+class StaffController extends PaginatedController<UserEntity> {
+  final StaffRepository _repo;
   final GetAllStoresUseCase getAllStoresUseCase;
   final GetUserByEmailUseCase getUserByEmailUseCase;
   final UpdateUserRoleUseCase updateUserRoleUseCase;
 
   StaffController({
-    required this.getAllStaffUseCase,
+    required StaffRepository repo,
     required this.getAllStoresUseCase,
     required this.getUserByEmailUseCase,
     required this.updateUserRoleUseCase,
-  });
+  }) : _repo = repo;
 
-  final isLoading       = false.obs;
   final isSearching     = false.obs;
-  final staff           = <UserEntity>[].obs;
   final stores          = <StoreEntity>[].obs;
   final searchEmailCtrl = TextEditingController();
 
@@ -31,28 +31,7 @@ class StaffController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadData();
-  }
-
-  Future<void> loadData() async {
-    isLoading.value = true;
-    try {
-      staff.value = await getAllStaffUseCase.execute();
-    } catch (e) {
-      staff.clear();
-      Get.snackbar('Error', 'Failed to load staff: $e',
-          backgroundColor: Colors.red.withValues(alpha: 0.8),
-          colorText: Colors.white);
-    }
-    try {
-      stores.value = await getAllStoresUseCase.execute();
-    } catch (e) {
-      stores.clear();
-      Get.snackbar('Error', 'Failed to load stores: $e',
-          backgroundColor: Colors.red.withValues(alpha: 0.8),
-          colorText: Colors.white);
-    }
-    isLoading.value = false;
+    _loadStores();
   }
 
   @override
@@ -60,6 +39,13 @@ class StaffController extends GetxController {
     searchEmailCtrl.dispose();
     super.onClose();
   }
+
+  Future<void> _loadStores() async {
+    try { stores.value = await getAllStoresUseCase.execute(); } catch (_) {}
+  }
+
+  @override
+  Future<PageResult<UserEntity>> fetchPage(PageParams params) => _repo.getStaffPage(params);
 
   Future<void> searchByEmail() async {
     final email = searchEmailCtrl.text.trim();
@@ -89,9 +75,9 @@ class StaffController extends GetxController {
   }
 
   void showEditDialog(UserEntity user) {
-    final selectedRole = (user.role).obs;
+    final selectedRole    = (user.role).obs;
     final selectedStoreId = Rx<String?>(user.storeId);
-    final isSaving = false.obs;
+    final isSaving        = false.obs;
 
     Get.dialog(
       AlertDialog(
@@ -119,9 +105,7 @@ class StaffController extends GetxController {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0x33FFFFFF))),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0x33FFFFFF))),
                   ),
-                  items: roleOptions
-                      .map((r) => DropdownMenuItem(value: r, child: Text(r)))
-                      .toList(),
+                  items: roleOptions.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
                   onChanged: (v) => selectedRole.value = v ?? 'customer',
                 )),
             const SizedBox(height: 12),
@@ -160,8 +144,8 @@ class StaffController extends GetxController {
                             role: selectedRole.value,
                             storeId: selectedStoreId.value,
                           );
-                          final idx = staff.indexWhere((u) => u.id == user.id);
-                          if (idx != -1) staff[idx] = updated;
+                          final idx = items.indexWhere((u) => u.id == user.id);
+                          if (idx != -1) items[idx] = updated;
                           Get.back();
                           Get.snackbar('Done', 'Updated successfully',
                               backgroundColor: Colors.green.withValues(alpha: 0.8),

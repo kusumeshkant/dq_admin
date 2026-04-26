@@ -1,3 +1,4 @@
+import '../../core/pagination/page_result.dart';
 import '../../domain/entity/store_entity.dart';
 import '../../domain/repo/store_repository.dart';
 import '../datasources/remote/store_remote_ds.dart';
@@ -11,6 +12,18 @@ class StoreRepositoryImpl implements StoreRepository {
   Future<List<StoreEntity>> getAllStores() async {
     final list = await ds.getAllStores();
     return list.map((e) => StoreModel.fromJson(e)).toList();
+  }
+
+  @override
+  Future<PageResult<StoreEntity>> getStoresPage({required PageParams params, String? storeId}) async {
+    final data = await ds.fetchStoresPage(params, storeId: storeId);
+    final meta = data['meta'] as Map<String, dynamic>;
+    return PageResult<StoreEntity>(
+      items: (data['items'] as List).map((e) => StoreModel.fromJson(e as Map<String, dynamic>)).toList(),
+      hasNext: meta['hasNext'] as bool,
+      nextCursor: meta['nextCursor'] as String?,
+      totalCount: meta['totalCount'] as int?,
+    );
   }
 
   @override

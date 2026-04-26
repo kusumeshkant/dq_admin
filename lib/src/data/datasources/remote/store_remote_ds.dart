@@ -1,4 +1,5 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
+import '../../../core/pagination/page_result.dart';
 import '../../../service_core/networks/graphql_client_provider.dart';
 
 class StoreRemoteDs {
@@ -8,6 +9,15 @@ class StoreRemoteDs {
     query Stores {
       stores {
         id storeCode name address latitude longitude
+      }
+    }
+  ''';
+
+  static const _storesPageQuery = r'''
+    query StoresPaginated($first: Int, $after: String, $search: String, $storeId: ID) {
+      storesPaginated(first: $first, after: $after, search: $search, storeId: $storeId) {
+        items { id storeCode name address latitude longitude }
+        meta  { hasNext nextCursor totalCount }
       }
     }
   ''';
@@ -42,6 +52,20 @@ class StoreRemoteDs {
 
   void _check(QueryResult result) {
     if (result.hasException) throw Exception(_errorMessage(result.exception!));
+  }
+
+  Future<Map<String, dynamic>> fetchStoresPage(PageParams params, {String? storeId}) async {
+    final vars = <String, dynamic>{
+      'first': params.limit,
+      if (params.cursor != null) 'after': params.cursor,
+      if (params.search != null) 'search': params.search,
+      if (storeId != null) 'storeId': storeId,
+    };
+    final result = await _client.query(
+      QueryOptions(document: gql(_storesPageQuery), variables: vars, fetchPolicy: FetchPolicy.networkOnly),
+    );
+    _check(result);
+    return result.data!['storesPaginated'] as Map<String, dynamic>;
   }
 
   Future<List<Map<String, dynamic>>> getAllStores() async {

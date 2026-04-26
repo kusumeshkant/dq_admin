@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/responsive/app_sizes.dart';
+import '../../core/responsive/app_spacing.dart';
+import '../../core/responsive/app_typography.dart';
 import '../../data/services/excel_parser_service.dart';
 import '../../domain/entity/product_entity.dart';
 import '../../domain/usecase/bulk_upsert_products_usecase.dart';
 import '../../domain/usecase/get_upload_logs_usecase.dart';
+import '../../service_core/subscription/feature_keys.dart';
+import '../../service_core/subscription/subscription_manager.dart';
 import '../../theme/app_theme.dart';
 import 'bulk_upload/bulk_upload_controller.dart';
 import 'bulk_upload/column_mapping_screen.dart';
+import '../plans/plans_binding.dart';
+import '../plans/plans_page.dart';
 
 class BulkUploadPage extends StatefulWidget {
   final String storeId;
@@ -83,6 +90,60 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
       ),
       body: SafeArea(
         child: Obx(() {
+          if (!Get.find<SubscriptionManager>().canUse(FeatureKeys.bulkUpload)) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 64, height: 64,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.lock_rounded,
+                          color: AppTheme.primary, size: 28),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text('Bulk Excel Upload',
+                        style: AppTypography.titleMedium
+                            .copyWith(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Upgrade to Starter or higher to upload your entire product catalogue from Excel in one click.',
+                      style: AppTypography.body.copyWith(
+                          color: AppTheme.textSecondary, height: 1.5),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    ElevatedButton.icon(
+                      onPressed: () => Get.to(
+                        () => const PlansPage(),
+                        binding: PlansBinding(),
+                        transition: Transition.rightToLeft,
+                      ),
+                      icon: const Icon(Icons.workspace_premium_rounded, size: 16),
+                      label: const Text('View Plans',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(AppSizes.radiusMd)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           final step = _ctrl.step.value;
 
           // ── Parsing spinner ──────────────────────────────────────────────

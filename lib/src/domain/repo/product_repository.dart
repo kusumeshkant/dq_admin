@@ -1,7 +1,12 @@
 import '../entity/product_entity.dart';
+import '../../core/pagination/page_result.dart';
 
 abstract class ProductRepository {
   Future<List<ProductEntity>> getStoreProducts(String storeId);
+
+  /// Cursor-paginated version — preferred for list screens.
+  Future<PageResult<ProductEntity>> getStoreProductsPage(
+      String storeId, PageParams params);
   Future<ProductEntity> createProduct({
     required String storeId, required String barcode, String? sku, required String name,
     String? description, String? brand, String? gender, String? color,

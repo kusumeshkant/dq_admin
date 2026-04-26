@@ -2,11 +2,11 @@ import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/pagination/paginated_list_view.dart';
 import '../../core/responsive/app_responsive.dart';
 import '../../core/responsive/app_spacing.dart';
 import '../../core/responsive/app_sizes.dart';
 import '../../core/responsive/app_typography.dart';
-import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/store_entity.dart';
 import '../../theme/app_theme.dart';
 import '../store_detail/store_detail_binding.dart';
@@ -29,77 +29,47 @@ class StoresPage extends StatelessWidget {
           onPressed: c.showCreateDialog,
           child: const Icon(Icons.add_rounded, color: Colors.white),
         ),
-        body: Obx(() {
-          if (c.isLoading.value) return const AppLoadingWidget();
-          if (c.stores.isEmpty) {
-            return Center(
-              child: Text(
-                'No stores yet. Tap + to add one.',
-                style: AppTypography.body
-                    .copyWith(color: AppTheme.textSecondary),
+        body: context.isTabletOrLarger
+            ? AppPaginatedGridView<StoreEntity>(
+                controller: c,
+                emptyTitle: 'No stores yet',
+                emptySubtitle: 'Tap + to add your first store.',
+                padding: EdgeInsets.fromLTRB(
+                    context.pagePadding, AppSpacing.md,
+                    context.pagePadding, 100),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: context.gridColumns,
+                  crossAxisSpacing: AppSpacing.md,
+                  mainAxisSpacing: AppSpacing.md,
+                  childAspectRatio: 2.8,
+                ),
+                itemBuilder: (_, store, __) => _StoreCard(
+                  store: store,
+                  onTap: () => Get.to(
+                    () => StoreDetailPage(store: store),
+                    binding: StoreDetailBinding(store: store),
+                  )?.then((_) => c.loadStores()),
+                  onEdit: () => c.showEditDialog(store),
+                  onDelete: () => c.confirmDelete(store),
+                ),
+              )
+            : AppPaginatedListView<StoreEntity>(
+                controller: c,
+                emptyTitle: 'No stores yet',
+                emptySubtitle: 'Tap + to add your first store.',
+                padding: EdgeInsets.fromLTRB(
+                    context.pagePadding, AppSpacing.md,
+                    context.pagePadding, 100),
+                itemBuilder: (_, store, __) => _StoreCard(
+                  store: store,
+                  onTap: () => Get.to(
+                    () => StoreDetailPage(store: store),
+                    binding: StoreDetailBinding(store: store),
+                  )?.then((_) => c.loadStores()),
+                  onEdit: () => c.showEditDialog(store),
+                  onDelete: () => c.confirmDelete(store),
+                ),
               ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: c.loadStores,
-            color: AppTheme.primary,
-            child: context.isTabletOrLarger
-                ? _StoresGrid(c: c)
-                : _StoresList(c: c),
-          );
-        }),
-      ),
-    );
-  }
-}
-
-class _StoresList extends StatelessWidget {
-  final StoresController c;
-  const _StoresList({required this.c});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(
-          context.pagePadding, AppSpacing.md, context.pagePadding, 100),
-      itemCount: c.stores.length,
-      itemBuilder: (_, i) => _StoreCard(
-        store: c.stores[i],
-        onTap: () => Get.to(
-          () => StoreDetailPage(store: c.stores[i]),
-          binding: StoreDetailBinding(store: c.stores[i]),
-        )?.then((_) => c.loadStores()),
-        onEdit: () => c.showEditDialog(c.stores[i]),
-        onDelete: () => c.confirmDelete(c.stores[i]),
-      ),
-    );
-  }
-}
-
-class _StoresGrid extends StatelessWidget {
-  final StoresController c;
-  const _StoresGrid({required this.c});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: EdgeInsets.fromLTRB(
-          context.pagePadding, AppSpacing.md, context.pagePadding, 100),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: context.gridColumns,
-        crossAxisSpacing: AppSpacing.md,
-        mainAxisSpacing: AppSpacing.md,
-        childAspectRatio: 2.8,
-      ),
-      itemCount: c.stores.length,
-      itemBuilder: (_, i) => _StoreCard(
-        store: c.stores[i],
-        onTap: () => Get.to(
-          () => StoreDetailPage(store: c.stores[i]),
-          binding: StoreDetailBinding(store: c.stores[i]),
-        )?.then((_) => c.loadStores()),
-        onEdit: () => c.showEditDialog(c.stores[i]),
-        onDelete: () => c.confirmDelete(c.stores[i]),
       ),
     );
   }
@@ -153,8 +123,7 @@ class _StoreCard extends StatelessWidget {
                         const SizedBox(width: AppSpacing.sm - 2),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.sm - 2,
-                              vertical: 2),
+                              horizontal: AppSpacing.sm - 2, vertical: 2),
                           decoration: BoxDecoration(
                             color: AppTheme.primary.withValues(alpha: 0.15),
                             borderRadius:
@@ -177,8 +146,7 @@ class _StoreCard extends StatelessWidget {
                   ),
                   if (store.address != null)
                     Text(store.address!,
-                        style:
-                            AppTypography.label,
+                        style: AppTypography.label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis),
                 ],
@@ -192,15 +160,14 @@ class _StoreCard extends StatelessWidget {
                 if (v == 'edit') onEdit();
                 if (v == 'delete') onDelete();
               },
-              itemBuilder: (_) => [
-                const PopupMenuItem(
+              itemBuilder: (_) => const [
+                PopupMenuItem(
                     value: 'edit',
-                    child: Text('Edit',
-                        style: TextStyle(color: Colors.white))),
-                const PopupMenuItem(
+                    child: Text('Edit', style: TextStyle(color: Colors.white))),
+                PopupMenuItem(
                     value: 'delete',
-                    child: Text('Delete',
-                        style: TextStyle(color: Colors.red))),
+                    child:
+                        Text('Delete', style: TextStyle(color: Colors.red))),
               ],
             ),
           ],

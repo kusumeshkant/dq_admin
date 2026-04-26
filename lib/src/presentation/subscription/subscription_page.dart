@@ -10,6 +10,8 @@ import '../../service_core/auth/session_manager.dart';
 import '../../service_core/subscription/subscription_manager.dart';
 import '../../service_core/subscription/subscription_model.dart';
 import '../../theme/app_theme.dart';
+import '../plans/plans_binding.dart';
+import '../plans/plans_page.dart';
 
 class SubscriptionPage extends StatelessWidget {
   const SubscriptionPage({super.key});
@@ -532,16 +534,11 @@ class _UpgradeCta extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                Get.snackbar(
-                  'Coming Soon',
-                  'Online plan upgrades will be available soon. Contact support@dqstore.in to upgrade.',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: AppTheme.primary.withValues(alpha: 0.9),
-                  colorText: Colors.white,
-                  duration: const Duration(seconds: 4),
-                );
-              },
+              onPressed: () => Get.to(
+                () => const PlansPage(),
+                binding: PlansBinding(),
+                transition: Transition.rightToLeft,
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,

@@ -2,11 +2,11 @@ import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/pagination/paginated_list_view.dart';
 import '../../core/responsive/app_responsive.dart';
 import '../../core/responsive/app_spacing.dart';
 import '../../core/responsive/app_sizes.dart';
 import '../../core/responsive/app_typography.dart';
-import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/user_entity.dart';
 import '../../theme/app_theme.dart';
 import 'staff_controller.dart';
@@ -24,6 +24,7 @@ class StaffPage extends StatelessWidget {
         appBar: AppBar(title: const Text('Staff Management')),
         body: Column(
           children: [
+            // Email lookup (separate from list search)
             Padding(
               padding: EdgeInsets.fromLTRB(
                   context.pagePadding, AppSpacing.md, context.pagePadding, 0),
@@ -69,8 +70,7 @@ class StaffPage extends StatelessWidget {
                           height: AppSizes.touchTarget,
                           child: Center(
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppTheme.primary)),
+                                  strokeWidth: 2, color: AppTheme.primary)),
                         )
                       : IconButton(
                           onPressed: c.searchByEmail,
@@ -82,36 +82,21 @@ class StaffPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
+
+            // Paginated staff list
             Expanded(
-              child: Obx(() {
-                if (c.isLoading.value) return const AppLoadingWidget();
-                if (c.staff.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No staff users found.',
-                      style: AppTypography.body
-                          .copyWith(color: AppTheme.textSecondary),
-                    ),
-                  );
-                }
-                return RefreshIndicator(
-                  onRefresh: c.loadData,
-                  color: AppTheme.primary,
-                  child: ListView.builder(
-                    padding: EdgeInsets.fromLTRB(
-                        context.pagePadding,
-                        AppSpacing.xs,
-                        context.pagePadding,
-                        40),
-                    itemCount: c.staff.length,
-                    itemBuilder: (_, i) => _StaffCard(
-                      user: c.staff[i],
-                      storeName: c.storeNameFor(c.staff[i].storeId),
-                      onTap: () => c.showEditDialog(c.staff[i]),
-                    ),
-                  ),
-                );
-              }),
+              child: AppPaginatedListView<UserEntity>(
+                controller: c,
+                emptyTitle: 'No staff users found',
+                padding: EdgeInsets.fromLTRB(
+                    context.pagePadding, AppSpacing.xs,
+                    context.pagePadding, 40),
+                itemBuilder: (_, user, __) => _StaffCard(
+                  user: user,
+                  storeName: c.storeNameFor(user.storeId),
+                  onTap: () => c.showEditDialog(user),
+                ),
+              ),
             ),
           ],
         ),
