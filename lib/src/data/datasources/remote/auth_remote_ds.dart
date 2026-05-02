@@ -30,7 +30,10 @@ class AuthRemoteDs {
 
   Future<Map<String, dynamic>> getProfile() async {
     final result = await _client.query(
-      QueryOptions(document: gql(_meQuery)),
+      QueryOptions(
+        document: gql(_meQuery),
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
     );
     if (result.hasException) throw Exception(result.exception.toString());
     return result.data!['me'] as Map<String, dynamic>;

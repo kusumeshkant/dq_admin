@@ -117,6 +117,7 @@ class SubscriptionRemoteDs {
         }
         limits { maxStaff maxOrdersPerMonth maxStores }
         isRecommended
+        isCustomPricing
         displayOrder
       }
     }

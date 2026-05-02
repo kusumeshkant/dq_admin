@@ -8,4 +8,9 @@ class AppConfig {
       : _flavor == 'uat'
           ? 'https://ca-dq-uat.ashysea-f5376b70.centralindia.azurecontainerapps.io/graphql'
           : 'https://ca-dq-backend.ashysea-f5376b70.centralindia.azurecontainerapps.io/graphql';
+
+  // ── Contact emails ─────────────────────────────────────────────────────────
+  // Change these when moving to branded addresses (e.g. enterprise@dqstore.in).
+  static const String enterpriseContactEmail = 'kushumeshkantsharma@gmail.com';
+  static const String supportEmail           = 'kushumeshkantsharma@gmail.com';
 }

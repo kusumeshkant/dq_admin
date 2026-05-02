@@ -2,14 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../domain/repo/auth_repository.dart';
 import '../../../domain/usecase/get_profile_usecase.dart';
+import '../../../service_core/auth/auth_router.dart';
 import '../../../service_core/auth/session_manager.dart';
 import '../../../service_core/networks/graphql_client_provider.dart';
-import '../../dashboard/dashboard_binding.dart';
-import '../../dashboard/dashboard_page.dart';
-import '../../onboarding/onboarding_binding.dart';
-import '../../onboarding/onboarding_page.dart';
-import '../../profile_setup/profile_setup_binding.dart';
-import '../../profile_setup/profile_setup_page.dart';
 
 class LoginController extends GetxController {
   final AuthRepository authRepo;
@@ -47,16 +42,10 @@ class LoginController extends GetxController {
       await GraphQLClientProvider.reinitWithToken();
 
       final user = await getProfileUseCase.execute();
-      Get.find<SessionManager>().setUser(user);
 
-      final profileIncomplete =
-          (user.name == null || user.name!.isEmpty) ||
-          (user.phone == null || user.phone!.isEmpty);
-
+      // Reject non-admin accounts with a clear message so the user knows
+      // they are using the wrong app or need to sign up as an admin.
       if (!user.isAdmin) {
-        // This account is not a store admin. Reject immediately.
-        // Covers: customer using the wrong app, or a failed dq_admin signup
-        // where registerAdmin never completed.
         await authRepo.signOut();
         GraphQLClientProvider.reset();
         errorMessage.value =
@@ -65,17 +54,17 @@ class LoginController extends GetxController {
         return;
       }
 
-      // ── Confirmed admin — route based on profile + onboarding state ──────
-      if (profileIncomplete) {
-        Get.offAll(
-          () => const ProfileSetupPage(),
-          binding: ProfileSetupBinding(email: email),
-        );
-      } else if (user.storeId == null || user.storeId!.isEmpty) {
-        Get.offAll(() => const OnboardingPage(), binding: OnboardingBinding());
-      } else {
-        Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
-      }
+      final session = Get.find<SessionManager>();
+      session.setUser(user);
+
+      // Persist the fresh profile so offline cold-starts serve correct data.
+      // Without this, a user who logs in and then reopens the app offline
+      // would get stale cached data (e.g. storeId: null from before onboarding).
+      await session.cacheProfile(user);
+
+      // AuthRouter is the single source of truth for routing — it also loads
+      // the subscription before navigating to Dashboard.
+      AuthRouter.navigateAfterLogin(user, email);
     } catch (e) {
       errorMessage.value = _friendlyError(e.toString());
     } finally {
@@ -89,7 +78,12 @@ class LoginController extends GetxController {
         raw.contains('invalid-credential')) {
       return 'Invalid email or password.';
     }
-    if (raw.contains('network')) return 'Network error. Check your connection.';
+    if (raw.contains('network') || raw.contains('NO_NETWORK')) {
+      return 'Network error. Check your connection.';
+    }
+    if (raw.contains('SESSION_EXPIRED')) {
+      return 'Session expired. Please sign in again.';
+    }
     return 'Login failed. Please try again.';
   }
 }

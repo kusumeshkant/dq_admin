@@ -4,6 +4,6 @@
 ///
 /// Only the key_id goes here (public). The key_secret stays on the backend only.
 class RazorpayConfig {
-  static const String keyId = 'rzp_test_XXXXXXXXXX'; // ← replace this
+  static const String keyId = 'rzp_test_SNjNbfNOTtc2oC';
   static const String businessName = 'DQ';
 }

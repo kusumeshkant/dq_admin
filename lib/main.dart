@@ -1,15 +1,9 @@
 import 'package:dq_admin/src/data/datasources/remote/auth_remote_ds.dart';
 import 'package:dq_admin/src/data/repo_impl/auth_repository_impl.dart';
-import 'package:dq_admin/src/domain/entity/user_entity.dart';
 import 'package:dq_admin/src/domain/usecase/get_profile_usecase.dart';
 import 'package:dq_admin/src/presentation/auth/login/login_binding.dart';
 import 'package:dq_admin/src/presentation/auth/login/login_page.dart';
-import 'package:dq_admin/src/presentation/dashboard/dashboard_binding.dart';
-import 'package:dq_admin/src/presentation/dashboard/dashboard_page.dart';
-import 'package:dq_admin/src/presentation/onboarding/onboarding_binding.dart';
-import 'package:dq_admin/src/presentation/onboarding/onboarding_page.dart';
-import 'package:dq_admin/src/presentation/profile_setup/profile_setup_binding.dart';
-import 'package:dq_admin/src/presentation/profile_setup/profile_setup_page.dart';
+import 'package:dq_admin/src/service_core/auth/auth_router.dart';
 import 'package:dq_admin/src/service_core/auth/session_manager.dart';
 import 'package:dq_admin/src/service_core/networks/graphql_client_provider.dart';
 import 'package:dq_admin/src/service_core/subscription/subscription_manager.dart';
@@ -88,124 +82,43 @@ void main() async {
 ///   2. Live backend profile       → validate access, cache profile, route
 ///   3. Cached profile             → route from cache (network was unreachable)
 ///   4. No cache + no network      → login (Firebase session kept for retry)
-Future<_StartConfig> _resolveStartPage(SessionManager session) async {
+Future<AuthStartConfig> _resolveStartPage(SessionManager session) async {
   final firebaseUser = FirebaseAuth.instance.currentUser;
 
   if (firebaseUser == null) {
-    // Not signed into Firebase — clear any stale cache and go to login.
     await session.clearCache();
-    return _StartConfig(page: const LoginPage(), binding: LoginBinding());
+    return AuthStartConfig(page: const LoginPage(), binding: LoginBinding());
   }
 
   try {
     await GraphQLClientProvider.reinitWithToken();
 
-    // Role gate: verify this session has admin access before routing.
-    // This catches revoked admins, staff/customer accounts using the wrong app,
-    // and any other case where the Firebase session is valid but the backend
-    // no longer grants admin access.
-    //
-    // Throws _ForbiddenException on FORBIDDEN → handled below (sign out).
-    // Throws any other exception on network/server error → falls through to
-    // the catch block where we fall back to cached profile.
+    // Role gate: throws _ForbiddenException on FORBIDDEN, other exceptions
+    // on network/server error (handled in catch below).
     await _assertAdminAccess();
 
     final user = await GetProfileUseCase(
       AuthRepositoryImpl(AuthRemoteDs()),
     ).execute();
 
-    // Cache on every successful fetch so offline cold starts work.
+    // Cache on every successful fetch so offline cold-starts serve correct data.
     await session.cacheProfile(user);
-    return _routeFrom(session, user, firebaseUser.email ?? '');
+    return AuthRouter.resolveStartConfig(session, user, firebaseUser.email ?? '');
   } on _ForbiddenException {
-    // Definitive backend rejection (role revoked, wrong app, etc.).
-    // Sign out and clear cache — do not fall back to stale cached data.
     await FirebaseAuth.instance.signOut();
     await session.clearCache();
     GraphQLClientProvider.reset();
-    return _StartConfig(page: const LoginPage(), binding: LoginBinding());
+    return AuthStartConfig(page: const LoginPage(), binding: LoginBinding());
   } catch (_) {
-    // Network / transient server error — fall back to cached profile so the
-    // user is not kicked out just because the backend was briefly unreachable.
-    // The Firebase session is valid; it will succeed once connectivity returns.
+    // Network / transient error — fall back to cached profile so the user is
+    // not kicked out because the backend was briefly unreachable.
     final cached = await session.loadCachedProfile();
     if (cached != null) {
-      return _routeFrom(session, cached, firebaseUser.email ?? '');
+      return AuthRouter.resolveStartConfig(session, cached, firebaseUser.email ?? '');
     }
-    // No cache and backend unreachable — show login without signing out.
-    // The Firebase session is preserved for the next launch.
-    return _StartConfig(page: const LoginPage(), binding: LoginBinding());
+    // No cache and no network — show login, preserve Firebase session for retry.
+    return AuthStartConfig(page: const LoginPage(), binding: LoginBinding());
   }
-}
-
-/// Determines which page to open based on profile completeness and role.
-///
-/// Role + completeness matrix:
-///   isAdmin + complete        → Dashboard
-///   isAdmin + incomplete      → ProfileSetup  (mid-onboarding resume)
-///   !isAdmin + complete       → Onboarding    (role set after profile done)
-///   !isAdmin + incomplete     → Login         (partial/failed signup — do not
-///                                              auto-route into setup without
-///                                              explicit re-authentication)
-_StartConfig _routeFrom(
-    SessionManager session, UserEntity user, String email) {
-  session.setUser(user);
-
-  final profileIncomplete = (user.name == null || user.name!.isEmpty) ||
-      (user.phone == null || user.phone!.isEmpty);
-
-  if (!user.isAdmin) {
-    if (profileIncomplete) {
-      // Backend user exists but has no admin role and no profile data.
-      // This is the state left by a partial/failed signup:
-      //   - Firebase account was created ✅
-      //   - registerAdmin never completed (or rolled back) ❌
-      //   - getOrCreateUser in 'me' query auto-created a customer record
-      // Routing directly to ProfileSetup here would let an incomplete
-      // customer-role user continue admin onboarding silently — wrong.
-      // Send to Login: user explicitly re-authenticates, then LoginController
-      // routes them through the correct path.
-      session.clearUser();
-      return _StartConfig(page: const LoginPage(), binding: LoginBinding());
-    }
-    // Profile is complete but admin role not yet assigned — mid-onboarding.
-    return _StartConfig(
-      page: const OnboardingPage(),
-      binding: OnboardingBinding(),
-    );
-  }
-
-  // Confirmed admin.
-  if (profileIncomplete) {
-    return _StartConfig(
-      page: const ProfileSetupPage(),
-      binding: ProfileSetupBinding(email: email),
-    );
-  }
-
-  // Profile complete but store not yet created (killed app between ProfileSetup
-  // and OnboardingPage, or upgradeToAdmin not yet called).
-  if (user.storeId == null || user.storeId!.isEmpty) {
-    return _StartConfig(
-      page: const OnboardingPage(),
-      binding: OnboardingBinding(),
-    );
-  }
-
-  // Load subscription in the background — Dashboard renders immediately,
-  // SubscriptionManager updates reactively once the fetch completes.
-  Get.find<SubscriptionManager>().load(user.storeId!);
-
-  return _StartConfig(
-    page: const DashboardPage(),
-    binding: DashboardBinding(),
-  );
-}
-
-class _StartConfig {
-  final Widget page;
-  final Bindings binding;
-  _StartConfig({required this.page, required this.binding});
 }
 
 class DQAdminApp extends StatelessWidget {

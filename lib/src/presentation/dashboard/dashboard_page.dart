@@ -29,6 +29,8 @@ import '../analytics/analytics_binding.dart';
 import '../analytics/analytics_page.dart';
 import '../staff_management/staff_management_binding.dart';
 import '../staff_management/staff_management_page.dart';
+import '../permissions/permissions_binding.dart';
+import '../permissions/permissions_page.dart';
 import 'dashboard_controller.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -456,6 +458,16 @@ class _QuickAccess extends StatelessWidget {
           binding: SubscriptionBinding(),
         ),
       ),
+      _QuickItem(
+        icon: Icons.verified_user_rounded,
+        label: 'Permissions',
+        subtitle: 'Requests, approvals & logs',
+        color: Colors.green.shade400,
+        onTap: () => Get.to(
+          () => const PermissionsPage(),
+          binding: PermissionsBinding(),
+        ),
+      ),
     ];
 
     // On tablet+: all 5 as uniform grid cards. On mobile: 2+2+1 layout.
@@ -514,6 +526,12 @@ class _QuickAccess extends StatelessWidget {
           buildCard(allItems[4]),
           const SizedBox(width: AppSpacing.sm + 2),
           buildCard(allItems[5]),
+        ]),
+        const SizedBox(height: AppSpacing.sm + 2),
+        Row(children: [
+          buildCard(allItems[6]),
+          const SizedBox(width: AppSpacing.sm + 2),
+          const Expanded(child: SizedBox()),
         ]),
       ],
     );

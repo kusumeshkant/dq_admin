@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../constants/app_config.dart';
 import '../../core/config/razorpay_config.dart';
 import '../../service_core/auth/session_manager.dart';
 import '../../service_core/subscription/subscription_manager.dart';
@@ -56,13 +58,28 @@ class PlansController extends GetxController {
 
   /// Returns true if the given plan is an upgrade from the current plan.
   bool isUpgrade(String planName) {
-    const order = ['free', 'trial', 'starter', 'growth', 'pro', 'enterprise'];
+    const order = ['free', 'trial', 'starter', 'growth', 'enterprise'];
     final currentIdx = order.indexOf(currentPlanName);
     final targetIdx  = order.indexOf(planName);
     return targetIdx > currentIdx;
   }
 
+  bool isCustomPricing(String planName) {
+    try {
+      return plans.firstWhere((p) => p['name'] == planName)['isCustomPricing'] as bool? ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> selectPlan(String planName) async {
+    // Enterprise / custom-pricing plans go to contact instead of Razorpay
+    if (isCustomPricing(planName)) {
+      final uri = Uri.parse('mailto:${AppConfig.enterpriseContactEmail}?subject=Enterprise%20Plan%20Enquiry');
+      if (await canLaunchUrl(uri)) await launchUrl(uri);
+      return;
+    }
+
     final storeId = _session.storeId;
     if (storeId == null) {
       Get.snackbar('Error', 'No store found. Please re-login.', snackPosition: SnackPosition.BOTTOM);
@@ -130,7 +147,7 @@ class PlansController extends GetxController {
     } catch (e) {
       Get.snackbar(
         'Activation Error',
-        'Payment received but plan activation failed. Contact support@dqstore.in',
+        'Payment received but plan activation failed. Contact ${AppConfig.supportEmail}',
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 6),
       );

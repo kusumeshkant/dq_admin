@@ -2,6 +2,7 @@ import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../constants/app_config.dart';
 import '../../core/responsive/app_spacing.dart';
 import '../../core/responsive/app_sizes.dart';
 import '../../core/responsive/app_typography.dart';
@@ -174,13 +175,14 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name         = plan['name'] as String;
-    final displayName  = plan['displayName'] as String;
-    final description  = plan['description'] as String? ?? '';
-    final isRecommended= plan['isRecommended'] as bool? ?? false;
-    final features     = plan['features'] as Map<String, dynamic>? ?? {};
-    final limits       = plan['limits'] as Map<String, dynamic>? ?? {};
-    final priceMap     = plan['price'] as Map<String, dynamic>? ?? {};
+    final name            = plan['name'] as String;
+    final displayName     = plan['displayName'] as String;
+    final description     = plan['description'] as String? ?? '';
+    final isRecommended   = plan['isRecommended'] as bool? ?? false;
+    final isCustomPricing = plan['isCustomPricing'] as bool? ?? false;
+    final features        = plan['features'] as Map<String, dynamic>? ?? {};
+    final limits          = plan['limits'] as Map<String, dynamic>? ?? {};
+    final priceMap        = plan['price'] as Map<String, dynamic>? ?? {};
 
     return Obx(() {
       final cycle   = controller.billingCycle.value;
@@ -189,7 +191,7 @@ class _PlanCard extends StatelessWidget {
       final price   = cycle == 'annual' ? annual : monthly;
       final perMonth = cycle == 'annual' ? (annual / 12).round() : monthly;
 
-      final isCurrent  = controller.isCurrentPlan(name);
+      final isCurrent   = controller.isCurrentPlan(name);
       final isUpgrading = controller.isUpgrading.value;
 
       return Stack(
@@ -238,40 +240,47 @@ class _PlanCard extends StatelessWidget {
                           style: AppTypography.caption
                               .copyWith(color: AppTheme.textSecondary)),
                       const SizedBox(height: 12),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '₹${_fmt(perMonth)}',
-                            style: AppTypography.displayMedium.copyWith(
-                                fontWeight: FontWeight.w900),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 3, left: 4),
-                            child: Text('/mo',
-                                style: AppTypography.caption
-                                    .copyWith(color: AppTheme.textSecondary)),
-                          ),
-                          if (cycle == 'annual') ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withValues(alpha: 0.15),
-                                borderRadius:
-                                    BorderRadius.circular(AppSizes.radiusFull),
-                              ),
-                              child: Text(
-                                '₹${_fmt(price)}/yr',
-                                style: AppTypography.labelSmall.copyWith(
-                                    color: Colors.green.shade400,
-                                    fontWeight: FontWeight.bold),
-                              ),
+                      if (isCustomPricing)
+                        Text(
+                          'Custom',
+                          style: AppTypography.displayMedium.copyWith(
+                              fontWeight: FontWeight.w900),
+                        )
+                      else
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '₹${_fmt(perMonth)}',
+                              style: AppTypography.displayMedium.copyWith(
+                                  fontWeight: FontWeight.w900),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 3, left: 4),
+                              child: Text('/mo',
+                                  style: AppTypography.caption
+                                      .copyWith(color: AppTheme.textSecondary)),
+                            ),
+                            if (cycle == 'annual') ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.15),
+                                  borderRadius:
+                                      BorderRadius.circular(AppSizes.radiusFull),
+                                ),
+                                child: Text(
+                                  '₹${_fmt(price)}/yr',
+                                  style: AppTypography.labelSmall.copyWith(
+                                      color: Colors.green.shade400,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
-                      ),
+                        ),
                     ],
                   ),
                 ),
@@ -298,9 +307,11 @@ class _PlanCard extends StatelessWidget {
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: (isCurrent || isUpgrading)
-                          ? null
-                          : () => controller.selectPlan(name),
+                      onPressed: isCustomPricing
+                          ? () => controller.selectPlan(name)
+                          : (isCurrent || isUpgrading)
+                              ? null
+                              : () => controller.selectPlan(name),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isRecommended
                             ? AppTheme.primary
@@ -322,7 +333,11 @@ class _PlanCard extends StatelessWidget {
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
                           : Text(
-                              isCurrent ? 'Current Plan' : 'Select Plan',
+                              isCustomPricing
+                                  ? 'Contact Us'
+                                  : isCurrent
+                                      ? 'Current Plan'
+                                      : 'Select Plan',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14),
                             ),
@@ -458,7 +473,7 @@ class _Footer extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Questions? Contact support@dqstore.in',
+            'Questions? Contact ${AppConfig.supportEmail}',
             style: AppTypography.caption
                 .copyWith(color: AppTheme.textSecondary),
             textAlign: TextAlign.center,
