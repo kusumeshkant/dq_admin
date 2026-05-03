@@ -41,18 +41,10 @@ class LoginController extends GetxController {
       await authRepo.loginWithEmail(email, password);
       await GraphQLClientProvider.reinitWithToken();
 
-      final user = await getProfileUseCase.execute();
-
-      // Reject non-admin accounts with a clear message so the user knows
-      // they are using the wrong app or need to sign up as an admin.
-      if (!user.isAdmin) {
-        await authRepo.signOut();
-        GraphQLClientProvider.reset();
-        errorMessage.value =
-            'This account is not registered as a store admin. '
-            'Please sign up to create a new admin account, or use the correct app.';
-        return;
-      }
+      // validateAppAccess enforces role separation on the backend and returns
+      // specific error messages when the wrong account type is used
+      // (e.g. customer account, staff account, or unregistered account).
+      final user = await authRepo.validateAppAccess();
 
       final session = Get.find<SessionManager>();
       session.setUser(user);
@@ -83,6 +75,14 @@ class LoginController extends GetxController {
     }
     if (raw.contains('SESSION_EXPIRED')) {
       return 'Session expired. Please sign in again.';
+    }
+    // Pass through backend-originated messages verbatim — they are already
+    // user-readable (account separation errors, role errors, etc.).
+    if (raw.contains('Customer and admin accounts must be separate') ||
+        raw.contains('Staff and admin accounts must be separate') ||
+        raw.contains('No admin account found') ||
+        raw.contains('does not have admin access')) {
+      return raw.replaceFirst('Exception: ', '');
     }
     return 'Login failed. Please try again.';
   }

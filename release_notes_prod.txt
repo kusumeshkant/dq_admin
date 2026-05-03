@@ -1,0 +1,17 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DQ Admin  |  v1.0.2+31  |  PROD BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀  PRODUCTION BUILD — Azure backend.
+
+🔧 Environment
+  • Backend: Azure Container Apps (production)
+  • Flavor: prod  |  App ID: com.example.dq_admin
+
+📦 What's new
+  • Backend fully migrated to Azure Container Apps
+  • Faster cold starts, improved reliability
+  • Flavor system: dev / uat / prod builds now available
+  • All existing features unchanged
+
+✅  This is the release candidate build.

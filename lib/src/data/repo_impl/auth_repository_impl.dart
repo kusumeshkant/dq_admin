@@ -19,6 +19,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<UserEntity> validateAppAccess() async {
+    final json = await ds.validateAppAccess();
+    return UserModel.fromJson(json);
+  }
+
+  @override
   Future<void> signOut() async {
     GraphQLClientProvider.reset();
     await ds.signOut();

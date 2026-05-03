@@ -21,6 +21,20 @@ class AuthRemoteDs {
     }
   ''';
 
+  static const _validateAppAccessMutation = r'''
+    mutation ValidateAppAccess($appId: String!) {
+      validateAppAccess(appId: $appId) {
+        id
+        name
+        email
+        phone
+        role
+        roles
+        storeId
+      }
+    }
+  ''';
+
   Future<void> loginWithEmail(String email, String password) async {
     await FirebaseAuth.instance.signInWithEmailAndPassword(
       email: email,
@@ -37,6 +51,24 @@ class AuthRemoteDs {
     );
     if (result.hasException) throw Exception(result.exception.toString());
     return result.data!['me'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> validateAppAccess() async {
+    final result = await _client.mutate(
+      MutationOptions(
+        document: gql(_validateAppAccessMutation),
+        variables: const {'appId': 'ADMIN'},
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
+    );
+    if (result.hasException) {
+      final graphqlErrors = result.exception?.graphqlErrors;
+      if (graphqlErrors != null && graphqlErrors.isNotEmpty) {
+        throw Exception(graphqlErrors.first.message);
+      }
+      throw Exception(result.exception.toString());
+    }
+    return result.data!['validateAppAccess'] as Map<String, dynamic>;
   }
 
   Future<void> signOut() async {
