@@ -2,6 +2,11 @@ import 'package:get/get.dart';
 import 'subscription_model.dart';
 import 'subscription_remote_ds.dart';
 
+/// Master switch — set to true to begin enforcing subscription plan limits.
+/// When false, canUse() always returns true regardless of the store's plan.
+/// Flip this (and SUBSCRIPTION_ENABLED on the backend) together when ready.
+const bool _subscriptionEnabled = false;
+
 /// SubscriptionManager — single source of truth for the current store's plan.
 ///
 /// Lifecycle:
@@ -58,9 +63,15 @@ class SubscriptionManager extends GetxService {
     }
   }
 
-  /// Convenience — returns true if the current plan includes [featureKey].
-  /// Uses the locally cached feature map — no network call.
-  bool canUse(String featureKey) => _info.value.features[featureKey];
+  /// Returns true if the current plan includes [featureKey].
+  /// When _subscriptionEnabled is false, always returns true (open access).
+  bool canUse(String featureKey) {
+    if (!_subscriptionEnabled) return true;
+    return _info.value.features[featureKey];
+  }
+
+  /// Whether subscription enforcement is currently active.
+  bool get isSubscriptionEnabled => _subscriptionEnabled;
 
   /// Clears the cached subscription — call on logout.
   void clear() {
