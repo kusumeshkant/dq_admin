@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -175,8 +176,8 @@ class _RevenueHero extends StatelessWidget {
     final wowColor = wow == null
         ? Colors.white54
         : isUp
-            ? Colors.greenAccent
-            : Colors.redAccent;
+            ? AppColors.success
+            : AppColors.error;
     final wowText = wow == null
         ? 'No prior week data'
         : '${isUp ? '↑' : '↓'} ${wow.abs().toStringAsFixed(1)}% vs last week';
@@ -262,27 +263,27 @@ class _KpiChipsRow extends StatelessWidget {
           'Completion',
           '${analytics.completionRate.toStringAsFixed(0)}%',
           Icons.check_circle_outline_rounded,
-          Colors.green.shade400),
+          AppColors.success),
       _KpiData(
           'Cancellation',
           '${analytics.cancellationRate.toStringAsFixed(0)}%',
           Icons.cancel_outlined,
           analytics.cancellationRate > 15
-              ? Colors.red.shade400
-              : Colors.orange.shade400),
+              ? AppColors.error
+              : AppColors.warning),
       _KpiData('Avg Order', '₹${analytics.avgOrderValue.toStringAsFixed(0)}',
-          Icons.shopping_bag_outlined, Colors.blue.shade400),
+          Icons.shopping_bag_outlined, AppColors.info),
       _KpiData('Avg Items', analytics.avgItemsPerOrder.toStringAsFixed(1),
-          Icons.inventory_2_outlined, Colors.purple.shade300),
+          Icons.inventory_2_outlined, AppColors.primary),
       _KpiData('Units Sold', '${analytics.totalUnitsSold}',
-          Icons.sell_outlined, Colors.teal.shade300),
+          Icons.sell_outlined, AppColors.info),
       _KpiData(
           'Low Stock',
           '${analytics.lowStockCount}',
           Icons.warning_amber_rounded,
           analytics.lowStockCount > 0
-              ? Colors.red.shade400
-              : Colors.green.shade400),
+              ? AppColors.error
+              : AppColors.success),
     ];
 
     return SizedBox(
@@ -366,8 +367,8 @@ class _BusinessInsights extends StatelessWidget {
     final trendColor = wow == null
         ? AppTheme.textSecondary
         : wow >= 0
-            ? Colors.greenAccent
-            : Colors.redAccent;
+            ? AppColors.success
+            : AppColors.error;
 
     return AppGlassCard(
       child: Column(
@@ -389,7 +390,7 @@ class _BusinessInsights extends StatelessWidget {
           // Best day
           _InsightRow(
             icon: Icons.emoji_events_rounded,
-            iconColor: Colors.amber.shade400,
+            iconColor: AppColors.warning,
             label: 'Best Day',
             value: bestDay != null
                 ? '${_shortDate(bestDay.date)}  ·  ₹${_fmt(bestDay.revenue)}'
@@ -401,21 +402,21 @@ class _BusinessInsights extends StatelessWidget {
           _InsightRow(
             icon: Icons.inventory_2_rounded,
             iconColor: analytics.lowStockCount > 0
-                ? Colors.red.shade400
-                : Colors.green.shade400,
+                ? AppColors.error
+                : AppColors.success,
             label: 'Low Stock Alert',
             value: analytics.lowStockCount > 0
                 ? '${analytics.lowStockCount} product${analytics.lowStockCount > 1 ? 's' : ''} running low (≤5 units)'
                 : 'All products well stocked',
             valueColor: analytics.lowStockCount > 0
-                ? Colors.red.shade300
-                : Colors.green.shade300,
+                ? AppColors.error
+                : AppColors.success,
           ),
           const Divider(color: Colors.white10, height: 16),
           // Basket size
           _InsightRow(
             icon: Icons.shopping_cart_rounded,
-            iconColor: Colors.blue.shade400,
+            iconColor: AppColors.info,
             label: 'Avg Basket Size',
             value:
                 '${analytics.avgItemsPerOrder.toStringAsFixed(1)} items  ·  ₹${analytics.avgOrderValue.toStringAsFixed(0)} avg spend',
@@ -608,7 +609,7 @@ class _RevenueChart extends StatelessWidget {
                           height: (ratio * 100).clamp(3.0, 100.0),
                           decoration: BoxDecoration(
                             color: isToday
-                                ? Colors.amber.shade400
+                                ? AppColors.warning
                                 : isPeak
                                     ? AppTheme.primary
                                     : AppTheme.primary
@@ -661,7 +662,7 @@ class _RevenueChart extends StatelessWidget {
               Container(
                   width: 8, height: 8,
                   decoration: BoxDecoration(
-                      color: Colors.amber.shade400,
+                      color: AppColors.warning,
                       borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 4),
               const Text('Today',
@@ -810,7 +811,7 @@ class _TopProductsList extends StatelessWidget {
                     children: [
                       Text('₹${_fmt(p.revenue)}',
                           style: const TextStyle(
-                              color: Colors.greenAccent,
+                              color: AppColors.success,
                               fontWeight: FontWeight.bold,
                               fontSize: 14)),
                       Container(
@@ -849,9 +850,9 @@ class _TopProductsList extends StatelessWidget {
   }
 
   Color _rankColor(int i) {
-    if (i == 0) return Colors.amber.shade400;
-    if (i == 1) return Colors.grey.shade400;
-    if (i == 2) return Colors.orange.shade300;
+    if (i == 0) return AppColors.warning;
+    if (i == 1) return AppColors.neutral;
+    if (i == 2) return AppColors.warning;
     return AppTheme.primary;
   }
 
@@ -933,7 +934,7 @@ class _MonthlyRevenueChart extends StatelessWidget {
                             height: (ratio * 86).clamp(3.0, 86.0),
                             decoration: BoxDecoration(
                               color: isCurrent
-                                  ? Colors.amber.shade400
+                                  ? AppColors.warning
                                   : isPeak
                                       ? AppTheme.primary
                                       : AppTheme.primary.withValues(alpha: 0.35),
@@ -988,7 +989,7 @@ class _RetentionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weekChange = r.newCustomersThisWeek - r.newCustomersLastWeek;
-    final weekColor = weekChange >= 0 ? Colors.greenAccent : Colors.redAccent;
+    final weekColor = weekChange >= 0 ? AppColors.success : AppColors.error;
 
     return AppGlassCard(
       child: Column(
@@ -997,15 +998,15 @@ class _RetentionCard extends StatelessWidget {
             children: [
               _StatBox(label: 'Retention Rate',
                   value: '${r.retentionRate.toStringAsFixed(1)}%',
-                  color: r.retentionRate >= 30 ? Colors.greenAccent
-                      : r.retentionRate >= 15 ? Colors.amber.shade400
-                      : Colors.redAccent),
+                  color: r.retentionRate >= 30 ? AppColors.success
+                      : r.retentionRate >= 15 ? AppColors.warning
+                      : AppColors.error),
               const SizedBox(width: 8),
               _StatBox(label: 'Returning', value: '${r.returningCustomers}',
                   color: AppTheme.primary),
               const SizedBox(width: 8),
               _StatBox(label: 'Total Customers', value: '${r.totalCustomers}',
-                  color: Colors.blue.shade400),
+                  color: AppColors.info),
             ],
           ),
           const SizedBox(height: 8),
@@ -1014,7 +1015,7 @@ class _RetentionCard extends StatelessWidget {
               _StatBox(
                 label: 'New This Week',
                 value: '${r.newCustomersThisWeek}',
-                color: Colors.teal.shade300,
+                color: AppColors.info,
                 suffix: ' (${weekChange >= 0 ? '+' : ''}$weekChange vs last)',
                 suffixColor: weekColor,
               ),
@@ -1024,7 +1025,7 @@ class _RetentionCard extends StatelessWidget {
                 value: r.avgRepeatIntervalDays != null
                     ? '${r.avgRepeatIntervalDays!.toStringAsFixed(1)} days'
                     : '—',
-                color: Colors.purple.shade300,
+                color: AppColors.primary,
               ),
             ],
           ),
@@ -1043,7 +1044,7 @@ class _BasketAbandonmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weekChange = b.thisWeekAbandonmentRate - b.lastWeekAbandonmentRate;
-    final weekColor = weekChange <= 0 ? Colors.greenAccent : Colors.redAccent;
+    final weekColor = weekChange <= 0 ? AppColors.success : AppColors.error;
 
     return AppGlassCard(
       child: Column(
@@ -1053,14 +1054,14 @@ class _BasketAbandonmentCard extends StatelessWidget {
               _StatBox(
                 label: 'Abandonment Rate',
                 value: '${b.abandonmentRate.toStringAsFixed(1)}%',
-                color: b.abandonmentRate > 50 ? Colors.redAccent
-                    : b.abandonmentRate > 30 ? Colors.amber.shade400
-                    : Colors.greenAccent,
+                color: b.abandonmentRate > 50 ? AppColors.error
+                    : b.abandonmentRate > 30 ? AppColors.warning
+                    : AppColors.success,
               ),
               const SizedBox(width: 8),
               _StatBox(label: 'Conversion Rate',
                   value: '${b.conversionRate.toStringAsFixed(1)}%',
-                  color: Colors.greenAccent),
+                  color: AppColors.success),
               const SizedBox(width: 8),
               _StatBox(label: 'Total Checks', value: '${b.totalChecks}',
                   color: AppTheme.primary),
@@ -1078,10 +1079,10 @@ class _BasketAbandonmentCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               _StatBox(label: 'Abandoned', value: '${b.abandonedChecks}',
-                  color: Colors.redAccent),
+                  color: AppColors.error),
               const SizedBox(width: 8),
               _StatBox(label: 'Converted', value: '${b.convertedChecks}',
-                  color: Colors.teal.shade300),
+                  color: AppColors.info),
             ],
           ),
         ],
@@ -1112,7 +1113,7 @@ class _CustomerLTVCard extends StatelessWidget {
             children: [
               _StatBox(label: 'Avg Revenue / Customer',
                   value: _lfmt(ltv.avgRevenuePerCustomer),
-                  color: Colors.greenAccent),
+                  color: AppColors.success),
               const SizedBox(width: 8),
               _StatBox(
                 label: 'Projected Monthly LTV',
@@ -1127,17 +1128,17 @@ class _CustomerLTVCard extends StatelessWidget {
             children: [
               _StatBox(label: 'Avg Orders / Customer',
                   value: ltv.avgOrdersPerCustomer.toStringAsFixed(1),
-                  color: Colors.blue.shade400),
+                  color: AppColors.info),
               const SizedBox(width: 8),
               _StatBox(
                 label: 'Avg Days Active',
                 value: ltv.avgDaysActive != null
                     ? '${ltv.avgDaysActive!.toStringAsFixed(0)} days' : '—',
-                color: Colors.purple.shade300,
+                color: AppColors.primary,
               ),
               const SizedBox(width: 8),
               _StatBox(label: 'Total Customers', value: '${ltv.totalCustomers}',
-                  color: Colors.teal.shade300),
+                  color: AppColors.info),
             ],
           ),
           if (ltv.topCustomers.isNotEmpty) ...[
@@ -1172,7 +1173,7 @@ class _CustomerLTVCard extends StatelessWidget {
                             color: AppTheme.textSecondary, fontSize: 10)),
                     const SizedBox(width: 8),
                     Text(_lfmt(cu.totalSpend),
-                        style: const TextStyle(color: Colors.greenAccent,
+                        style: const TextStyle(color: AppColors.success,
                             fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 ),
@@ -1257,10 +1258,10 @@ class _StaffPerformanceListState extends State<_StaffPerformanceList> {
 
   Widget _buildCard(StaffPerformanceStatEntity s) {
     final cancColor = s.cancellationRate > 20
-        ? Colors.redAccent
+        ? AppColors.error
         : s.cancellationRate > 10
-            ? Colors.amber.shade400
-            : Colors.greenAccent;
+            ? AppColors.warning
+            : AppColors.success;
     return AppGlassCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -1298,12 +1299,12 @@ class _StaffPerformanceListState extends State<_StaffPerformanceList> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade400.withValues(alpha: 0.12),
+                    color: AppColors.info.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                       '⚡ ${s.avgFulfillmentTime!.toStringAsFixed(0)}m avg',
-                      style: TextStyle(color: Colors.blue.shade400,
+                      style: TextStyle(color: AppColors.info,
                           fontSize: 10, fontWeight: FontWeight.w600)),
                 ),
             ],
@@ -1312,14 +1313,14 @@ class _StaffPerformanceListState extends State<_StaffPerformanceList> {
           Row(
             children: [
               _StatBox(label: 'Completed', value: '${s.ordersCompleted}',
-                  color: Colors.greenAccent),
+                  color: AppColors.success),
               const SizedBox(width: 6),
               _StatBox(label: 'Cancelled', value: '${s.ordersCancelled}',
                   color: cancColor),
               const SizedBox(width: 6),
               _StatBox(label: 'Flags Raised', value: '${s.flagsRaised}',
                   color: s.flagsRaised > 0
-                      ? Colors.orange.shade400 : Colors.greenAccent),
+                      ? AppColors.warning : AppColors.success),
               const SizedBox(width: 6),
               _StatBox(label: 'Cancel Rate',
                   value: '${s.cancellationRate.toStringAsFixed(0)}%',
