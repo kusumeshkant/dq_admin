@@ -912,7 +912,7 @@ class _SubscriptionBanner extends StatelessWidget {
 
       if (info.isExpired) {
         message = 'Your subscription has expired. Renew to restore access.';
-        color = Colors.red.shade700;
+        color = AppColors.error;
         icon = Icons.error_rounded;
       } else if (info.isGracePeriod) {
         final days = info.gracePeriodEndsAt != null
@@ -920,14 +920,14 @@ class _SubscriptionBanner extends StatelessWidget {
             : 0;
         message =
             'Payment overdue — $days day${days == 1 ? '' : 's'} of grace period remaining.';
-        color = Colors.orange.shade700;
+        color = AppColors.warning;
         icon = Icons.warning_rounded;
       } else if (info.isTrial && (info.trialDaysLeft ?? 99) <= 5) {
         final d = info.trialDaysLeft!;
         message = d == 0
             ? 'Your trial expires today — upgrade to keep access.'
             : 'Trial expires in $d day${d == 1 ? '' : 's'} — upgrade to continue.';
-        color = Colors.blue.shade700;
+        color = AppColors.info;
         icon = Icons.info_rounded;
       }
 
@@ -980,14 +980,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (status.toLowerCase()) {
-      'pending' => Colors.grey.shade500,
-      'preparing' => Colors.orange.shade600,
-      'ready' => Colors.blue.shade500,
-      'completed' => Colors.green.shade600,
-      'cancelled' => Colors.red.shade600,
-      _ => Colors.grey.shade500,
-    };
+    final color = AppColors.statusColor(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
