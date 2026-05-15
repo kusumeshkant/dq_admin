@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -136,7 +137,7 @@ class BulkUploadController extends GetxController {
       Get.snackbar(
         'Upload Failed',
         e.toString().replaceAll('Exception: ', ''),
-        backgroundColor: Colors.red.withValues(alpha: 0.85),
+        backgroundColor: AppColors.error,
         colorText: Colors.white,
         duration: const Duration(seconds: 5),
       );

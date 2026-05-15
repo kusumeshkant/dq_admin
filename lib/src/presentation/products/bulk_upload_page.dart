@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -211,7 +212,7 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
                       label: const Text('Done — Continue Setup',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: AppColors.success,
                         foregroundColor: Colors.white,
                         padding:
                             const EdgeInsets.symmetric(vertical: 14),
@@ -248,9 +249,9 @@ class _MappingBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.08),
+        color: AppColors.successSubtle,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.successBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,7 +259,7 @@ class _MappingBanner extends StatelessWidget {
           Row(
             children: [
               const Icon(Icons.check_circle_rounded,
-                  color: Colors.green, size: 14),
+                  color: AppColors.success, size: 14),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -283,13 +284,13 @@ class _MappingBanner extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.12),
+                  color: AppColors.successSubtle,
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Text(
                   '$label → $col',
                   style: const TextStyle(
-                      color: Colors.green, fontSize: 10),
+                      color: AppColors.success, fontSize: 10),
                 ),
               );
             }).toList(),
@@ -310,9 +311,9 @@ class _InfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.1),
+        color: AppColors.infoSubtle,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.infoBorder),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,12 +321,12 @@ class _InfoCard extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.info_outline_rounded,
-                  color: Colors.blue, size: 18),
+                  color: AppColors.info, size: 18),
               SizedBox(width: 8),
               Text(
                 'Bulk Product Upload',
                 style: TextStyle(
-                    color: Colors.blue,
+                    color: AppColors.info,
                     fontWeight: FontWeight.bold,
                     fontSize: 13),
               ),
@@ -394,20 +395,20 @@ class _ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.1),
+        color: AppColors.errorSubtle,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.errorBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(Icons.error_outline_rounded,
-              color: Colors.red, size: 16),
+              color: AppColors.error, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(message,
                 style:
-                    const TextStyle(color: Colors.red, fontSize: 12)),
+                    const TextStyle(color: AppColors.error, fontSize: 12)),
           ),
         ],
       ),
@@ -494,12 +495,12 @@ class _PreviewRow extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.purple.withValues(alpha: 0.2),
+                color: AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(p.brand!,
                   style: const TextStyle(
-                      color: Colors.purple, fontSize: 10)),
+                      color: AppColors.primary, fontSize: 10)),
             ),
         ],
       ),
@@ -558,10 +559,10 @@ class _ResultCard extends StatelessWidget {
         result.created == 0 && result.updated == 0;
 
     final Color statusColor = hasErrors
-        ? Colors.red
+        ? AppColors.error
         : nothingCreated
-            ? Colors.orange
-            : Colors.green;
+            ? AppColors.warning
+            : AppColors.success;
 
     final IconData statusIcon = hasErrors
         ? Icons.error_outline_rounded
@@ -616,24 +617,24 @@ class _ResultCard extends StatelessWidget {
               _StatChip(
                   label: 'Created',
                   value: result.created,
-                  color: Colors.green),
+                  color: AppColors.success),
               const SizedBox(width: 10),
               _StatChip(
                   label: 'Updated',
                   value: result.updated,
-                  color: Colors.blue),
+                  color: AppColors.info),
               const SizedBox(width: 10),
               if (result.skipped > 0)
                 _StatChip(
                     label: 'Skipped',
                     value: result.skipped,
-                    color: Colors.orange),
+                    color: AppColors.warning),
               if (hasErrors) ...[
                 const SizedBox(width: 10),
                 _StatChip(
                     label: 'Errors',
                     value: result.errors.length,
-                    color: Colors.red),
+                    color: AppColors.error),
               ],
             ],
           ),
@@ -650,7 +651,7 @@ class _ResultCard extends StatelessWidget {
                   child: Text(
                     '• ${e.barcode}: ${e.message}',
                     style: const TextStyle(
-                        color: Colors.red, fontSize: 11),
+                        color: AppColors.error, fontSize: 11),
                   ),
                 )),
           ],
@@ -766,22 +767,22 @@ class _LogCard extends StatelessWidget {
             children: [
               _MiniChip(
                   label: '${log.created} created',
-                  color: Colors.green),
+                  color: AppColors.success),
               const SizedBox(width: 6),
               _MiniChip(
                   label: '${log.updated} updated',
-                  color: Colors.blue),
+                  color: AppColors.info),
               if (log.skipped > 0) ...[
                 const SizedBox(width: 6),
                 _MiniChip(
                     label: '${log.skipped} skipped',
-                    color: Colors.orange),
+                    color: AppColors.warning),
               ],
               if (hasErrors) ...[
                 const SizedBox(width: 6),
                 _MiniChip(
                     label: '${log.errorCount} errors',
-                    color: Colors.red),
+                    color: AppColors.error),
               ],
             ],
           ),
@@ -792,14 +793,14 @@ class _LogCard extends StatelessWidget {
                   child: Text(
                     '• ${e.barcode}: ${e.message}',
                     style: const TextStyle(
-                        color: Colors.red, fontSize: 10),
+                        color: AppColors.error, fontSize: 10),
                   ),
                 )),
             if (log.errors.length > 3)
               Text(
                 '… and ${log.errors.length - 3} more errors',
                 style: const TextStyle(
-                    color: Colors.red, fontSize: 10),
+                    color: AppColors.error, fontSize: 10),
               ),
           ],
         ],

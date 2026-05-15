@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -147,13 +148,13 @@ class _ToggleOption extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: selected
                       ? Colors.white.withValues(alpha: 0.25)
-                      : Colors.green.withValues(alpha: 0.2),
+                      : AppColors.successSubtle,
                   borderRadius: BorderRadius.circular(AppSizes.radiusFull),
                 ),
                 child: Text(
                   subLabel!,
                   style: AppTypography.labelSmall.copyWith(
-                    color: selected ? Colors.white : Colors.green.shade400,
+                    color: selected ? Colors.white : AppColors.success,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -209,7 +210,7 @@ class _PlanCard extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: isRecommended
                           ? [AppTheme.primary.withValues(alpha: 0.35),
-                             Colors.indigo.shade900.withValues(alpha: 0.4)]
+                             AppColors.primary.withValues(alpha: 0.15)]
                           : [Colors.white.withValues(alpha: 0.05),
                              Colors.white.withValues(alpha: 0.03)],
                       begin: Alignment.topLeft,
@@ -228,7 +229,7 @@ class _PlanCard extends StatelessWidget {
                                   fontWeight: FontWeight.bold)),
                           if (isCurrent) ...[
                             const SizedBox(width: 8),
-                            _Badge(label: 'Current', color: Colors.green),
+                            _Badge(label: 'Current', color: AppColors.success),
                           ],
                           const Spacer(),
                           if (isRecommended)
@@ -267,14 +268,14 @@ class _PlanCard extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: Colors.green.withValues(alpha: 0.15),
+                                  color: AppColors.successSubtle,
                                   borderRadius:
                                       BorderRadius.circular(AppSizes.radiusFull),
                                 ),
                                 child: Text(
                                   '₹${_fmt(price)}/yr',
                                   style: AppTypography.labelSmall.copyWith(
-                                      color: Colors.green.shade400,
+                                      color: AppColors.success,
                                       fontWeight: FontWeight.bold),
                                 ),
                               ),
@@ -388,7 +389,7 @@ class _PlanCard extends StatelessWidget {
                   ? Icons.check_circle_rounded
                   : Icons.cancel_rounded,
               size: 14,
-              color: enabled ? Colors.green.shade400 : Colors.white12,
+              color: enabled ? AppColors.success : Colors.white12,
             ),
           ],
         ),
@@ -413,7 +414,7 @@ class _PlanCard extends StatelessWidget {
                 style: AppTypography.caption.copyWith(
                     fontWeight: FontWeight.bold,
                     color: display == '∞'
-                        ? Colors.amber.shade400
+                        ? AppColors.warning
                         : AppTheme.textPrimary)),
           ],
         ),

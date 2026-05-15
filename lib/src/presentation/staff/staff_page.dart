@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -115,8 +116,7 @@ class _StaffCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final roleColor =
-        user.isAdmin ? Colors.purple.shade300 : Colors.blue.shade300;
+    final roleColor = user.isAdmin ? AppColors.primary : AppColors.info;
 
     return GestureDetector(
       onTap: onTap,

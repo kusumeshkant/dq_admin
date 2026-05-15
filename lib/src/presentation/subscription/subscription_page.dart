@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -189,14 +190,14 @@ class _PlanStatusCard extends StatelessWidget {
   }
 
   Color _statusColor(String status) => switch (status) {
-        'trial'          => Colors.blue.shade400,
-        'active'         => Colors.green.shade400,
-        'grace_period'   => Colors.orange.shade400,
-        'expired'        => Colors.red.shade400,
-        'cancelled'      => Colors.red.shade300,
-        'admin_override' => Colors.purple.shade300,
-        'grandfathered'  => Colors.amber.shade400,
-        _                => Colors.grey.shade400,
+        'trial'          => AppColors.info,
+        'active'         => AppColors.success,
+        'grace_period'   => AppColors.warning,
+        'expired'        => AppColors.error,
+        'cancelled'      => AppColors.error,
+        'admin_override' => AppColors.primary,
+        'grandfathered'  => AppColors.warning,
+        _                => AppColors.neutral,
       };
 
   String _statusLabel(String status) => switch (status) {
@@ -257,10 +258,10 @@ class _TrialProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = (daysLeft / totalDays).clamp(0.0, 1.0);
     final color = daysLeft <= 3
-        ? Colors.red.shade400
+        ? AppColors.error
         : daysLeft <= 7
-            ? Colors.orange.shade400
-            : Colors.blue.shade400;
+            ? AppColors.warning
+            : AppColors.info;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,7 +307,7 @@ class _UsageSection extends StatelessWidget {
           _UsageRow(
             icon: Icons.people_rounded,
             label: 'Staff',
-            color: Colors.blue.shade400,
+            color: AppColors.info,
             used: info.usage.staffCount,
             limit: info.limits.maxStaff,
             isUnlimited: info.limits.isStaffUnlimited,
@@ -324,7 +325,7 @@ class _UsageSection extends StatelessWidget {
           _UsageRow(
             icon: Icons.storefront_rounded,
             label: 'Stores',
-            color: Colors.purple.shade300,
+            color: AppColors.primary,
             used: info.usage.storeCount,
             limit: info.limits.maxStores,
             isUnlimited: info.limits.isStoresUnlimited,
@@ -381,7 +382,7 @@ class _UsageRow extends StatelessWidget {
             Text(
               usageText,
               style: AppTypography.label.copyWith(
-                color: nearLimit ? Colors.orange.shade300 : AppTheme.textSecondary,
+                color: nearLimit ? AppColors.warning : AppTheme.textSecondary,
                 fontWeight: nearLimit ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -396,7 +397,7 @@ class _UsageRow extends StatelessWidget {
               minHeight: 4,
               backgroundColor: Colors.white10,
               valueColor: AlwaysStoppedAnimation<Color>(
-                nearLimit ? Colors.orange.shade400 : color,
+                nearLimit ? AppColors.warning : color,
               ),
             ),
           ),
@@ -467,10 +468,10 @@ class _FeatureRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isEnabled ? Colors.greenAccent : Colors.grey.shade600;
+    final color = isEnabled ? AppColors.success : AppColors.neutral;
     return Row(
       children: [
-        Icon(icon, size: 16, color: isEnabled ? AppTheme.primary : Colors.grey.shade600),
+        Icon(icon, size: 16, color: isEnabled ? AppTheme.primary : AppColors.neutral),
         const SizedBox(width: 12),
         Expanded(
           child: Text(label,
@@ -503,7 +504,7 @@ class _UpgradeCta extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             AppTheme.primary.withValues(alpha: 0.2),
-            Colors.indigo.shade900.withValues(alpha: 0.3),
+            AppColors.primary.withValues(alpha: 0.15),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

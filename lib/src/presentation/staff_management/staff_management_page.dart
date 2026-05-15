@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -209,14 +210,14 @@ class _StaffCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: member.role == 'admin'
-                  ? Colors.amber.withValues(alpha: 0.15)
-                  : Colors.green.withValues(alpha: 0.12),
+                  ? AppColors.warningSubtle
+                  : AppColors.successSubtle,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               member.role?.toUpperCase() ?? 'STAFF',
               style: TextStyle(
-                color: member.role == 'admin' ? Colors.amber : Colors.green,
+                color: member.role == 'admin' ? AppColors.warning : AppColors.success,
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
               ),
@@ -227,7 +228,7 @@ class _StaffCard extends StatelessWidget {
           // Remove button (only for staff, not admin)
           if (member.role != 'admin')
             IconButton(
-              icon: const Icon(Icons.person_remove_rounded, color: Colors.redAccent, size: 20),
+              icon: const Icon(Icons.person_remove_rounded, color: AppColors.error, size: 20),
               tooltip: 'Remove from store',
               onPressed: () => controller.removeStaff(member),
             ),
@@ -255,10 +256,10 @@ class _InviteCard extends StatelessWidget {
           Container(
             width: 44, height: 44,
             decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.15),
+              color: AppColors.warningSubtle,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.mail_outline_rounded, color: Colors.orange, size: 22),
+            child: const Icon(Icons.mail_outline_rounded, color: AppColors.warning, size: 22),
           ),
           const SizedBox(width: 14),
 
@@ -278,7 +279,7 @@ class _InviteCard extends StatelessWidget {
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: invite.token));
                     Get.snackbar('Copied!', 'Invite code copied to clipboard.',
-                        backgroundColor: Colors.green.withValues(alpha: 0.85),
+                        backgroundColor: AppColors.success,
                         colorText: Colors.white,
                         duration: const Duration(seconds: 2));
                   },

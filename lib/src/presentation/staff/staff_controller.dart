@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../../core/pagination/page_result.dart';
@@ -55,14 +56,14 @@ class StaffController extends PaginatedController<UserEntity> {
       final user = await getUserByEmailUseCase.execute(email);
       if (user == null) {
         Get.snackbar('Not Found', 'No user found with that email.',
-            backgroundColor: Colors.orange.withValues(alpha: 0.8),
+            backgroundColor: AppColors.warning,
             colorText: Colors.white);
         return;
       }
       showEditDialog(user);
     } catch (e) {
       Get.snackbar('Error', e.toString(),
-          backgroundColor: Colors.red.withValues(alpha: 0.8),
+          backgroundColor: AppColors.error,
           colorText: Colors.white);
     } finally {
       isSearching.value = false;
@@ -148,11 +149,11 @@ class StaffController extends PaginatedController<UserEntity> {
                           if (idx != -1) items[idx] = updated;
                           Get.back();
                           Get.snackbar('Done', 'Updated successfully',
-                              backgroundColor: Colors.green.withValues(alpha: 0.8),
+                              backgroundColor: AppColors.success,
                               colorText: Colors.white);
                         } catch (e) {
                           Get.snackbar('Error', e.toString(),
-                              backgroundColor: Colors.red.withValues(alpha: 0.8),
+                              backgroundColor: AppColors.error,
                               colorText: Colors.white);
                         } finally {
                           isSaving.value = false;

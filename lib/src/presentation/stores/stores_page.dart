@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -167,7 +168,7 @@ class _StoreCard extends StatelessWidget {
                 PopupMenuItem(
                     value: 'delete',
                     child:
-                        Text('Delete', style: TextStyle(color: Colors.red))),
+                        Text('Delete', style: TextStyle(color: AppColors.error))),
               ],
             ),
           ],
