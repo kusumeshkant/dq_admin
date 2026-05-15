@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +70,7 @@ class _PendingTab extends StatelessWidget {
           return _EmptyState(
             icon: Icons.check_circle_rounded,
             message: 'No pending requests',
-            color: Colors.green.shade400,
+            color: AppColors.success,
           );
         }
         return ListView.builder(
@@ -148,7 +149,7 @@ class _HistoryTab extends StatelessWidget {
                 return _EmptyState(
                   icon: Icons.history_rounded,
                   message: 'No requests found',
-                  color: Colors.blue.shade300,
+                  color: AppColors.info,
                 );
               }
               return ListView.builder(
@@ -191,7 +192,7 @@ class _DiscountLogsTab extends StatelessWidget {
           return _EmptyState(
             icon: Icons.percent_rounded,
             message: 'No discount logs yet',
-            color: Colors.amber.shade400,
+            color: AppColors.warning,
           );
         }
         return ListView.builder(
@@ -224,7 +225,7 @@ class _ProductChangeLogsTab extends StatelessWidget {
           return _EmptyState(
             icon: Icons.inventory_2_rounded,
             message: 'No product changes logged yet',
-            color: Colors.purple.shade300,
+            color: AppColors.primary,
           );
         }
         return ListView.builder(
@@ -334,8 +335,8 @@ class _RequestCard extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: onReject,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red.shade400,
-                      side: BorderSide(color: Colors.red.shade400.withValues(alpha: 0.5)),
+                      foregroundColor: AppColors.error,
+                      side: const BorderSide(color: AppColors.errorBorder),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                     child: const Text('Reject', style: TextStyle(fontSize: 13)),
@@ -346,7 +347,7 @@ class _RequestCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onApprove,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade700,
+                      backgroundColor: AppColors.success,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                     child: const Text('Approve', style: TextStyle(fontSize: 13)),
@@ -362,9 +363,9 @@ class _RequestCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: onRevoke,
-                icon: Icon(Icons.block_rounded, size: 14, color: Colors.red.shade400),
-                label: Text('Revoke',
-                    style: TextStyle(color: Colors.red.shade400, fontSize: 12)),
+                icon: const Icon(Icons.block_rounded, size: 14, color: AppColors.error),
+                label: const Text('Revoke',
+                    style: TextStyle(color: AppColors.error, fontSize: 12)),
               ),
             ),
           ],
@@ -374,11 +375,11 @@ class _RequestCard extends StatelessWidget {
   }
 
   Color _statusColor(String status) => switch (status) {
-    'pending'  => Colors.orange.shade400,
-    'approved' => Colors.green.shade400,
-    'rejected' => Colors.red.shade400,
-    'revoked'  => Colors.red.shade300,
-    _          => Colors.grey.shade400,
+    'pending'  => AppColors.warning,
+    'approved' => AppColors.success,
+    'rejected' => AppColors.error,
+    'revoked'  => AppColors.error,
+    _          => AppColors.neutral,
   };
 
   String _typeLabel(String t) => switch (t) {
@@ -418,13 +419,13 @@ class _DiscountLogCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withValues(alpha: 0.15),
+                  color: AppColors.warningSubtle,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   '${log['discountPercent']}% OFF',
                   style: const TextStyle(
-                      color: Colors.amber,
+                      color: AppColors.warning,
                       fontSize: 12,
                       fontWeight: FontWeight.bold),
                 ),
@@ -444,11 +445,11 @@ class _DiscountLogCard extends StatelessWidget {
           const SizedBox(height: 4),
           Row(
             children: [
-              _amountChip('Original', log['originalAmount'], Colors.grey.shade400),
+              _amountChip('Original', log['originalAmount'], AppColors.neutral),
               const SizedBox(width: 8),
-              _amountChip('Discount', log['discountAmount'], Colors.red.shade400),
+              _amountChip('Discount', log['discountAmount'], AppColors.error),
               const SizedBox(width: 8),
-              _amountChip('Final', log['finalAmount'], Colors.green.shade400),
+              _amountChip('Final', log['finalAmount'], AppColors.success),
             ],
           ),
           const SizedBox(height: 4),
@@ -501,11 +502,11 @@ class _ChangeLogCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final changeType = log['changeType'] as String? ?? '';
     final typeColor = switch (changeType) {
-      'created'       => Colors.green.shade400,
-      'updated'       => Colors.blue.shade400,
-      'deleted'       => Colors.red.shade400,
-      'bulk_uploaded' => Colors.purple.shade300,
-      _               => Colors.grey.shade400,
+      'created'       => AppColors.success,
+      'updated'       => AppColors.info,
+      'deleted'       => AppColors.error,
+      'bulk_uploaded' => AppColors.primary,
+      _               => AppColors.neutral,
     };
 
     final changedFields = (log['changedFields'] as List?)?.cast<String>() ?? [];

@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/datasources/remote/permission_remote_ds.dart';
@@ -149,7 +150,7 @@ class PermissionsController extends GetxController {
                     title: Text(_permLabel(perm),
                         style: const TextStyle(color: Colors.white70, fontSize: 13)),
                     checkColor: Colors.white,
-                    activeColor: Colors.green.shade600,
+                    activeColor: AppColors.success,
                     onChanged: (v) {
                       if (v == true) {
                         selectedPerms.add(perm);
@@ -168,7 +169,7 @@ class PermissionsController extends GetxController {
         actions: [
           TextButton(onPressed: Get.back, child: const Text('Cancel')),
           Obx(() => ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
             onPressed: isSaving.value
                 ? null
                 : () async {
@@ -184,12 +185,12 @@ class PermissionsController extends GetxController {
                       );
                       Get.back();
                       Get.snackbar('Approved', 'Permission granted to ${req['staffName']}',
-                          backgroundColor: Colors.green.shade700, colorText: Colors.white);
+                          backgroundColor: AppColors.success, colorText: Colors.white);
                       await loadPending();
                       await loadAll();
                     } catch (e) {
                       Get.snackbar('Error', e.toString(),
-                          backgroundColor: Colors.red.shade700, colorText: Colors.white);
+                          backgroundColor: AppColors.error, colorText: Colors.white);
                     } finally {
                       isSaving.value = false;
                     }
@@ -227,7 +228,7 @@ class PermissionsController extends GetxController {
         actions: [
           TextButton(onPressed: Get.back, child: const Text('Cancel')),
           Obx(() => ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: isSaving.value
                 ? null
                 : () async {
@@ -239,12 +240,12 @@ class PermissionsController extends GetxController {
                       );
                       Get.back();
                       Get.snackbar('Rejected', 'Request rejected',
-                          backgroundColor: Colors.orange.shade700, colorText: Colors.white);
+                          backgroundColor: AppColors.warning, colorText: Colors.white);
                       await loadPending();
                       await loadAll();
                     } catch (e) {
                       Get.snackbar('Error', e.toString(),
-                          backgroundColor: Colors.red.shade700, colorText: Colors.white);
+                          backgroundColor: AppColors.error, colorText: Colors.white);
                     } finally {
                       isSaving.value = false;
                     }
@@ -301,7 +302,7 @@ class PermissionsController extends GetxController {
         actions: [
           TextButton(onPressed: Get.back, child: const Text('Cancel')),
           Obx(() => ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade800),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: isSaving.value
                 ? null
                 : () async {
@@ -314,11 +315,11 @@ class PermissionsController extends GetxController {
                       );
                       Get.back();
                       Get.snackbar('Revoked', 'Permission revoked for ${req['staffName']}',
-                          backgroundColor: Colors.red.shade700, colorText: Colors.white);
+                          backgroundColor: AppColors.error, colorText: Colors.white);
                       await loadAll();
                     } catch (e) {
                       Get.snackbar('Error', e.toString(),
-                          backgroundColor: Colors.red.shade700, colorText: Colors.white);
+                          backgroundColor: AppColors.error, colorText: Colors.white);
                     } finally {
                       isSaving.value = false;
                     }
