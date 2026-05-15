@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart' show AppColors;
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -204,7 +205,7 @@ class _ActiveFilterBar extends StatelessWidget {
                 onRemove: () => controller.applySort('createdAt', dir: 'desc')),
           _Chip(
               label: 'Clear all',
-              color: Colors.red.withValues(alpha: 0.2),
+              color: AppColors.errorSubtle,
               onRemove: controller.clearFilters),
         ],
       ),
@@ -262,7 +263,7 @@ void _showFilterSheet(BuildContext context, ProductsController c) {
     Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
       decoration: const BoxDecoration(
-        color: Color(0xFF1A0D35),
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
@@ -549,11 +550,11 @@ class _ProductCard extends StatelessWidget {
             width: AppSizes.avatarMd - 2,
             height: AppSizes.avatarMd - 2,
             decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.15),
+              color: AppColors.warningSubtle,
               borderRadius: BorderRadius.circular(AppSizes.radiusMd),
             ),
             child: const Icon(Icons.inventory_2_rounded,
-                color: Colors.orange, size: AppSizes.iconMd - 4),
+                color: AppColors.warning, size: AppSizes.iconMd - 4),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -574,21 +575,20 @@ class _ProductCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.sm - 2, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.15),
+                          color: AppColors.warningSubtle,
                           borderRadius:
                               BorderRadius.circular(AppSizes.radiusSm - 2),
-                          border: Border.all(
-                              color: Colors.red.withValues(alpha: 0.4)),
+                          border: Border.all(color: AppColors.warningBorder),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.warning_amber_rounded,
-                                color: Colors.red, size: 10),
+                                color: AppColors.warning, size: 10),
                             SizedBox(width: 3),
                             Text('Low Stock',
                                 style: TextStyle(
-                                    color: Colors.red,
+                                    color: AppColors.warning,
                                     fontSize: 9,
                                     fontWeight: FontWeight.w600)),
                           ],
@@ -623,7 +623,7 @@ class _ProductCard extends StatelessWidget {
               const PopupMenuItem(
                   value: 'delete',
                   child: Text('Delete',
-                      style: TextStyle(color: Colors.red))),
+                      style: TextStyle(color: AppColors.error))),
             ],
           ),
         ],
