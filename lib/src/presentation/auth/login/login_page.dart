@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -99,7 +100,7 @@ class LoginPage extends StatelessWidget {
                             child: Text(
                               c.errorMessage.value,
                               style: AppTypography.bodySmall
-                                  .copyWith(color: Colors.redAccent),
+                                  .copyWith(color: AppColors.error),
                             ),
                           )),
                     const SizedBox(height: AppSpacing.xl),

@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -108,7 +109,7 @@ class SignupPage extends StatelessWidget {
                     : Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(c.errorMessage.value,
-                            style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
+                            style: const TextStyle(color: AppColors.error, fontSize: 13)),
                       )),
                 const SizedBox(height: 8),
 

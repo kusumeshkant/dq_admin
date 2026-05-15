@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -240,14 +241,14 @@ class _RevenueCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.green.shade800.withValues(alpha: 0.6),
-            Colors.green.shade600.withValues(alpha: 0.3),
+            AppColors.success.withValues(alpha: 0.6),
+            AppColors.success.withValues(alpha: 0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppSizes.radiusXl),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.successBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,11 +270,11 @@ class _RevenueCard extends StatelessWidget {
                 Row(
                   children: [
                     const Icon(Icons.check_circle_rounded,
-                        color: Colors.greenAccent, size: 14),
+                        color: AppColors.success, size: 14),
                     const SizedBox(width: 4),
                     Text('$completionRate% completion rate',
                         style: const TextStyle(
-                            color: Colors.greenAccent, fontSize: 12)),
+                            color: AppColors.success, fontSize: 12)),
                   ],
                 ),
               ],
@@ -342,14 +343,14 @@ class _StatsRow extends StatelessWidget {
           label: 'Pending',
           value: '${stats.pendingOrders}',
           icon: Icons.hourglass_top_rounded,
-          color: Colors.orange.shade400,
+          color: AppColors.warning,
         ),
         const SizedBox(width: 10),
         _MiniStatCard(
           label: 'Stores',
           value: '${stats.activeStores}',
           icon: Icons.store_rounded,
-          color: Colors.blue.shade400,
+          color: AppColors.info,
         ),
       ],
     );
@@ -413,7 +414,7 @@ class _QuickAccess extends StatelessWidget {
         icon: Icons.store_rounded,
         label: 'Stores',
         subtitle: 'Manage locations & products',
-        color: Colors.blue.shade400,
+        color: AppColors.info,
         onTap: () => Get.to(() => const StoresPage(), binding: StoresBinding()),
       ),
       _QuickItem(
@@ -427,7 +428,7 @@ class _QuickAccess extends StatelessWidget {
         icon: Icons.bar_chart_rounded,
         label: 'Analytics',
         subtitle: 'Revenue & trends',
-        color: Colors.indigo.shade300,
+        color: AppColors.primary,
         onTap: () =>
             Get.to(() => const AnalyticsPage(), binding: AnalyticsBinding()),
       ),
@@ -435,7 +436,7 @@ class _QuickAccess extends StatelessWidget {
         icon: Icons.person_add_rounded,
         label: 'Invite Staff',
         subtitle: 'Add team members',
-        color: Colors.teal.shade300,
+        color: AppColors.info,
         onTap: () => Get.to(
           () => const StaffManagementPage(),
           binding: StaffManagementBinding(),
@@ -445,14 +446,14 @@ class _QuickAccess extends StatelessWidget {
         icon: Icons.people_rounded,
         label: 'Staff',
         subtitle: 'View and manage your team',
-        color: Colors.purple.shade300,
+        color: AppColors.primary,
         onTap: () => Get.to(() => const StaffPage(), binding: StaffBinding()),
       ),
       _QuickItem(
         icon: Icons.workspace_premium_rounded,
         label: 'Subscription',
         subtitle: 'Plan, features & usage',
-        color: Colors.amber.shade400,
+        color: AppColors.warning,
         onTap: () => Get.to(
           () => const SubscriptionPage(),
           binding: SubscriptionBinding(),
@@ -462,7 +463,7 @@ class _QuickAccess extends StatelessWidget {
         icon: Icons.verified_user_rounded,
         label: 'Permissions',
         subtitle: 'Requests, approvals & logs',
-        color: Colors.green.shade400,
+        color: AppColors.success,
         onTap: () => Get.to(
           () => const PermissionsPage(),
           binding: PermissionsBinding(),
@@ -637,9 +638,9 @@ class _TopStoresList extends StatelessWidget {
         final sr = topStores[i];
         final ratio = (sr.revenue / maxRevenue).clamp(0.0, 1.0);
         final rankColors = [
-          Colors.amber.shade400,
-          Colors.grey.shade400,
-          Colors.orange.shade300,
+          AppColors.warning,
+          AppColors.neutral,
+          AppColors.warning,
         ];
         final rankColor =
             i < rankColors.length ? rankColors[i] : AppTheme.textSecondary;
@@ -706,7 +707,7 @@ class _TopStoresList extends StatelessWidget {
                     Text(
                       '₹${_fmt(sr.revenue)}',
                       style: const TextStyle(
-                          color: Colors.greenAccent,
+                          color: AppColors.success,
                           fontWeight: FontWeight.bold,
                           fontSize: 14),
                     ),
@@ -768,11 +769,11 @@ class _RecentOrdersList extends StatelessWidget {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: _statusColor(o.status).withValues(alpha: 0.1),
+                    color: AppColors.statusColor(o.status).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(Icons.receipt_rounded,
-                      color: _statusColor(o.status), size: 18),
+                      color: AppColors.statusColor(o.status), size: 18),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -813,17 +814,6 @@ class _RecentOrdersList extends StatelessWidget {
         );
       }).toList(),
     );
-  }
-
-  Color _statusColor(String status) {
-    return switch (status.toLowerCase()) {
-      'pending' => Colors.grey.shade500,
-      'preparing' => Colors.orange.shade600,
-      'ready' => Colors.blue.shade500,
-      'completed' => Colors.green.shade600,
-      'cancelled' => Colors.red.shade600,
-      _ => Colors.grey.shade500,
-    };
   }
 
   String _timeAgo(String createdAt) {
@@ -891,14 +881,14 @@ class _PlanBadge extends StatelessWidget {
   }
 
   Color _badgeColor(String status) => switch (status) {
-        'trial'          => Colors.blue.shade400,
-        'active'         => Colors.green.shade400,
-        'grace_period'   => Colors.orange.shade400,
-        'expired'        => Colors.red.shade400,
-        'cancelled'      => Colors.red.shade300,
-        'admin_override' => Colors.purple.shade300,
-        'grandfathered'  => Colors.amber.shade400,
-        _                => Colors.grey.shade400,
+        'trial'          => AppColors.info,
+        'active'         => AppColors.success,
+        'grace_period'   => AppColors.warning,
+        'expired'        => AppColors.error,
+        'cancelled'      => AppColors.error,
+        'admin_override' => AppColors.primary,
+        'grandfathered'  => AppColors.warning,
+        _                => AppColors.neutral,
       };
 
   String _fmt(String name) {

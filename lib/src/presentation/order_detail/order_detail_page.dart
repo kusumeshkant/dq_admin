@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,7 @@ class OrderDetailPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      _StatusBadge(status: order.status),
+                      DsStatusBadge(status: order.status),
                     ],
                   ),
                   if (order.isFlagged) ...[
@@ -47,18 +48,18 @@ class OrderDetailPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
+                        color: AppColors.errorSubtle,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                        border: Border.all(color: AppColors.errorBorder),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.flag_rounded, color: Colors.red, size: 16),
+                          const Icon(Icons.flag_rounded, color: AppColors.error, size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Issue: ${order.flaggedIssue!.reason}${order.flaggedIssue!.note != null ? " — ${order.flaggedIssue!.note}" : ""}',
-                              style: const TextStyle(color: Colors.red, fontSize: 12),
+                              style: const TextStyle(color: AppColors.error, fontSize: 12),
                             ),
                           ),
                         ],
@@ -157,29 +158,3 @@ class OrderDetailPage extends StatelessWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  final String status;
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (status.toLowerCase()) {
-      'pending' => Colors.grey.shade500,
-      'preparing' => Colors.orange.shade600,
-      'ready' => Colors.blue.shade500,
-      'completed' => Colors.green.shade600,
-      'cancelled' => Colors.red.shade600,
-      _ => Colors.grey.shade500,
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Text(status,
-          style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
-    );
-  }
-}
