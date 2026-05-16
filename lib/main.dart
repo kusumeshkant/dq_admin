@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:dq_admin/core/observability/observability.dart';
 import 'package:dq_admin/src/data/datasources/remote/auth_remote_ds.dart';
 import 'package:dq_admin/src/data/repo_impl/auth_repository_impl.dart';
 import 'package:dq_admin/src/domain/usecase/get_profile_usecase.dart';
@@ -51,9 +54,40 @@ Future<void> _assertAdminAccess() async {
   }
 }
 
-void main() async {
+void main() {
+  runZonedGuarded(_bootstrap, (error, stack) {
+    if (Get.isRegistered<CrashlyticsService>()) {
+      Get.find<CrashlyticsService>().recordError(
+        error, stack, category: CrashCategory.unknown, fatal: true,
+      );
+    }
+    debugPrint('\n=== [DQ-Admin] UNCAUGHT ZONE ERROR ===\n$error\n$stack\n======================================\n');
+  });
+}
+
+Future<void> _bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Observability services — must run immediately after Firebase init.
+  final crashlytics = Get.put(CrashlyticsService(), permanent: true);
+  Get.put(AnalyticsService(), permanent: true);
+  Get.put(PerformanceService(), permanent: true);
+  Get.put(BreadcrumbService(), permanent: true);
+  Get.put(ReleaseHealthService(), permanent: true);
+  Get.put(FramePerformanceTracker(), permanent: true);
+  Get.put(AnrDetector(), permanent: true);
+
+  // Wire global error handlers.
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    crashlytics.recordFlutterError(details);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    crashlytics.recordError(error, stack,
+        category: CrashCategory.rendering, fatal: true);
+    return true;
+  };
 
   if (defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.iOS) {
@@ -134,6 +168,7 @@ class DQAdminApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       initialBinding: binding,
+      navigatorObservers: [AnalyticsNavigatorObserver()],
       home: home,
     );
   }

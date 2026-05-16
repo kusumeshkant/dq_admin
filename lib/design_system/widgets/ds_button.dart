@@ -23,7 +23,7 @@ class DsButton extends StatelessWidget {
     this.leadingIcon,
     this.isLoading = false,
     this.width,
-  });
+  }) : _variant = _ButtonVariant.primary;
 
   const DsButton.secondary({
     super.key,
@@ -45,16 +45,6 @@ class DsButton extends StatelessWidget {
 
   // ignore: unused_field
   final _ButtonVariant _variant;
-
-  const DsButton._internal({
-    super.key,
-    required this.label,
-    required _ButtonVariant variant,
-    this.onPressed,
-    this.leadingIcon,
-    this.isLoading = false,
-    this.width,
-  }) : _variant = variant;
 
   @override
   Widget build(BuildContext context) {

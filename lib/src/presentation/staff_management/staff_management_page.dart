@@ -215,7 +215,7 @@ class _StaffCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              member.role?.toUpperCase() ?? 'STAFF',
+              member.role.toUpperCase(),
               style: TextStyle(
                 color: member.role == 'admin' ? AppColors.warning : AppColors.success,
                 fontSize: 10,
