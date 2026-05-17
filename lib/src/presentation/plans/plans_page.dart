@@ -1,12 +1,10 @@
-import 'package:dq_admin/design_system/design_system.dart';
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../constants/app_config.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_typography.dart';
+import '../../core/responsive/app_responsive.dart';
 import '../../theme/app_theme.dart';
 import 'plans_controller.dart';
 
@@ -47,19 +45,65 @@ class PlansPage extends StatelessWidget {
             children: [
               _BillingToggle(controller: c),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.md, AppSpacing.sm, AppSpacing.md, 40),
-                  children: [
-                    for (final plan in c.plans)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: _PlanCard(plan: plan, controller: c),
+                child: context.isTabletOrLarger
+                    // ── Tablet / desktop: grid layout ──────────────────
+                    ? SingleChildScrollView(
+                        padding: EdgeInsets.fromLTRB(
+                            context.pagePadding,
+                            AppSpacing.sm,
+                            context.pagePadding,
+                            40),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                                maxWidth: context.maxContentWidth),
+                            child: Column(
+                              children: [
+                                // Plan cards grid
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final cols = context.responsive(
+                                        1, tablet: 2, largeTablet: 3);
+                                    final spacing = AppSpacing.md.toDouble();
+                                    final cardWidth = (constraints.maxWidth -
+                                            spacing * (cols - 1)) /
+                                        cols;
+                                    return Wrap(
+                                      spacing: spacing,
+                                      runSpacing: spacing,
+                                      children: [
+                                        for (final plan in c.plans)
+                                          SizedBox(
+                                            width: cardWidth,
+                                            child: _PlanCard(
+                                                plan: plan, controller: c),
+                                          ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: AppSpacing.sm),
+                                _Footer(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    // ── Mobile: original vertical list ─────────────────
+                    : ListView(
+                        padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.md, AppSpacing.sm, AppSpacing.md, 40),
+                        children: [
+                          for (final plan in c.plans)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(bottom: AppSpacing.md),
+                              child: _PlanCard(plan: plan, controller: c),
+                            ),
+                          const SizedBox(height: AppSpacing.sm),
+                          _Footer(),
+                        ],
                       ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _Footer(),
-                  ],
-                ),
               ),
             ],
           );
