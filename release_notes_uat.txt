@@ -1,0 +1,38 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DQ Admin  |  v1.0.2+37  |  UAT BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪  UAT BUILD — For testers only.
+
+🔧 Environment
+  • Backend: UAT server (Azure Container Apps)
+  • Flavor: uat  |  App ID: com.example.dq_admin.uat
+  • Razorpay: TEST mode (no real charges)
+  • Installs alongside Dev and Prod apps
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🆕  What's New — Phase 2 Subscription
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  • Subscription page — view current plan, status, usage counters
+  • Trial progress bar with days remaining
+  • Feature access list per plan (analytics, coupons, bulk upload etc.)
+  • Plans page — browse all tiers, monthly/annual toggle
+  • Razorpay payment sheet for plan upgrades (TEST mode)
+  • Plan activates instantly after payment confirmation
+  • Fixed: Razorpay test key now correctly wired (was placeholder)
+
+📋 What to Test
+  • Go to Subscription → verify current plan and status display
+  • Check usage bars (staff, orders, stores)
+  • Tap "View Plans" → verify all plans load with correct pricing
+  • Toggle Monthly / Annual — prices should update
+  • Tap Subscribe on a paid plan — Razorpay sheet should open
+  • Use TEST card to complete payment:
+      Card:  4111 1111 1111 1111
+      Expiry: any future date
+      CVV:   any 3 digits
+  • Verify plan name updates after successful payment
+  • Test payment dismiss (tap back) — should handle gracefully
+
+⚠️  Razorpay is in TEST mode — no real money is charged.
+⚠️  Report issues to kushumeshkant2013@gmail.com before prod sign-off.
