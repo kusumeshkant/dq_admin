@@ -1,20 +1,16 @@
-import 'package:dq_admin/design_system/design_system.dart';
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/responsive/app_responsive.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_typography.dart';
 import '../../core/widgets/app_error_widget.dart';
 import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/dashboard_entity.dart';
 import '../../service_core/subscription/feature_keys.dart';
 import '../../service_core/subscription/subscription_manager.dart';
 import '../../theme/app_theme.dart';
-import '../plans/plans_binding.dart';
-import '../plans/plans_page.dart';
+import '../../routes/app_routes.dart';
 import 'analytics_controller.dart';
 
 class AnalyticsPage extends StatefulWidget {
@@ -205,34 +201,32 @@ class _RevenueHero extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm - 2),
           Text(
             '₹${_fmt(analytics.totalRevenue)}',
-            style: const TextStyle(
+            style: AppTypography.statLarge.copyWith(
                 color: Colors.white,
                 fontSize: 36,
-                fontWeight: FontWeight.bold,
                 letterSpacing: -1),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
                   color: wowColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadius.full),
                   border:
                       Border.all(color: wowColor.withValues(alpha: 0.4)),
                 ),
                 child: Text(wowText,
-                    style: TextStyle(
-                        color: wowColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600)),
+                    style: AppTypography.caption.copyWith(
+                        color: wowColor, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(width: 10),
               Text(
                 'This week: ₹${_fmt(analytics.thisWeekRevenue)}',
-                style: const TextStyle(color: Colors.white54, fontSize: 11),
+                style: AppTypography.caption
+                    .copyWith(color: Colors.white54),
               ),
             ],
           ),
@@ -516,7 +510,7 @@ class _PeriodSelector extends StatelessWidget {
               color: active
                   ? AppTheme.primary.withValues(alpha: 0.25)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppSizes.radiusSm),
               border: Border.all(
                 color: active
                     ? AppTheme.primary.withValues(alpha: 0.7)
@@ -524,14 +518,9 @@ class _PeriodSelector extends StatelessWidget {
               ),
             ),
             child: Text('${days}D',
-                style: TextStyle(
-                    color: active
-                        ? AppTheme.primary
-                        : AppTheme.textSecondary,
-                    fontSize: 11,
-                    fontWeight: active
-                        ? FontWeight.bold
-                        : FontWeight.normal)),
+                style: AppTypography.caption.copyWith(
+                    color: active ? AppTheme.primary : AppTheme.textSecondary,
+                    fontWeight: active ? FontWeight.bold : FontWeight.normal)),
           ),
         );
       }).toList(),
@@ -598,7 +587,7 @@ class _RevenueChart extends StatelessWidget {
                         if (isPeak) ...[
                           Text(
                             '₹${_fmt(d.revenue)}',
-                            style: const TextStyle(
+                            style: AppTypography.caption.copyWith(
                                 color: AppTheme.primary,
                                 fontSize: 7,
                                 fontWeight: FontWeight.bold),
@@ -630,15 +619,12 @@ class _RevenueChart extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(_shortDate(data.first.date),
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 9)),
+                  style: AppTypography.caption.copyWith(fontSize: 9)),
               if (data.length > 2)
                 Text(_shortDate(data[data.length ~/ 2].date),
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 9)),
+                    style: AppTypography.caption.copyWith(fontSize: 9)),
               Text(_shortDate(data.last.date),
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 9)),
+                  style: AppTypography.caption.copyWith(fontSize: 9)),
             ],
           ),
           const Divider(color: Colors.white10, height: 16),
@@ -665,19 +651,17 @@ class _RevenueChart extends StatelessWidget {
                       color: AppColors.warning,
                       borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 4),
-              const Text('Today',
-                  style: TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 9)),
-              const SizedBox(width: 12),
+              Text('Today',
+                  style: AppTypography.caption.copyWith(fontSize: 9)),
+              const SizedBox(width: AppSpacing.md),
               Container(
                   width: 8, height: 8,
                   decoration: BoxDecoration(
                       color: AppTheme.primary,
                       borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 4),
-              const Text('Peak day',
-                  style: TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 9)),
+              Text('Peak day',
+                  style: AppTypography.caption.copyWith(fontSize: 9)),
             ],
           ),
         ],
@@ -716,13 +700,11 @@ class _ChartStat extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(value,
-            style: const TextStyle(
-                color: AppTheme.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 13)),
+            style: AppTypography.bodySmall
+                .copyWith(fontWeight: FontWeight.bold)),
         Text(label,
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 9)),
+            style: AppTypography.caption
+                .copyWith(fontSize: 9, color: AppTheme.textSecondary)),
       ],
     );
   }
@@ -792,17 +774,14 @@ class _TopProductsList extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(p.name,
-                            style: const TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13),
+                            style: AppTypography.bodySmall
+                                .copyWith(fontWeight: FontWeight.w600),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
                         Text(
                             '${p.totalSold} units  ·  ${p.barcode}',
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 10)),
+                            style: AppTypography.caption
+                                .copyWith(fontSize: 10)),
                       ],
                     ),
                   ),
@@ -810,10 +789,9 @@ class _TopProductsList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text('₹${_fmt(p.revenue)}',
-                          style: const TextStyle(
+                          style: AppTypography.body.copyWith(
                               color: AppColors.success,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14)),
+                              fontWeight: FontWeight.bold)),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
@@ -924,8 +902,9 @@ class _MonthlyRevenueChart extends StatelessWidget {
                         children: [
                           if (isPeak)
                             Text(_mfmt(m.revenue),
-                                style: const TextStyle(
-                                    color: AppTheme.primary, fontSize: 7,
+                                style: AppTypography.caption.copyWith(
+                                    color: AppTheme.primary,
+                                    fontSize: 7,
                                     fontWeight: FontWeight.bold),
                                 maxLines: 1,
                                 overflow: TextOverflow.clip),
@@ -943,8 +922,8 @@ class _MonthlyRevenueChart extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(_safeMonthName(m.month),
-                              style: const TextStyle(
-                                  color: AppTheme.textSecondary, fontSize: 7)),
+                              style: AppTypography.caption
+                                  .copyWith(fontSize: 7)),
                         ],
                       ),
                     ),
@@ -1144,8 +1123,7 @@ class _CustomerLTVCard extends StatelessWidget {
           if (ltv.topCustomers.isNotEmpty) ...[
             const SizedBox(height: 12),
             const Text('Top Customers',
-                style: TextStyle(color: AppTheme.textSecondary,
-                    fontSize: 11, fontWeight: FontWeight.w600)),
+                style: AppTypography.captionBold),
             const SizedBox(height: 8),
             ...ltv.topCustomers.take(5).toList().asMap().entries.map((entry) {
               final i = entry.key;
@@ -1165,16 +1143,17 @@ class _CustomerLTVCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(cu.name,
-                        style: const TextStyle(
-                            color: AppTheme.textPrimary, fontSize: 12),
+                        style: AppTypography.label
+                            .copyWith(color: AppTheme.textPrimary),
                         maxLines: 1, overflow: TextOverflow.ellipsis)),
                     Text('${cu.totalOrders} orders',
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 10)),
-                    const SizedBox(width: 8),
+                        style: AppTypography.caption
+                            .copyWith(fontSize: 10)),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(_lfmt(cu.totalSpend),
-                        style: const TextStyle(color: AppColors.success,
-                            fontSize: 12, fontWeight: FontWeight.bold)),
+                        style: AppTypography.label.copyWith(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.bold)),
                   ],
                 ),
               );
@@ -1284,13 +1263,13 @@ class _StaffPerformanceListState extends State<_StaffPerformanceList> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(s.staffName,
-                        style: const TextStyle(color: AppTheme.textPrimary,
-                            fontWeight: FontWeight.w600, fontSize: 13),
+                        style: AppTypography.bodySmall
+                            .copyWith(fontWeight: FontWeight.w600),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis),
                     Text('${s.totalOrdersHandled} orders handled',
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 10)),
+                        style: AppTypography.caption
+                            .copyWith(fontSize: 10)),
                   ],
                 ),
               ),
@@ -1304,8 +1283,8 @@ class _StaffPerformanceListState extends State<_StaffPerformanceList> {
                   ),
                   child: Text(
                       '⚡ ${s.avgFulfillmentTime!.toStringAsFixed(0)}m avg',
-                      style: TextStyle(color: AppColors.info,
-                          fontSize: 10, fontWeight: FontWeight.w600)),
+                      style: AppTypography.caption.copyWith(
+                          color: AppColors.info, fontWeight: FontWeight.w600)),
                 ),
             ],
           ),
@@ -1367,20 +1346,21 @@ class _StatBox extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(value,
-                      style: TextStyle(color: color, fontSize: 14,
-                          fontWeight: FontWeight.bold),
+                      style: AppTypography.body.copyWith(
+                          color: color, fontWeight: FontWeight.bold),
                       maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
                 if (suffix != null)
                   Text(suffix!,
-                      style: TextStyle(color: suffixColor ?? color,
-                          fontSize: 9, fontWeight: FontWeight.w600)),
+                      style: AppTypography.caption.copyWith(
+                          color: suffixColor ?? color,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 2),
             Text(label,
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 9),
+                style: AppTypography.caption.copyWith(fontSize: 9),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),
@@ -1419,18 +1399,14 @@ class _LockedFeatureBody extends StatelessWidget {
                 style: AppTypography.titleMedium
                     .copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(description,
                 style: AppTypography.body
                     .copyWith(color: AppTheme.textSecondary, height: 1.5),
                 textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.lg),
             ElevatedButton.icon(
-              onPressed: () => Get.to(
-                () => const PlansPage(),
-                binding: PlansBinding(),
-                transition: Transition.rightToLeft,
-              ),
+              onPressed: () => Get.toNamed(AppRoutes.plans),
               icon: const Icon(Icons.workspace_premium_rounded, size: 16),
               label: const Text('View Plans',
                   style: TextStyle(fontWeight: FontWeight.bold)),
@@ -1438,7 +1414,7 @@ class _LockedFeatureBody extends StatelessWidget {
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg, vertical: 12),
+                    horizontal: AppSpacing.lg, vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSizes.radiusMd)),
               ),

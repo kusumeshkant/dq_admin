@@ -1,8 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../src/theme/app_theme.dart';
-import '../src/core/responsive/app_sizes.dart';
-import '../src/core/responsive/app_spacing.dart';
+import 'package:dq_admin/design_system/design_system.dart';
 
 class AppGlassCard extends StatelessWidget {
   final Widget child;

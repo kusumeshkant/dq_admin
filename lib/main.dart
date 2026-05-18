@@ -16,9 +16,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'firebase_options.dart';
+import 'src/routes/app_pages.dart';
 
 /// Thrown only when the backend explicitly returns FORBIDDEN for the admin
 /// app access check. Distinguished from generic network/server errors so that
@@ -55,6 +57,7 @@ Future<void> _assertAdminAccess() async {
 }
 
 void main() {
+  usePathUrlStrategy();
   runZonedGuarded(_bootstrap, (error, stack) {
     if (Get.isRegistered<CrashlyticsService>()) {
       Get.find<CrashlyticsService>().recordError(
@@ -169,6 +172,7 @@ class DQAdminApp extends StatelessWidget {
       theme: AppTheme.dark,
       initialBinding: binding,
       navigatorObservers: [AnalyticsNavigatorObserver()],
+      getPages: AppPages.routes,
       home: home,
     );
   }

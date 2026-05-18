@@ -9,6 +9,7 @@ import '../../presentation/onboarding/onboarding_binding.dart';
 import '../../presentation/onboarding/onboarding_page.dart';
 import '../../presentation/profile_setup/profile_setup_binding.dart';
 import '../../presentation/profile_setup/profile_setup_page.dart';
+import '../../routes/app_routes.dart';
 import '../subscription/subscription_manager.dart';
 import 'session_manager.dart';
 
@@ -35,20 +36,12 @@ class AuthRouter {
     assert(user.isAdmin, 'navigateAfterLogin must only be called for admin users');
 
     if (_profileIncomplete(user)) {
-      Get.offAll(
-        () => const ProfileSetupPage(),
-        binding: ProfileSetupBinding(email: email),
-        transition: Transition.fadeIn,
-      );
+      Get.offAllNamed(AppRoutes.profileSetup, arguments: email);
       return;
     }
 
     if (user.storeId == null || user.storeId!.isEmpty) {
-      Get.offAll(
-        () => const OnboardingPage(),
-        binding: OnboardingBinding(),
-        transition: Transition.fadeIn,
-      );
+      Get.offAllNamed(AppRoutes.onboarding);
       return;
     }
 
@@ -100,11 +93,7 @@ class AuthRouter {
   // ── Shared helper ───────────────────────────────────────────────────────────
   static void _loadSubscriptionAndGoToDashboard(String storeId) {
     Get.find<SubscriptionManager>().load(storeId);
-    Get.offAll(
-      () => const DashboardPage(),
-      binding: DashboardBinding(),
-      transition: Transition.fadeIn,
-    );
+    Get.offAllNamed(AppRoutes.dashboard);
   }
 }
 

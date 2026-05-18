@@ -69,4 +69,15 @@ abstract class AppSizes {
   static const double blurMd = 10;
   static const double blurHeavy = 20;
   static const double blurXHeavy = 40;
+
+  // ── Border radii ──────────────────────────────────────────
+  static const double radiusSm = 8;
+  static const double radiusMd = 12;
+  static const double radiusLg = 14;
+  static const double radiusXl = 16;
+  static const double radiusXxl = 20;
+  static const double radiusFull = 999;
+
+  // ── Elevation ─────────────────────────────────────────────
+  static const double elevationCard = 4;
 }

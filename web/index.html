@@ -1,38 +1,117 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="DQ Admin — Manage stores, staff, permissions, and platform analytics.">
+  <meta name="theme-color" content="#12082A">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="dq_admin">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DQ Admin">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>dq_admin</title>
+  <title>DQ Admin — Platform Management</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #12082A;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    #dq-loader {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #12082A 0%, #1E1040 50%, #12082A 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 9999;
+      transition: opacity 0.45s ease;
+    }
+
+    #dq-loader.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .dq-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      background: rgba(138, 43, 226,0.15);
+      border: 1px solid rgba(138, 43, 226, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dq-wordmark {
+      font-size: 26px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    .dq-sub {
+      font-size: 11px;
+      color: rgba(200, 180, 230, 0.5);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .dq-bar {
+      width: 36px;
+      height: 2px;
+      background: #7C3AED;
+      border-radius: 2px;
+      margin-top: 6px;
+      animation: dq-pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes dq-pulse {
+      0%, 100% { opacity: 0.3; transform: scaleX(0.65); }
+      50%       { opacity: 1;   transform: scaleX(1);    }
+    }
+  </style>
 </head>
 <body>
+  <div id="dq-loader">
+    <div class="dq-icon">
+      <span style="font-size:22px;font-weight:800;color:#9F5EF5;">DQ</span>
+    </div>
+    <div>
+      <div class="dq-wordmark">DQ Admin</div>
+      <div class="dq-sub" style="margin-top:5px;">Platform Management</div>
+    </div>
+    <div class="dq-bar"></div>
+  </div>
+
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var loader = document.getElementById('dq-loader');
+      if (loader) {
+        loader.classList.add('fade-out');
+        setTimeout(function () { loader.remove(); }, 450);
+      }
+    });
+  </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

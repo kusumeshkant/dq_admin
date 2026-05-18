@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../responsive/app_spacing.dart';
-import '../responsive/app_typography.dart';
+import 'package:dq_admin/design_system/design_system.dart';
 import '../widgets/app_loading_widget.dart';
 import '../../theme/app_theme.dart';
 import 'paginated_controller.dart';

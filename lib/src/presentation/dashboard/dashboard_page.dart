@@ -1,12 +1,9 @@
-import 'package:dq_admin/design_system/design_system.dart';
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/responsive/app_responsive.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_typography.dart';
 import '../../core/widgets/app_error_widget.dart';
 import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/dashboard_entity.dart';
@@ -14,24 +11,11 @@ import '../../domain/entity/order_entity.dart';
 import '../../service_core/auth/session_manager.dart';
 import '../../service_core/subscription/subscription_manager.dart';
 import '../../theme/app_theme.dart';
-import '../subscription/subscription_binding.dart';
-import '../subscription/subscription_page.dart';
+import '../../routes/app_routes.dart';
 import '../order_detail/order_detail_binding.dart';
 import '../order_detail/order_detail_page.dart';
-import '../orders/orders_binding.dart';
-import '../orders/orders_page.dart';
-import '../staff/staff_binding.dart';
-import '../staff/staff_page.dart';
 import '../store_detail/store_detail_binding.dart';
 import '../store_detail/store_detail_page.dart';
-import '../stores/stores_binding.dart';
-import '../stores/stores_page.dart';
-import '../analytics/analytics_binding.dart';
-import '../analytics/analytics_page.dart';
-import '../staff_management/staff_management_binding.dart';
-import '../staff_management/staff_management_page.dart';
-import '../permissions/permissions_binding.dart';
-import '../permissions/permissions_page.dart';
 import 'dashboard_controller.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -103,9 +87,7 @@ class DashboardPage extends StatelessWidget {
                 if (s.topStores.isNotEmpty) ...[
                   _sectionHeader(
                     'Top Stores',
-                    onViewAll: () => Get.to(
-                        () => const StoresPage(),
-                        binding: StoresBinding()),
+                    onViewAll: () => Get.toNamed(AppRoutes.stores),
                   ),
                   const SizedBox(height: 10),
                   _TopStoresList(topStores: s.topStores),
@@ -116,9 +98,7 @@ class DashboardPage extends StatelessWidget {
                 if (s.recentOrders.isNotEmpty) ...[
                   _sectionHeader(
                     'Recent Orders',
-                    onViewAll: () => Get.to(
-                        () => const OrdersPage(),
-                        binding: OrdersBinding()),
+                    onViewAll: () => Get.toNamed(AppRoutes.orders),
                   ),
                   const SizedBox(height: 10),
                   _RecentOrdersList(orders: s.recentOrders),
@@ -271,10 +251,10 @@ class _RevenueCard extends StatelessWidget {
                   children: [
                     const Icon(Icons.check_circle_rounded,
                         color: AppColors.success, size: 14),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: AppSpacing.xs),
                     Text('$completionRate% completion rate',
-                        style: const TextStyle(
-                            color: AppColors.success, fontSize: 12)),
+                        style: AppTypography.label
+                            .copyWith(color: AppColors.success)),
                   ],
                 ),
               ],
@@ -284,30 +264,29 @@ class _RevenueCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs + 1),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.currency_rupee_rounded,
+                    const Icon(Icons.currency_rupee_rounded,
                         color: Colors.white, size: 14),
                     Text('Revenue',
-                        style:
-                            TextStyle(color: Colors.white70, fontSize: 11)),
+                        style: AppTypography.caption
+                            .copyWith(color: Colors.white70)),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text('${stats.completedOrders}',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold)),
-              const Text('completed',
-                  style: TextStyle(color: Colors.white54, fontSize: 10)),
+                  style: AppTypography.statSmall
+                      .copyWith(color: Colors.white)),
+              Text('completed',
+                  style: AppTypography.caption
+                      .copyWith(color: Colors.white54, fontSize: 10)),
             ],
           ),
         ],
@@ -415,59 +394,49 @@ class _QuickAccess extends StatelessWidget {
         label: 'Stores',
         subtitle: 'Manage locations & products',
         color: AppColors.info,
-        onTap: () => Get.to(() => const StoresPage(), binding: StoresBinding()),
+        onTap: () => Get.toNamed(AppRoutes.stores),
       ),
       _QuickItem(
         icon: Icons.receipt_long_rounded,
         label: 'Orders',
         subtitle: 'View all orders',
         color: AppTheme.primary,
-        onTap: () => Get.to(() => const OrdersPage(), binding: OrdersBinding()),
+        onTap: () => Get.toNamed(AppRoutes.orders),
       ),
       _QuickItem(
         icon: Icons.bar_chart_rounded,
         label: 'Analytics',
         subtitle: 'Revenue & trends',
         color: AppColors.primary,
-        onTap: () =>
-            Get.to(() => const AnalyticsPage(), binding: AnalyticsBinding()),
+        onTap: () => Get.toNamed(AppRoutes.analytics),
       ),
       _QuickItem(
         icon: Icons.person_add_rounded,
         label: 'Invite Staff',
         subtitle: 'Add team members',
         color: AppColors.info,
-        onTap: () => Get.to(
-          () => const StaffManagementPage(),
-          binding: StaffManagementBinding(),
-        ),
+        onTap: () => Get.toNamed(AppRoutes.staffManagement),
       ),
       _QuickItem(
         icon: Icons.people_rounded,
         label: 'Staff',
         subtitle: 'View and manage your team',
         color: AppColors.primary,
-        onTap: () => Get.to(() => const StaffPage(), binding: StaffBinding()),
+        onTap: () => Get.toNamed(AppRoutes.staff),
       ),
       _QuickItem(
         icon: Icons.workspace_premium_rounded,
         label: 'Subscription',
         subtitle: 'Plan, features & usage',
         color: AppColors.warning,
-        onTap: () => Get.to(
-          () => const SubscriptionPage(),
-          binding: SubscriptionBinding(),
-        ),
+        onTap: () => Get.toNamed(AppRoutes.subscription),
       ),
       _QuickItem(
         icon: Icons.verified_user_rounded,
         label: 'Permissions',
         subtitle: 'Requests, approvals & logs',
         color: AppColors.success,
-        onTap: () => Get.to(
-          () => const PermissionsPage(),
-          binding: PermissionsBinding(),
-        ),
+        onTap: () => Get.toNamed(AppRoutes.permissions),
       ),
     ];
 
@@ -653,15 +622,16 @@ class _TopStoresList extends StatelessWidget {
                   )
               : null,
           child: AppGlassCard(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md, vertical: AppSpacing.md),
             child: Column(
               children: [
                 Row(
                   children: [
                     Container(
-                      width: 28,
-                      height: 28,
+                      width: AppSizes.iconLg,
+                      height: AppSizes.iconLg,
                       decoration: BoxDecoration(
                         color: rankColor.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
@@ -670,46 +640,40 @@ class _TopStoresList extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text('${i + 1}',
-                            style: TextStyle(
+                            style: AppTypography.label.copyWith(
                                 color: rankColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12)),
+                                fontWeight: FontWeight.bold)),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: AppSpacing.sm + 2),
                     Container(
-                      width: 32,
-                      height: 32,
+                      width: AppSizes.iconLg,
+                      height: AppSizes.iconLg,
                       decoration: BoxDecoration(
                         color: AppTheme.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppSizes.radiusSm),
                       ),
                       child: const Icon(Icons.store_rounded,
-                          color: AppTheme.primary, size: 16),
+                          color: AppTheme.primary, size: AppSizes.iconSm - 2),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: AppSpacing.sm + 2),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(sr.store?.name ?? '—',
-                              style: const TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13)),
+                              style: AppTypography.bodySmall
+                                  .copyWith(fontWeight: FontWeight.w600)),
                           Text('${sr.orderCount} orders',
-                              style: const TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontSize: 11)),
+                              style: AppTypography.caption),
                         ],
                       ),
                     ),
                     Text(
                       '₹${_fmt(sr.revenue)}',
-                      style: const TextStyle(
+                      style: AppTypography.body.copyWith(
                           color: AppColors.success,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14),
+                          fontWeight: FontWeight.bold),
                     ),
                     if (sr.store != null) ...[
                       const SizedBox(width: 8),
@@ -719,9 +683,9 @@ class _TopStoresList extends StatelessWidget {
                     ],
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppSizes.radiusSm - 4),
                   child: LinearProgressIndicator(
                     value: ratio,
                     minHeight: 4,
@@ -761,37 +725,35 @@ class _RecentOrdersList extends StatelessWidget {
             binding: OrderDetailBinding(order: o),
           ),
           child: AppGlassCard(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
             child: Row(
               children: [
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: AppSizes.avatarSm,
+                  height: AppSizes.avatarSm,
                   decoration: BoxDecoration(
                     color: AppColors.statusColor(o.status).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppSizes.radiusSm + 2),
                   ),
                   child: Icon(Icons.receipt_rounded,
-                      color: AppColors.statusColor(o.status), size: 18),
+                      color: AppColors.statusColor(o.status), size: AppSizes.iconMd - 6),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: AppSpacing.sm + 2),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         '#${o.id.substring(o.id.length > 8 ? o.id.length - 8 : 0)}',
-                        style: const TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13),
+                        style: AppTypography.bodySmall
+                            .copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         '${o.storeName ?? '—'}  ·  ${o.items.length} item${o.items.length == 1 ? '' : 's'}  ·  ${_timeAgo(o.createdAt)}',
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 11),
+                        style: AppTypography.caption,
                       ),
                     ],
                   ),
@@ -800,11 +762,9 @@ class _RecentOrdersList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text('₹${o.grandTotal.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13)),
-                    const SizedBox(height: 4),
+                        style: AppTypography.bodySmall
+                            .copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: AppSpacing.xs),
                     _StatusChip(status: o.status),
                   ],
                 ),
@@ -853,10 +813,7 @@ class _PlanBadge extends StatelessWidget {
         : '';
 
     return GestureDetector(
-      onTap: () => Get.to(
-        () => const SubscriptionPage(),
-        binding: SubscriptionBinding(),
-      ),
+      onTap: () => Get.toNamed(AppRoutes.subscription),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
@@ -871,7 +828,7 @@ class _PlanBadge extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               '$label$suffix',
-              style: TextStyle(
+              style: AppTypography.caption.copyWith(
                   color: color, fontSize: 10, fontWeight: FontWeight.w700),
             ),
           ],
@@ -934,10 +891,7 @@ class _SubscriptionBanner extends StatelessWidget {
       if (message == null) return const SizedBox.shrink();
 
       return GestureDetector(
-        onTap: () => Get.to(
-          () => const SubscriptionPage(),
-          binding: SubscriptionBinding(),
-        ),
+        onTap: () => Get.toNamed(AppRoutes.subscription),
         child: Container(
           width: double.infinity,
           margin: const EdgeInsets.only(bottom: 12),
@@ -955,17 +909,16 @@ class _SubscriptionBanner extends StatelessWidget {
               Expanded(
                 child: Text(
                   message,
-                  style: TextStyle(
+                  style: AppTypography.label.copyWith(
                       color: Colors.white,
-                      fontSize: 12,
                       fontWeight: FontWeight.w500,
                       height: 1.4),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Text('View →',
-                  style: TextStyle(
-                      color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+                  style: AppTypography.caption.copyWith(
+                      color: color, fontWeight: FontWeight.w700)),
             ],
           ),
         ),
@@ -989,8 +942,8 @@ class _StatusChip extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(status,
-          style:
-              TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w600)),
+          style: AppTypography.caption.copyWith(
+              color: color, fontSize: 9, fontWeight: FontWeight.w600)),
     );
   }
 }

@@ -1,18 +1,15 @@
-import 'package:dq_admin/design_system/design_system.dart';
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_typography.dart';
+import '../../core/responsive/app_responsive.dart';
 import '../../service_core/subscription/feature_keys.dart';
 import '../../service_core/auth/session_manager.dart';
 import '../../service_core/subscription/subscription_manager.dart';
 import '../../service_core/subscription/subscription_model.dart';
 import '../../theme/app_theme.dart';
-import '../plans/plans_binding.dart';
-import '../plans/plans_page.dart';
+import '../../routes/app_routes.dart';
 
 class SubscriptionPage extends StatelessWidget {
   const SubscriptionPage({super.key});
@@ -59,24 +56,24 @@ class SubscriptionPage extends StatelessWidget {
           final info = sub.info;
 
           return ListView(
-            padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 40),
+            padding: EdgeInsets.fromLTRB(
+                context.pagePadding, AppSpacing.sm, context.pagePadding, 40),
             children: [
               // ── Plan status card ─────────────────────────────────────
               _PlanStatusCard(info: info),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
 
               // ── Usage counters ───────────────────────────────────────
               const _SectionTitle('Usage'),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm + 2),
               _UsageSection(info: info),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
 
               // ── Features included ────────────────────────────────────
               const _SectionTitle('Features'),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm + 2),
               _FeaturesSection(info: info),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
 
               // ── Upgrade CTA (shown when not on top plan) ─────────────
               if (!_isTopPlan(info.planName)) ...[
@@ -138,10 +135,10 @@ class _PlanStatusCard extends StatelessWidget {
               _StatusBadge(label: statusLabel, color: statusColor),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           _periodRow(info),
           if (info.isTrial && info.trialDaysLeft != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             _TrialProgressBar(daysLeft: info.trialDaysLeft!, totalDays: 14),
           ],
         ],
@@ -172,11 +169,10 @@ class _PlanStatusCard extends StatelessWidget {
             size: 13, color: Colors.white.withValues(alpha: 0.6)),
         const SizedBox(width: 6),
         Text('$label  ',
-            style:
-                TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12)),
+            style: AppTypography.label.copyWith(color: Colors.white.withValues(alpha: 0.6))),
         Text(value,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+            style: AppTypography.label.copyWith(
+                color: Colors.white, fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -236,15 +232,15 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.full),
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(label,
-          style: TextStyle(
-              color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+          style: AppTypography.caption
+              .copyWith(color: color, fontWeight: FontWeight.w700)),
     );
   }
 }
@@ -270,11 +266,11 @@ class _TrialProgressBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Trial progress',
-                style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6), fontSize: 11)),
+                style: AppTypography.caption
+                    .copyWith(color: Colors.white.withValues(alpha: 0.6))),
             Text('$daysLeft days left',
-                style: TextStyle(
-                    color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+                style: AppTypography.caption
+                    .copyWith(color: color, fontWeight: FontWeight.w700)),
           ],
         ),
         const SizedBox(height: 6),
@@ -365,15 +361,15 @@ class _UsageRow extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: AppSizes.iconLg,
+              height: AppSizes.iconLg,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSizes.radiusSm),
               ),
-              child: Icon(icon, color: color, size: 16),
+              child: Icon(icon, color: color, size: AppSizes.iconSm),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(label,
                   style: AppTypography.bodySmall
@@ -389,7 +385,7 @@ class _UsageRow extends StatelessWidget {
           ],
         ),
         if (!isUnlimited) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
@@ -471,13 +467,12 @@ class _FeatureRow extends StatelessWidget {
     final color = isEnabled ? AppColors.success : AppColors.neutral;
     return Row(
       children: [
-        Icon(icon, size: 16, color: isEnabled ? AppTheme.primary : AppColors.neutral),
-        const SizedBox(width: 12),
+        Icon(icon, size: AppSizes.iconSm, color: isEnabled ? AppTheme.primary : AppColors.neutral),
+        const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Text(label,
-              style: TextStyle(
-                  color: isEnabled ? AppTheme.textPrimary : AppTheme.textSecondary,
-                  fontSize: 13)),
+              style: AppTypography.bodySmall.copyWith(
+                  color: isEnabled ? AppTheme.textPrimary : AppTheme.textSecondary)),
         ),
         Icon(
           isEnabled ? Icons.check_circle_rounded : Icons.cancel_rounded,
@@ -519,36 +514,31 @@ class _UpgradeCta extends StatelessWidget {
             children: [
               const Icon(Icons.workspace_premium_rounded,
                   color: AppTheme.primary, size: 20),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Text('Upgrade your plan',
                   style: AppTypography.bodyLarge
                       .copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             'Unlock advanced analytics, coupon engine, unlimited products and more.',
             style: AppTypography.caption
                 .copyWith(color: AppTheme.textSecondary, height: 1.5),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => Get.to(
-                () => const PlansPage(),
-                binding: PlansBinding(),
-                transition: Transition.rightToLeft,
-              ),
+              onPressed: () => Get.toNamed(AppRoutes.plans),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSizes.radiusMd)),
               ),
-              child: const Text('View Plans',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              child: Text('View Plans', style: AppTypography.button),
             ),
           ),
         ],

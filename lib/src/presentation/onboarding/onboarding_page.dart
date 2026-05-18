@@ -13,8 +13,7 @@ import '../../data/model/user_model.dart';
 import '../../service_core/auth/session_manager.dart';
 import '../../service_core/networks/graphql_client_provider.dart';
 import '../../theme/app_theme.dart';
-import '../dashboard/dashboard_binding.dart';
-import '../dashboard/dashboard_page.dart';
+import '../../routes/app_routes.dart';
 import '../products/bulk_upload_page.dart';
 import '../stores/map_picker_page.dart';
 
@@ -265,7 +264,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   void _goToDashboard() {
-    Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
+    Get.offAllNamed(AppRoutes.dashboard);
   }
 
   @override

@@ -1,12 +1,9 @@
-import 'package:dq_admin/design_system/design_system.dart';
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/responsive/app_responsive.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_typography.dart';
 import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/order_entity.dart';
 import '../../domain/entity/store_entity.dart';

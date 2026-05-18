@@ -1,11 +1,8 @@
-import 'package:dq_admin/design_system/design_system.dart';
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_typography.dart';
 import '../../data/services/excel_parser_service.dart';
 import '../../domain/entity/product_entity.dart';
 import '../../domain/usecase/bulk_upsert_products_usecase.dart';
@@ -15,8 +12,7 @@ import '../../service_core/subscription/subscription_manager.dart';
 import '../../theme/app_theme.dart';
 import 'bulk_upload/bulk_upload_controller.dart';
 import 'bulk_upload/column_mapping_screen.dart';
-import '../plans/plans_binding.dart';
-import '../plans/plans_page.dart';
+import '../../routes/app_routes.dart';
 
 class BulkUploadPage extends StatefulWidget {
   final String storeId;
@@ -121,11 +117,7 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     ElevatedButton.icon(
-                      onPressed: () => Get.to(
-                        () => const PlansPage(),
-                        binding: PlansBinding(),
-                        transition: Transition.rightToLeft,
-                      ),
+                      onPressed: () => Get.toNamed(AppRoutes.plans),
                       icon: const Icon(Icons.workspace_premium_rounded, size: 16),
                       label: const Text('View Plans',
                           style: TextStyle(fontWeight: FontWeight.bold)),
@@ -166,7 +158,7 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
 
           // ── Scrollable body ──────────────────────────────────────────────
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -215,9 +207,9 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
                         backgroundColor: AppColors.success,
                         foregroundColor: Colors.white,
                         padding:
-                            const EdgeInsets.symmetric(vertical: 14),
+                            const EdgeInsets.symmetric(vertical: AppSpacing.md + 2),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(AppSizes.radiusMd)),
                       ),
                     ),
                   ),
@@ -247,10 +239,10 @@ class _MappingBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final mapping = ctrl.confirmedMapping;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.successSubtle,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd - 2),
         border: Border.all(color: AppColors.successBorder),
       ),
       child: Column(
@@ -309,10 +301,10 @@ class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: AppColors.infoSubtle,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         border: Border.all(color: AppColors.infoBorder),
       ),
       child: const Column(
@@ -356,10 +348,10 @@ class _PickButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppSizes.radiusXl - 2),
           border: Border.all(
             color: AppTheme.primary.withValues(alpha: 0.5),
           ),
@@ -393,10 +385,10 @@ class _ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.errorSubtle,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd - 2),
         border: Border.all(color: AppColors.errorBorder),
       ),
       child: Row(
@@ -526,9 +518,9 @@ class _UploadButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.primary,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(AppSizes.radiusMd)),
           disabledBackgroundColor:
               AppTheme.primary.withValues(alpha: 0.5),
         ),
@@ -577,10 +569,10 @@ class _ResultCard extends StatelessWidget {
             : 'Upload Successful!';
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: statusColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         border:
             Border.all(color: statusColor.withValues(alpha: 0.4)),
       ),
@@ -711,11 +703,11 @@ class _LogCard extends StatelessWidget {
     final hasErrors = log.errorCount > 0;
     final fmt = DateFormat('dd MMM yyyy, hh:mm a');
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
+      padding: const EdgeInsets.all(AppSpacing.md + 2),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         border:
             Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
