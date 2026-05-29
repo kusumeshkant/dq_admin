@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -120,12 +121,12 @@ class StaffManagementController extends GetxController {
     final email = emailCtrl.text.trim();
     if (name.isEmpty) {
       Get.snackbar('Missing Name', 'Please enter the staff member\'s name.',
-          backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
+          backgroundColor: AppColors.error, colorText: Colors.white);
       return;
     }
     if (email.isEmpty) {
       Get.snackbar('Missing Email', 'Please enter an email address.',
-          backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
+          backgroundColor: AppColors.error, colorText: Colors.white);
       return;
     }
 
@@ -145,10 +146,10 @@ class StaffManagementController extends GetxController {
       emailCtrl.clear();
       Get.back();
       Get.snackbar('Invite Sent', 'Invite sent to $email',
-          backgroundColor: Colors.green.withValues(alpha: 0.85), colorText: Colors.white);
+          backgroundColor: AppColors.success, colorText: Colors.white);
     } catch (e) {
       Get.snackbar('Error', e.toString(),
-          backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
+          backgroundColor: AppColors.error, colorText: Colors.white);
     } finally {
       isInviting.value = false;
     }
@@ -177,7 +178,7 @@ class StaffManagementController extends GetxController {
     if (result.hasException) return;
     pendingInvites.removeWhere((i) => i.id == invite.id);
     Get.snackbar('Cancelled', 'Invite for ${invite.email} cancelled',
-        backgroundColor: Colors.orange.withValues(alpha: 0.85), colorText: Colors.white);
+        backgroundColor: AppColors.warning, colorText: Colors.white);
   }
 
   Future<void> removeStaff(UserEntity member) async {
@@ -203,7 +204,7 @@ class StaffManagementController extends GetxController {
     if (result.hasException) return;
     staff.removeWhere((s) => s.id == member.id);
     Get.snackbar('Removed', '${member.name ?? member.email} removed from store',
-        backgroundColor: Colors.orange.withValues(alpha: 0.85), colorText: Colors.white);
+        backgroundColor: AppColors.warning, colorText: Colors.white);
   }
 
   void showAddStaffDialog() {

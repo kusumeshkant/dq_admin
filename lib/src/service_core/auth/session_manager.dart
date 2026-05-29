@@ -5,8 +5,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/model/user_model.dart';
 import '../../domain/entity/user_entity.dart';
-import '../../presentation/auth/login/login_binding.dart';
-import '../../presentation/auth/login/login_page.dart';
+import '../../routes/app_routes.dart';
 import '../subscription/subscription_manager.dart';
 
 class SessionManager extends GetxService {
@@ -95,11 +94,7 @@ class SessionManager extends GetxService {
     // Deferred to avoid "setState() called after dispose()" when dialog/sheet
     // animation is still in progress when Get.offAll fires.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.offAll(
-        () => const LoginPage(),
-        binding: LoginBinding(),
-        transition: Transition.fadeIn,
-      );
+      Get.offAllNamed(AppRoutes.login);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.snackbar(
           'Session Expired',

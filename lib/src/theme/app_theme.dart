@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/responsive/app_sizes.dart';
+import 'package:dq_admin/design_system/tokens/app_spacing.dart';
 
 class AppTheme {
   static const Color primary = Color(0xFF7C3AED); // vivid purple for admin

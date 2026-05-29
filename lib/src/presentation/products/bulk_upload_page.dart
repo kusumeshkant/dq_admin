@@ -1,10 +1,8 @@
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_typography.dart';
 import '../../data/services/excel_parser_service.dart';
 import '../../domain/entity/product_entity.dart';
 import '../../domain/usecase/bulk_upsert_products_usecase.dart';
@@ -14,8 +12,7 @@ import '../../service_core/subscription/subscription_manager.dart';
 import '../../theme/app_theme.dart';
 import 'bulk_upload/bulk_upload_controller.dart';
 import 'bulk_upload/column_mapping_screen.dart';
-import '../plans/plans_binding.dart';
-import '../plans/plans_page.dart';
+import '../../routes/app_routes.dart';
 
 class BulkUploadPage extends StatefulWidget {
   final String storeId;
@@ -120,11 +117,7 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     ElevatedButton.icon(
-                      onPressed: () => Get.to(
-                        () => const PlansPage(),
-                        binding: PlansBinding(),
-                        transition: Transition.rightToLeft,
-                      ),
+                      onPressed: () => Get.toNamed(AppRoutes.plans),
                       icon: const Icon(Icons.workspace_premium_rounded, size: 16),
                       label: const Text('View Plans',
                           style: TextStyle(fontWeight: FontWeight.bold)),
@@ -165,7 +158,7 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
 
           // ── Scrollable body ──────────────────────────────────────────────
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -211,12 +204,12 @@ class _BulkUploadPageState extends State<BulkUploadPage> {
                       label: const Text('Done — Continue Setup',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: AppColors.success,
                         foregroundColor: Colors.white,
                         padding:
-                            const EdgeInsets.symmetric(vertical: 14),
+                            const EdgeInsets.symmetric(vertical: AppSpacing.md + 2),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(AppSizes.radiusMd)),
                       ),
                     ),
                   ),
@@ -246,11 +239,11 @@ class _MappingBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final mapping = ctrl.confirmedMapping;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.25)),
+        color: AppColors.successSubtle,
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd - 2),
+        border: Border.all(color: AppColors.successBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,7 +251,7 @@ class _MappingBanner extends StatelessWidget {
           Row(
             children: [
               const Icon(Icons.check_circle_rounded,
-                  color: Colors.green, size: 14),
+                  color: AppColors.success, size: 14),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -283,13 +276,13 @@ class _MappingBanner extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.12),
+                  color: AppColors.successSubtle,
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Text(
                   '$label → $col',
                   style: const TextStyle(
-                      color: Colors.green, fontSize: 10),
+                      color: AppColors.success, fontSize: 10),
                 ),
               );
             }).toList(),
@@ -308,11 +301,11 @@ class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+        color: AppColors.infoSubtle,
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+        border: Border.all(color: AppColors.infoBorder),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,12 +313,12 @@ class _InfoCard extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.info_outline_rounded,
-                  color: Colors.blue, size: 18),
+                  color: AppColors.info, size: 18),
               SizedBox(width: 8),
               Text(
                 'Bulk Product Upload',
                 style: TextStyle(
-                    color: Colors.blue,
+                    color: AppColors.info,
                     fontWeight: FontWeight.bold,
                     fontSize: 13),
               ),
@@ -355,10 +348,10 @@ class _PickButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppSizes.radiusXl - 2),
           border: Border.all(
             color: AppTheme.primary.withValues(alpha: 0.5),
           ),
@@ -392,22 +385,22 @@ class _ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+        color: AppColors.errorSubtle,
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd - 2),
+        border: Border.all(color: AppColors.errorBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(Icons.error_outline_rounded,
-              color: Colors.red, size: 16),
+              color: AppColors.error, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(message,
                 style:
-                    const TextStyle(color: Colors.red, fontSize: 12)),
+                    const TextStyle(color: AppColors.error, fontSize: 12)),
           ),
         ],
       ),
@@ -494,12 +487,12 @@ class _PreviewRow extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.purple.withValues(alpha: 0.2),
+                color: AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(p.brand!,
                   style: const TextStyle(
-                      color: Colors.purple, fontSize: 10)),
+                      color: AppColors.primary, fontSize: 10)),
             ),
         ],
       ),
@@ -525,9 +518,9 @@ class _UploadButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.primary,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(AppSizes.radiusMd)),
           disabledBackgroundColor:
               AppTheme.primary.withValues(alpha: 0.5),
         ),
@@ -558,10 +551,10 @@ class _ResultCard extends StatelessWidget {
         result.created == 0 && result.updated == 0;
 
     final Color statusColor = hasErrors
-        ? Colors.red
+        ? AppColors.error
         : nothingCreated
-            ? Colors.orange
-            : Colors.green;
+            ? AppColors.warning
+            : AppColors.success;
 
     final IconData statusIcon = hasErrors
         ? Icons.error_outline_rounded
@@ -576,10 +569,10 @@ class _ResultCard extends StatelessWidget {
             : 'Upload Successful!';
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: statusColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         border:
             Border.all(color: statusColor.withValues(alpha: 0.4)),
       ),
@@ -616,24 +609,24 @@ class _ResultCard extends StatelessWidget {
               _StatChip(
                   label: 'Created',
                   value: result.created,
-                  color: Colors.green),
+                  color: AppColors.success),
               const SizedBox(width: 10),
               _StatChip(
                   label: 'Updated',
                   value: result.updated,
-                  color: Colors.blue),
+                  color: AppColors.info),
               const SizedBox(width: 10),
               if (result.skipped > 0)
                 _StatChip(
                     label: 'Skipped',
                     value: result.skipped,
-                    color: Colors.orange),
+                    color: AppColors.warning),
               if (hasErrors) ...[
                 const SizedBox(width: 10),
                 _StatChip(
                     label: 'Errors',
                     value: result.errors.length,
-                    color: Colors.red),
+                    color: AppColors.error),
               ],
             ],
           ),
@@ -650,7 +643,7 @@ class _ResultCard extends StatelessWidget {
                   child: Text(
                     '• ${e.barcode}: ${e.message}',
                     style: const TextStyle(
-                        color: Colors.red, fontSize: 11),
+                        color: AppColors.error, fontSize: 11),
                   ),
                 )),
           ],
@@ -710,11 +703,11 @@ class _LogCard extends StatelessWidget {
     final hasErrors = log.errorCount > 0;
     final fmt = DateFormat('dd MMM yyyy, hh:mm a');
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
+      padding: const EdgeInsets.all(AppSpacing.md + 2),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
         border:
             Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -766,22 +759,22 @@ class _LogCard extends StatelessWidget {
             children: [
               _MiniChip(
                   label: '${log.created} created',
-                  color: Colors.green),
+                  color: AppColors.success),
               const SizedBox(width: 6),
               _MiniChip(
                   label: '${log.updated} updated',
-                  color: Colors.blue),
+                  color: AppColors.info),
               if (log.skipped > 0) ...[
                 const SizedBox(width: 6),
                 _MiniChip(
                     label: '${log.skipped} skipped',
-                    color: Colors.orange),
+                    color: AppColors.warning),
               ],
               if (hasErrors) ...[
                 const SizedBox(width: 6),
                 _MiniChip(
                     label: '${log.errorCount} errors',
-                    color: Colors.red),
+                    color: AppColors.error),
               ],
             ],
           ),
@@ -792,14 +785,14 @@ class _LogCard extends StatelessWidget {
                   child: Text(
                     '• ${e.barcode}: ${e.message}',
                     style: const TextStyle(
-                        color: Colors.red, fontSize: 10),
+                        color: AppColors.error, fontSize: 10),
                   ),
                 )),
             if (log.errors.length > 3)
               Text(
                 '… and ${log.errors.length - 3} more errors',
                 style: const TextStyle(
-                    color: Colors.red, fontSize: 10),
+                    color: AppColors.error, fontSize: 10),
               ),
           ],
         ],

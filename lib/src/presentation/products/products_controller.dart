@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -99,7 +100,7 @@ class ProductsController extends PaginatedController<ProductEntity> {
       final stock = int.tryParse(stockCtrl.text.trim()) ?? 0;
       if (barcode.isEmpty || name.isEmpty) {
         Get.snackbar('Missing Fields', 'Barcode and Product Name are required.',
-            backgroundColor: Colors.red.withValues(alpha: 0.8),
+            backgroundColor: AppColors.error,
             colorText: Colors.white);
         return;
       }
@@ -124,7 +125,7 @@ class ProductsController extends PaginatedController<ProductEntity> {
       items.insert(0, product);
       Get.back();
       Get.snackbar('Done', 'Product added',
-          backgroundColor: Colors.green.withValues(alpha: 0.8),
+          backgroundColor: AppColors.success,
           colorText: Colors.white);
     });
   }
@@ -188,13 +189,13 @@ class ProductsController extends PaginatedController<ProductEntity> {
         if (idx != -1) items.removeAt(idx);
         Get.back();
         Get.snackbar('Removed', '"${product.name}" removed (stock depleted).',
-            backgroundColor: Colors.orange.withValues(alpha: 0.8),
+            backgroundColor: AppColors.warning,
             colorText: Colors.white);
       } else {
         if (idx != -1) items[idx] = updated;
         Get.back();
         Get.snackbar('Done', 'Product updated',
-            backgroundColor: Colors.green.withValues(alpha: 0.8),
+            backgroundColor: AppColors.success,
             colorText: Colors.white);
       }
     });
@@ -220,10 +221,10 @@ class ProductsController extends PaginatedController<ProductEntity> {
             Container(
               width: 56, height: 56,
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.12),
+                color: AppColors.errorSubtle,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.delete_rounded, color: Colors.red, size: 26),
+              child: const Icon(Icons.delete_rounded, color: AppColors.error, size: 26),
             ),
             const SizedBox(height: 14),
             const Text('Delete Product',
@@ -257,11 +258,11 @@ class ProductsController extends PaginatedController<ProductEntity> {
                       await deleteProductUseCase.execute(product.id);
                       items.removeWhere((p) => p.id == product.id);
                       Get.snackbar('Deleted', '"${product.name}" removed.',
-                          backgroundColor: Colors.green.withValues(alpha: 0.8),
+                          backgroundColor: AppColors.success,
                           colorText: Colors.white);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.error,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -305,7 +306,7 @@ class ProductsController extends PaginatedController<ProductEntity> {
             await onSave();
           } catch (e) {
             Get.snackbar('Error', e.toString(),
-                backgroundColor: Colors.red.withValues(alpha: 0.8),
+                backgroundColor: AppColors.error,
                 colorText: Colors.white);
           } finally {
             isSaving.value = false;
@@ -409,10 +410,10 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                   Container(
                     width: 40, height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.15),
+                      color: AppColors.warningSubtle,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(widget.isCreate ? Icons.add_box_rounded : Icons.edit_rounded, color: Colors.orange, size: 20),
+                    child: Icon(widget.isCreate ? Icons.add_box_rounded : Icons.edit_rounded, color: AppColors.warning, size: 20),
                   ),
                   const SizedBox(width: 10),
                   Text(
@@ -435,13 +436,13 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                         height: 46,
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.12),
+                          color: AppColors.warningSubtle,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.orange.withValues(alpha: 0.35)),
+                          border: Border.all(color: AppColors.warningBorder),
                         ),
                         child: _scanning
-                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange))
-                            : const Icon(Icons.qr_code_scanner_rounded, color: Colors.orange, size: 22),
+                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.warning))
+                            : const Icon(Icons.qr_code_scanner_rounded, color: AppColors.warning, size: 22),
                       ),
                     ),
                   ],
@@ -530,7 +531,7 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                     child: Obx(() => ElevatedButton(
                           onPressed: widget.isSaving.value ? null : widget.onSave,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
+                            backgroundColor: AppColors.warning,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 13),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -570,7 +571,7 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0x33FFFFFF))),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0x33FFFFFF))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.orange)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.warning)),
       ),
     );
   }

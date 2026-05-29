@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -95,7 +96,7 @@ class StoresController extends PaginatedController<StoreEntity> {
       items.insert(0, store);
       Get.back();
       Get.snackbar('Done', 'Store created  ·  ${store.storeCode ?? ''}',
-          backgroundColor: Colors.green.withValues(alpha: 0.8), colorText: Colors.white);
+          backgroundColor: AppColors.success, colorText: Colors.white);
     });
   }
 
@@ -117,7 +118,7 @@ class StoresController extends PaginatedController<StoreEntity> {
       final idx = items.indexWhere((s) => s.id == store.id);
       if (idx != -1) items[idx] = updated;
       Get.back();
-      Get.snackbar('Done', 'Store updated', backgroundColor: Colors.green.withValues(alpha: 0.8), colorText: Colors.white);
+      Get.snackbar('Done', 'Store updated', backgroundColor: AppColors.success, colorText: Colors.white);
     });
   }
 
@@ -143,10 +144,10 @@ class StoresController extends PaginatedController<StoreEntity> {
             Container(
               width: 56, height: 56,
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.12),
+                color: AppColors.errorSubtle,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.delete_rounded, color: Colors.red, size: 26),
+              child: const Icon(Icons.delete_rounded, color: AppColors.error, size: 26),
             ),
             const SizedBox(height: 14),
             const Text('Delete Store',
@@ -180,11 +181,11 @@ class StoresController extends PaginatedController<StoreEntity> {
                       await deleteStoreUseCase.execute(store.id);
                       items.removeWhere((s) => s.id == store.id);
                       Get.snackbar('Deleted', '"${store.name}" has been removed.',
-                          backgroundColor: Colors.green.withValues(alpha: 0.8),
+                          backgroundColor: AppColors.success,
                           colorText: Colors.white);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.error,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -224,7 +225,7 @@ class StoresController extends PaginatedController<StoreEntity> {
             await onSave();
           } catch (e) {
             Get.snackbar('Error', e.toString(),
-                backgroundColor: Colors.red.withValues(alpha: 0.8),
+                backgroundColor: AppColors.error,
                 colorText: Colors.white);
           } finally {
             isSaving.value = false;
@@ -304,7 +305,7 @@ class _StoreFormSheetState extends State<_StoreFormSheet> {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         Get.snackbar('Location Off', 'Please enable location services.',
-            backgroundColor: Colors.orange.withValues(alpha: 0.85),
+            backgroundColor: AppColors.warning,
             colorText: Colors.white);
         return;
       }
@@ -314,14 +315,14 @@ class _StoreFormSheetState extends State<_StoreFormSheet> {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           Get.snackbar('Permission Denied', 'Location permission is required.',
-              backgroundColor: Colors.red.withValues(alpha: 0.85),
+              backgroundColor: AppColors.error,
               colorText: Colors.white);
           return;
         }
       }
       if (permission == LocationPermission.deniedForever) {
         Get.snackbar('Permission Denied', 'Enable location in app settings.',
-            backgroundColor: Colors.red.withValues(alpha: 0.85),
+            backgroundColor: AppColors.error,
             colorText: Colors.white);
         return;
       }
@@ -340,7 +341,7 @@ class _StoreFormSheetState extends State<_StoreFormSheet> {
       widget.lonCtrl.text = pos.longitude.toStringAsFixed(6);
     } catch (e) {
       Get.snackbar('Error', 'Could not get location.',
-          backgroundColor: Colors.red.withValues(alpha: 0.85),
+          backgroundColor: AppColors.error,
           colorText: Colors.white);
     } finally {
       setState(() => _locating = false);
@@ -466,10 +467,10 @@ class _StoreFormSheetState extends State<_StoreFormSheet> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withValues(alpha: 0.12),
+                        color: AppColors.infoSubtle,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                            color: Colors.blue.withValues(alpha: 0.3)),
+                            color: AppColors.infoBorder),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -499,10 +500,10 @@ class _StoreFormSheetState extends State<_StoreFormSheet> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.12),
+                        color: AppColors.successSubtle,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                            color: Colors.green.withValues(alpha: 0.3)),
+                            color: AppColors.successBorder),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,

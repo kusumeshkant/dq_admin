@@ -1,9 +1,11 @@
 import 'dart:math';
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/usecase/create_store_usecase.dart';
 import '../../domain/usecase/bulk_upsert_products_usecase.dart';
 import '../../domain/usecase/get_upload_logs_usecase.dart';
@@ -11,8 +13,7 @@ import '../../data/model/user_model.dart';
 import '../../service_core/auth/session_manager.dart';
 import '../../service_core/networks/graphql_client_provider.dart';
 import '../../theme/app_theme.dart';
-import '../dashboard/dashboard_binding.dart';
-import '../dashboard/dashboard_page.dart';
+import '../../routes/app_routes.dart';
 import '../products/bulk_upload_page.dart';
 import '../stores/map_picker_page.dart';
 
@@ -36,6 +37,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
     }
   ''';
 
+  // SharedPreferences keys — persists the store across app kills so that
+  // a crash between store creation and upgradeToAdmin does not produce a
+  // duplicate orphaned store on the next launch.
+  static const _kPendingStoreId   = 'dq_admin_onboarding_pending_store_id';
+  static const _kPendingStoreName = 'dq_admin_onboarding_pending_store_name';
+
   int _step = 0; // 0 = store details, 1 = inventory, 2 = done
   bool _isSaving = false;
   String? _createdStoreId;
@@ -55,6 +62,46 @@ class _OnboardingPageState extends State<OnboardingPage> {
     super.initState();
     _nameCtrl.addListener(_onNameOrCityChanged);
     _cityCtrl.addListener(_onNameOrCityChanged);
+    _resumePendingStore();
+  }
+
+  // Restores a store that was created in a previous session but whose
+  // upgradeToAdmin step never completed (e.g. app was killed mid-flow).
+  Future<void> _resumePendingStore() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final id   = prefs.getString(_kPendingStoreId);
+      final name = prefs.getString(_kPendingStoreName);
+      if (id != null && name != null && mounted) {
+        setState(() {
+          _createdStoreId   = id;
+          _createdStoreName = name;
+        });
+        debugPrint('[Onboarding] Resuming pending store: $id');
+      }
+    } catch (e) {
+      debugPrint('[Onboarding] Could not restore pending store: $e');
+    }
+  }
+
+  Future<void> _savePendingStore(String id, String name) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kPendingStoreId, id);
+      await prefs.setString(_kPendingStoreName, name);
+    } catch (e) {
+      debugPrint('[Onboarding] Could not persist pending store: $e');
+    }
+  }
+
+  Future<void> _clearPendingStore() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_kPendingStoreId);
+      await prefs.remove(_kPendingStoreName);
+    } catch (e) {
+      debugPrint('[Onboarding] Could not clear pending store: $e');
+    }
   }
 
   @override
@@ -116,7 +163,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         Get.snackbar('Location Off', 'Please enable location services.',
-            backgroundColor: Colors.orange.withValues(alpha: 0.85), colorText: Colors.white);
+            backgroundColor: AppColors.warning, colorText: Colors.white);
         return;
       }
       LocationPermission permission = await Geolocator.checkPermission();
@@ -124,13 +171,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           Get.snackbar('Permission Denied', 'Location permission is required.',
-              backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
+              backgroundColor: AppColors.error, colorText: Colors.white);
           return;
         }
       }
       if (permission == LocationPermission.deniedForever) {
         Get.snackbar('Permission Denied', 'Enable location in app settings.',
-            backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
+            backgroundColor: AppColors.error, colorText: Colors.white);
         return;
       }
       Position? pos = await Geolocator.getLastKnownPosition();
@@ -141,10 +188,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
         _lon = pos.longitude;
       });
       Get.snackbar('Location Captured', 'Tap "Pick on Map" to verify the pin is on your store.',
-          backgroundColor: Colors.green.withValues(alpha: 0.85), colorText: Colors.white);
+          backgroundColor: AppColors.success, colorText: Colors.white);
     } catch (_) {
       Get.snackbar('Error', 'Could not get location.',
-          backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
+          backgroundColor: AppColors.error, colorText: Colors.white);
     } finally {
       setState(() => _locating = false);
     }
@@ -163,19 +210,31 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
     setState(() => _isSaving = true);
     try {
-      final store = await _createStoreUseCase.execute(
-        name: name,
-        address: '$address, $city',
-        lat: _lat!,
-        lon: _lon!,
-        storeCode: code.isNotEmpty ? code : null,
-      );
+      // Only create the store if not already created. If store creation succeeded
+      // but upgradeToAdmin failed on a previous attempt (in-session or after an
+      // app kill), we reuse the existing store ID rather than creating a duplicate.
+      if (_createdStoreId == null) {
+        final store = await _createStoreUseCase.execute(
+          name: name,
+          address: '$address, $city',
+          lat: _lat!,
+          lon: _lon!,
+          storeCode: code.isNotEmpty ? code : null,
+        );
+        // Persist immediately so an app kill before upgradeToAdmin completes
+        // can resume with the same store on the next launch.
+        await _savePendingStore(store.id, store.name);
+        setState(() {
+          _createdStoreId   = store.id;
+          _createdStoreName = store.name;
+        });
+      }
 
       // Upgrade user to admin and link storeId via roles-aware mutation
       final result = await GraphQLClientProvider.client.mutate(
         MutationOptions(
           document: gql(_upgradeToAdminMutation),
-          variables: {'storeId': store.id},
+          variables: {'storeId': _createdStoreId!},
         ),
       );
       if (result.hasException) {
@@ -188,11 +247,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
         Get.find<SessionManager>().setUser(UserModel.fromJson(data));
       }
 
-      setState(() {
-        _createdStoreId = store.id;
-        _createdStoreName = store.name;
-        _step = 1;
-      });
+      // Upgrade succeeded — clear the persisted pending state so a future
+      // cold-start does not attempt to re-enter onboarding with a stale ID.
+      await _clearPendingStore();
+      setState(() => _step = 1);
     } catch (e) {
       _showError(e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -202,11 +260,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void _showError(String msg) {
     Get.snackbar('Error', msg,
-        backgroundColor: Colors.red.withValues(alpha: 0.85), colorText: Colors.white);
+        backgroundColor: AppColors.error, colorText: Colors.white);
   }
 
   void _goToDashboard() {
-    Get.offAll(() => const DashboardPage(), binding: DashboardBinding());
+    Get.offAllNamed(AppRoutes.dashboard);
   }
 
   @override
@@ -341,7 +399,7 @@ class _StepStoreDetails extends StatelessWidget {
                 child: _LocationButton(
                   icon: Icons.map_rounded,
                   label: lat != null ? 'Location Set ✓' : 'Pick on Map',
-                  color: lat != null ? Colors.green : Colors.deepPurple,
+                  color: lat != null ? AppColors.success : AppColors.primary,
                   onTap: onPickMap,
                 ),
               ),
@@ -350,7 +408,7 @@ class _StepStoreDetails extends StatelessWidget {
                 child: _LocationButton(
                   icon: locating ? null : Icons.my_location_rounded,
                   label: locating ? 'Detecting...' : 'Use My Location',
-                  color: Colors.blue,
+                  color: AppColors.info,
                   onTap: locating ? () {} : onCurrentLocation,
                   loading: locating,
                 ),
@@ -363,17 +421,17 @@ class _StepStoreDetails extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.08),
+                color: AppColors.successSubtle,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.withValues(alpha: 0.25)),
+                border: Border.all(color: AppColors.successBorder),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
+                  const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 14),
                   const SizedBox(width: 8),
                   Text(
                     'Lat: ${lat!.toStringAsFixed(5)}   Lon: ${lon!.toStringAsFixed(5)}',
-                    style: const TextStyle(color: Colors.green, fontSize: 12),
+                    style: const TextStyle(color: AppColors.success, fontSize: 12),
                   ),
                 ],
               ),
@@ -383,18 +441,18 @@ class _StepStoreDetails extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.08),
+                color: AppColors.warningSubtle,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withValues(alpha: 0.25)),
+                border: Border.all(color: AppColors.warningBorder),
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 14),
+                  Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 14),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Please pick your store location on the map so customers can find you.',
-                      style: TextStyle(color: Colors.orange, fontSize: 11),
+                      style: TextStyle(color: AppColors.warning, fontSize: 11),
                     ),
                   ),
                 ],
@@ -511,10 +569,10 @@ class _StepInventory extends StatelessWidget {
           Container(
             width: 56, height: 56,
             decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.15),
+              color: AppColors.warningSubtle,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.upload_file_rounded, color: Colors.orange, size: 28),
+            child: const Icon(Icons.upload_file_rounded, color: AppColors.warning, size: 28),
           ),
           const SizedBox(height: 16),
           const Text('Upload Inventory', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
@@ -547,7 +605,7 @@ class _StepInventory extends StatelessWidget {
               icon: const Icon(Icons.upload_rounded),
               label: const Text('Upload Excel File', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: AppColors.warning,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -593,10 +651,10 @@ class _StepDone extends StatelessWidget {
           Container(
             width: 80, height: 80,
             decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.15),
+              color: AppColors.successSubtle,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.check_circle_rounded, color: Colors.green, size: 48),
+            child: const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 48),
           ),
           const SizedBox(height: 24),
           const Text('Your Store is Live!', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
@@ -608,7 +666,7 @@ class _StepDone extends StatelessWidget {
               onTap: () {
                 Clipboard.setData(ClipboardData(text: storeCode));
                 Get.snackbar('Copied!', 'Store code copied to clipboard.',
-                    backgroundColor: Colors.green.withValues(alpha: 0.85),
+                    backgroundColor: AppColors.success,
                     colorText: Colors.white,
                     duration: const Duration(seconds: 2));
               },
@@ -683,7 +741,7 @@ class _StepIndicator extends StatelessWidget {
                   height: 4,
                   decoration: BoxDecoration(
                     color: done
-                        ? Colors.green
+                        ? AppColors.success
                         : active
                             ? AppTheme.primary
                             : Colors.white12,

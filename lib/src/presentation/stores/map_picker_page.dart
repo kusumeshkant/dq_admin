@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
@@ -132,7 +133,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
                     point: _picked,
                     width: 48,
                     height: 48,
-                    child: const Icon(Icons.location_pin, color: Colors.red, size: 48),
+                    child: const Icon(Icons.location_pin, color: AppColors.error, size: 48),
                   ),
                 ],
               ),

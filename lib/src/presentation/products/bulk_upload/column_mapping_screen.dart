@@ -1,3 +1,4 @@
+import 'package:dq_admin/design_system/design_system.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/services/excel_parser_service.dart';
@@ -163,21 +164,21 @@ class _InfoBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.1),
+        color: AppColors.infoSubtle,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.infoBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(
             children: [
-              Icon(Icons.auto_fix_high_rounded, color: Colors.blue, size: 16),
+              Icon(Icons.auto_fix_high_rounded, color: AppColors.info, size: 16),
               SizedBox(width: 8),
               Text(
                 'Column Mapping Required',
                 style: TextStyle(
-                    color: Colors.blue,
+                    color: AppColors.info,
                     fontWeight: FontWeight.bold,
                     fontSize: 13),
               ),
@@ -200,7 +201,7 @@ class _InfoBanner extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withValues(alpha: 0.12),
+                        color: AppColors.infoSubtle,
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: Text(
@@ -247,12 +248,12 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: isMissing
-            ? Colors.red.withValues(alpha: 0.07)
+            ? AppColors.errorSubtle
             : Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isMissing
-              ? Colors.red.withValues(alpha: 0.45)
+              ? AppColors.errorBorder
               : Colors.white.withValues(alpha: 0.1),
         ),
       ),
@@ -266,7 +267,7 @@ class _FieldRow extends StatelessWidget {
                   isMissing
                       ? Icons.warning_amber_rounded
                       : Icons.check_circle_rounded,
-                  color: isMissing ? Colors.redAccent : Colors.green,
+                  color: isMissing ? AppColors.error : AppColors.success,
                   size: 13,
                 ),
                 const SizedBox(width: 5),
@@ -458,12 +459,12 @@ class _ConfirmBar extends StatelessWidget {
               child: Row(
                 children: [
                   const Icon(Icons.warning_amber_rounded,
-                      color: Colors.orange, size: 14),
+                      color: AppColors.warning, size: 14),
                   const SizedBox(width: 6),
                   const Expanded(
                     child: Text(
                       'Assign all required fields before continuing.',
-                      style: TextStyle(color: Colors.orange, fontSize: 11),
+                      style: TextStyle(color: AppColors.warning, fontSize: 11),
                     ),
                   ),
                 ],

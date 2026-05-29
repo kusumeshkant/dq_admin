@@ -6,8 +6,7 @@ import '../../../data/model/user_model.dart';
 import '../../../service_core/auth/session_manager.dart';
 import '../../../service_core/networks/app_logger.dart';
 import '../../../service_core/networks/graphql_client_provider.dart';
-import '../../profile_setup/profile_setup_binding.dart';
-import '../../profile_setup/profile_setup_page.dart';
+import '../../../routes/app_routes.dart';
 
 class SignupController extends GetxController {
   final nameCtrl     = TextEditingController();
@@ -96,10 +95,7 @@ class SignupController extends GetxController {
       Get.find<SessionManager>().setUser(UserModel.fromJson(userData));
 
       // ── Step 4: Navigate to profile setup ───────────────────────────────
-      Get.offAll(
-        () => const ProfileSetupPage(),
-        binding: ProfileSetupBinding(email: email),
-      );
+      Get.offAllNamed(AppRoutes.profileSetup, arguments: email);
     } on FirebaseAuthException catch (e) {
       // Firebase errors are clean — no backend state to roll back.
       errorMessage.value = _firebaseError(e.code);

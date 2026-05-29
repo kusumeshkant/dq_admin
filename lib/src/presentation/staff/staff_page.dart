@@ -1,12 +1,10 @@
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/pagination/paginated_list_view.dart';
 import '../../core/responsive/app_responsive.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_typography.dart';
 import '../../domain/entity/user_entity.dart';
 import '../../theme/app_theme.dart';
 import 'staff_controller.dart';
@@ -115,8 +113,7 @@ class _StaffCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final roleColor =
-        user.isAdmin ? Colors.purple.shade300 : Colors.blue.shade300;
+    final roleColor = user.isAdmin ? AppColors.primary : AppColors.info;
 
     return GestureDetector(
       onTap: onTap,

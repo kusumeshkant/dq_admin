@@ -1,11 +1,9 @@
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/responsive/app_responsive.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_typography.dart';
 import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/order_entity.dart';
 import '../../domain/entity/store_entity.dart';
@@ -191,7 +189,7 @@ class StoreDetailPage extends StatelessWidget {
                         icon: Icons.inventory_2_rounded,
                         label: 'Manage Products',
                         subtitle: 'View, add and edit inventory',
-                        color: Colors.orange,
+                        color: AppColors.warning,
                         onTap: () => Get.to(
                           () => ProductsPage(store: store),
                           binding: ProductsBinding(store: store),
@@ -266,14 +264,14 @@ class _RevenueCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.green.shade800.withValues(alpha: 0.55),
-            Colors.green.shade600.withValues(alpha: 0.25),
+            AppColors.success.withValues(alpha: 0.55),
+            AppColors.success.withValues(alpha: 0.25),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppSizes.radiusXl),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.successBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,11 +293,11 @@ class _RevenueCard extends StatelessWidget {
                 Row(
                   children: [
                     const Icon(Icons.check_circle_rounded,
-                        color: Colors.greenAccent, size: 13),
+                        color: AppColors.success, size: 13),
                     const SizedBox(width: AppSpacing.xs),
                     Text('$rate% completion rate',
                         style: AppTypography.caption
-                            .copyWith(color: Colors.greenAccent)),
+                            .copyWith(color: AppColors.success)),
                   ],
                 ),
               ],
@@ -362,13 +360,13 @@ class _StatsRow extends StatelessWidget {
             label: 'Pending',
             value: '${stats.pendingOrders}',
             icon: Icons.hourglass_top_rounded,
-            color: Colors.orange.shade400),
+            color: AppColors.warning),
         const SizedBox(width: AppSpacing.sm + 2),
         _MiniStat(
             label: 'Completed',
             value: '${stats.completedOrders}',
             icon: Icons.check_circle_outline_rounded,
-            color: Colors.blue.shade400),
+            color: AppColors.info),
       ],
     );
   }
@@ -487,14 +485,7 @@ class _OrderRow extends StatelessWidget {
   final OrderEntity order;
   const _OrderRow({required this.order});
 
-  Color _statusColor(String s) => switch (s.toLowerCase()) {
-        'pending' => Colors.grey.shade500,
-        'preparing' => Colors.orange.shade600,
-        'ready' => Colors.blue.shade500,
-        'completed' => Colors.green.shade600,
-        'cancelled' => Colors.red.shade600,
-        _ => Colors.grey.shade500,
-      };
+  Color _statusColor(String s) => AppColors.statusColor(s);
 
   String _timeAgo(String createdAt) {
     try {

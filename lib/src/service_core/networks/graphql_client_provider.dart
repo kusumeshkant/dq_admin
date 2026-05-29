@@ -1,11 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart' hide Response;
-import 'package:gql_exec/gql_exec.dart';
-import 'package:gql_link/gql_link.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../constants/app_config.dart';
 import '../auth/session_manager.dart';
 import 'app_logger.dart';
+import 'graphql_observability_link.dart';
 
 /// Logs every GraphQL operation to the debug console.
 class LoggingLink extends Link {
@@ -112,7 +111,9 @@ class GraphQLClientProvider {
       },
     );
 
-    final link = LoggingLink().concat(errorLink.concat(authLink.concat(httpLink)));
+    final link = GraphQLObservabilityLink()
+        .concat(LoggingLink())
+        .concat(errorLink.concat(authLink.concat(httpLink)));
 
     return GraphQLClient(
       link: link,

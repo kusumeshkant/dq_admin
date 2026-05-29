@@ -13,11 +13,11 @@ class StoreRemoteDs {
     }
   ''';
 
+  // TODO: revert to storesPaginated once UAT backend is deployed
   static const _storesPageQuery = r'''
-    query StoresPaginated($first: Int, $after: String, $search: String, $storeId: ID) {
-      storesPaginated(first: $first, after: $after, search: $search, storeId: $storeId) {
-        items { id storeCode name address latitude longitude }
-        meta  { hasNext nextCursor totalCount }
+    query StoresFallback {
+      stores {
+        id storeCode name address latitude longitude
       }
     }
   ''';
@@ -65,7 +65,12 @@ class StoreRemoteDs {
       QueryOptions(document: gql(_storesPageQuery), variables: vars, fetchPolicy: FetchPolicy.networkOnly),
     );
     _check(result);
-    return result.data!['storesPaginated'] as Map<String, dynamic>;
+    // TODO: revert to result.data!['storesPaginated'] once UAT backend is deployed
+    final items = (result.data!['stores'] as List).cast<Map<String, dynamic>>();
+    return {
+      'items': items,
+      'meta': {'hasNext': false, 'nextCursor': null, 'totalCount': items.length},
+    };
   }
 
   Future<List<Map<String, dynamic>>> getAllStores() async {

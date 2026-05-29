@@ -1,19 +1,16 @@
+﻿import 'package:dq_admin/design_system/design_system.dart';
 import 'package:dq_admin/widgets/app_glass_card.dart';
 import 'package:dq_admin/widgets/themed_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/responsive/app_responsive.dart';
-import '../../core/responsive/app_spacing.dart';
-import '../../core/responsive/app_sizes.dart';
-import '../../core/responsive/app_typography.dart';
 import '../../core/widgets/app_error_widget.dart';
 import '../../core/widgets/app_loading_widget.dart';
 import '../../domain/entity/dashboard_entity.dart';
 import '../../service_core/subscription/feature_keys.dart';
 import '../../service_core/subscription/subscription_manager.dart';
 import '../../theme/app_theme.dart';
-import '../plans/plans_binding.dart';
-import '../plans/plans_page.dart';
+import '../../routes/app_routes.dart';
 import 'analytics_controller.dart';
 
 class AnalyticsPage extends StatefulWidget {
@@ -175,8 +172,8 @@ class _RevenueHero extends StatelessWidget {
     final wowColor = wow == null
         ? Colors.white54
         : isUp
-            ? Colors.greenAccent
-            : Colors.redAccent;
+            ? AppColors.success
+            : AppColors.error;
     final wowText = wow == null
         ? 'No prior week data'
         : '${isUp ? '↑' : '↓'} ${wow.abs().toStringAsFixed(1)}% vs last week';
@@ -204,34 +201,32 @@ class _RevenueHero extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm - 2),
           Text(
             '₹${_fmt(analytics.totalRevenue)}',
-            style: const TextStyle(
+            style: AppTypography.statLarge.copyWith(
                 color: Colors.white,
                 fontSize: 36,
-                fontWeight: FontWeight.bold,
                 letterSpacing: -1),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm + 2, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
                   color: wowColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadius.full),
                   border:
                       Border.all(color: wowColor.withValues(alpha: 0.4)),
                 ),
                 child: Text(wowText,
-                    style: TextStyle(
-                        color: wowColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600)),
+                    style: AppTypography.caption.copyWith(
+                        color: wowColor, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(width: 10),
               Text(
                 'This week: ₹${_fmt(analytics.thisWeekRevenue)}',
-                style: const TextStyle(color: Colors.white54, fontSize: 11),
+                style: AppTypography.caption
+                    .copyWith(color: Colors.white54),
               ),
             ],
           ),
@@ -262,27 +257,27 @@ class _KpiChipsRow extends StatelessWidget {
           'Completion',
           '${analytics.completionRate.toStringAsFixed(0)}%',
           Icons.check_circle_outline_rounded,
-          Colors.green.shade400),
+          AppColors.success),
       _KpiData(
           'Cancellation',
           '${analytics.cancellationRate.toStringAsFixed(0)}%',
           Icons.cancel_outlined,
           analytics.cancellationRate > 15
-              ? Colors.red.shade400
-              : Colors.orange.shade400),
+              ? AppColors.error
+              : AppColors.warning),
       _KpiData('Avg Order', '₹${analytics.avgOrderValue.toStringAsFixed(0)}',
-          Icons.shopping_bag_outlined, Colors.blue.shade400),
+          Icons.shopping_bag_outlined, AppColors.info),
       _KpiData('Avg Items', analytics.avgItemsPerOrder.toStringAsFixed(1),
-          Icons.inventory_2_outlined, Colors.purple.shade300),
+          Icons.inventory_2_outlined, AppColors.primary),
       _KpiData('Units Sold', '${analytics.totalUnitsSold}',
-          Icons.sell_outlined, Colors.teal.shade300),
+          Icons.sell_outlined, AppColors.info),
       _KpiData(
           'Low Stock',
           '${analytics.lowStockCount}',
           Icons.warning_amber_rounded,
           analytics.lowStockCount > 0
-              ? Colors.red.shade400
-              : Colors.green.shade400),
+              ? AppColors.error
+              : AppColors.success),
     ];
 
     return SizedBox(
@@ -366,8 +361,8 @@ class _BusinessInsights extends StatelessWidget {
     final trendColor = wow == null
         ? AppTheme.textSecondary
         : wow >= 0
-            ? Colors.greenAccent
-            : Colors.redAccent;
+            ? AppColors.success
+            : AppColors.error;
 
     return AppGlassCard(
       child: Column(
@@ -389,7 +384,7 @@ class _BusinessInsights extends StatelessWidget {
           // Best day
           _InsightRow(
             icon: Icons.emoji_events_rounded,
-            iconColor: Colors.amber.shade400,
+            iconColor: AppColors.warning,
             label: 'Best Day',
             value: bestDay != null
                 ? '${_shortDate(bestDay.date)}  ·  ₹${_fmt(bestDay.revenue)}'
@@ -401,21 +396,21 @@ class _BusinessInsights extends StatelessWidget {
           _InsightRow(
             icon: Icons.inventory_2_rounded,
             iconColor: analytics.lowStockCount > 0
-                ? Colors.red.shade400
-                : Colors.green.shade400,
+                ? AppColors.error
+                : AppColors.success,
             label: 'Low Stock Alert',
             value: analytics.lowStockCount > 0
                 ? '${analytics.lowStockCount} product${analytics.lowStockCount > 1 ? 's' : ''} running low (≤5 units)'
                 : 'All products well stocked',
             valueColor: analytics.lowStockCount > 0
-                ? Colors.red.shade300
-                : Colors.green.shade300,
+                ? AppColors.error
+                : AppColors.success,
           ),
           const Divider(color: Colors.white10, height: 16),
           // Basket size
           _InsightRow(
             icon: Icons.shopping_cart_rounded,
-            iconColor: Colors.blue.shade400,
+            iconColor: AppColors.info,
             label: 'Avg Basket Size',
             value:
                 '${analytics.avgItemsPerOrder.toStringAsFixed(1)} items  ·  ₹${analytics.avgOrderValue.toStringAsFixed(0)} avg spend',
@@ -515,7 +510,7 @@ class _PeriodSelector extends StatelessWidget {
               color: active
                   ? AppTheme.primary.withValues(alpha: 0.25)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppSizes.radiusSm),
               border: Border.all(
                 color: active
                     ? AppTheme.primary.withValues(alpha: 0.7)
@@ -523,14 +518,9 @@ class _PeriodSelector extends StatelessWidget {
               ),
             ),
             child: Text('${days}D',
-                style: TextStyle(
-                    color: active
-                        ? AppTheme.primary
-                        : AppTheme.textSecondary,
-                    fontSize: 11,
-                    fontWeight: active
-                        ? FontWeight.bold
-                        : FontWeight.normal)),
+                style: AppTypography.caption.copyWith(
+                    color: active ? AppTheme.primary : AppTheme.textSecondary,
+                    fontWeight: active ? FontWeight.bold : FontWeight.normal)),
           ),
         );
       }).toList(),
@@ -597,7 +587,7 @@ class _RevenueChart extends StatelessWidget {
                         if (isPeak) ...[
                           Text(
                             '₹${_fmt(d.revenue)}',
-                            style: const TextStyle(
+                            style: AppTypography.caption.copyWith(
                                 color: AppTheme.primary,
                                 fontSize: 7,
                                 fontWeight: FontWeight.bold),
@@ -608,7 +598,7 @@ class _RevenueChart extends StatelessWidget {
                           height: (ratio * 100).clamp(3.0, 100.0),
                           decoration: BoxDecoration(
                             color: isToday
-                                ? Colors.amber.shade400
+                                ? AppColors.warning
                                 : isPeak
                                     ? AppTheme.primary
                                     : AppTheme.primary
@@ -629,15 +619,12 @@ class _RevenueChart extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(_shortDate(data.first.date),
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 9)),
+                  style: AppTypography.caption.copyWith(fontSize: 9)),
               if (data.length > 2)
                 Text(_shortDate(data[data.length ~/ 2].date),
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 9)),
+                    style: AppTypography.caption.copyWith(fontSize: 9)),
               Text(_shortDate(data.last.date),
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 9)),
+                  style: AppTypography.caption.copyWith(fontSize: 9)),
             ],
           ),
           const Divider(color: Colors.white10, height: 16),
@@ -661,22 +648,20 @@ class _RevenueChart extends StatelessWidget {
               Container(
                   width: 8, height: 8,
                   decoration: BoxDecoration(
-                      color: Colors.amber.shade400,
+                      color: AppColors.warning,
                       borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 4),
-              const Text('Today',
-                  style: TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 9)),
-              const SizedBox(width: 12),
+              Text('Today',
+                  style: AppTypography.caption.copyWith(fontSize: 9)),
+              const SizedBox(width: AppSpacing.md),
               Container(
                   width: 8, height: 8,
                   decoration: BoxDecoration(
                       color: AppTheme.primary,
                       borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 4),
-              const Text('Peak day',
-                  style: TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 9)),
+              Text('Peak day',
+                  style: AppTypography.caption.copyWith(fontSize: 9)),
             ],
           ),
         ],
@@ -715,13 +700,11 @@ class _ChartStat extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(value,
-            style: const TextStyle(
-                color: AppTheme.textPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 13)),
+            style: AppTypography.bodySmall
+                .copyWith(fontWeight: FontWeight.bold)),
         Text(label,
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 9)),
+            style: AppTypography.caption
+                .copyWith(fontSize: 9, color: AppTheme.textSecondary)),
       ],
     );
   }
@@ -791,17 +774,14 @@ class _TopProductsList extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(p.name,
-                            style: const TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13),
+                            style: AppTypography.bodySmall
+                                .copyWith(fontWeight: FontWeight.w600),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
                         Text(
                             '${p.totalSold} units  ·  ${p.barcode}',
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 10)),
+                            style: AppTypography.caption
+                                .copyWith(fontSize: 10)),
                       ],
                     ),
                   ),
@@ -809,10 +789,9 @@ class _TopProductsList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text('₹${_fmt(p.revenue)}',
-                          style: const TextStyle(
-                              color: Colors.greenAccent,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14)),
+                          style: AppTypography.body.copyWith(
+                              color: AppColors.success,
+                              fontWeight: FontWeight.bold)),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
@@ -849,9 +828,9 @@ class _TopProductsList extends StatelessWidget {
   }
 
   Color _rankColor(int i) {
-    if (i == 0) return Colors.amber.shade400;
-    if (i == 1) return Colors.grey.shade400;
-    if (i == 2) return Colors.orange.shade300;
+    if (i == 0) return AppColors.warning;
+    if (i == 1) return AppColors.neutral;
+    if (i == 2) return AppColors.warning;
     return AppTheme.primary;
   }
 
@@ -923,8 +902,9 @@ class _MonthlyRevenueChart extends StatelessWidget {
                         children: [
                           if (isPeak)
                             Text(_mfmt(m.revenue),
-                                style: const TextStyle(
-                                    color: AppTheme.primary, fontSize: 7,
+                                style: AppTypography.caption.copyWith(
+                                    color: AppTheme.primary,
+                                    fontSize: 7,
                                     fontWeight: FontWeight.bold),
                                 maxLines: 1,
                                 overflow: TextOverflow.clip),
@@ -933,7 +913,7 @@ class _MonthlyRevenueChart extends StatelessWidget {
                             height: (ratio * 86).clamp(3.0, 86.0),
                             decoration: BoxDecoration(
                               color: isCurrent
-                                  ? Colors.amber.shade400
+                                  ? AppColors.warning
                                   : isPeak
                                       ? AppTheme.primary
                                       : AppTheme.primary.withValues(alpha: 0.35),
@@ -942,8 +922,8 @@ class _MonthlyRevenueChart extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(_safeMonthName(m.month),
-                              style: const TextStyle(
-                                  color: AppTheme.textSecondary, fontSize: 7)),
+                              style: AppTypography.caption
+                                  .copyWith(fontSize: 7)),
                         ],
                       ),
                     ),
@@ -988,7 +968,7 @@ class _RetentionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weekChange = r.newCustomersThisWeek - r.newCustomersLastWeek;
-    final weekColor = weekChange >= 0 ? Colors.greenAccent : Colors.redAccent;
+    final weekColor = weekChange >= 0 ? AppColors.success : AppColors.error;
 
     return AppGlassCard(
       child: Column(
@@ -997,15 +977,15 @@ class _RetentionCard extends StatelessWidget {
             children: [
               _StatBox(label: 'Retention Rate',
                   value: '${r.retentionRate.toStringAsFixed(1)}%',
-                  color: r.retentionRate >= 30 ? Colors.greenAccent
-                      : r.retentionRate >= 15 ? Colors.amber.shade400
-                      : Colors.redAccent),
+                  color: r.retentionRate >= 30 ? AppColors.success
+                      : r.retentionRate >= 15 ? AppColors.warning
+                      : AppColors.error),
               const SizedBox(width: 8),
               _StatBox(label: 'Returning', value: '${r.returningCustomers}',
                   color: AppTheme.primary),
               const SizedBox(width: 8),
               _StatBox(label: 'Total Customers', value: '${r.totalCustomers}',
-                  color: Colors.blue.shade400),
+                  color: AppColors.info),
             ],
           ),
           const SizedBox(height: 8),
@@ -1014,7 +994,7 @@ class _RetentionCard extends StatelessWidget {
               _StatBox(
                 label: 'New This Week',
                 value: '${r.newCustomersThisWeek}',
-                color: Colors.teal.shade300,
+                color: AppColors.info,
                 suffix: ' (${weekChange >= 0 ? '+' : ''}$weekChange vs last)',
                 suffixColor: weekColor,
               ),
@@ -1024,7 +1004,7 @@ class _RetentionCard extends StatelessWidget {
                 value: r.avgRepeatIntervalDays != null
                     ? '${r.avgRepeatIntervalDays!.toStringAsFixed(1)} days'
                     : '—',
-                color: Colors.purple.shade300,
+                color: AppColors.primary,
               ),
             ],
           ),
@@ -1043,7 +1023,7 @@ class _BasketAbandonmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weekChange = b.thisWeekAbandonmentRate - b.lastWeekAbandonmentRate;
-    final weekColor = weekChange <= 0 ? Colors.greenAccent : Colors.redAccent;
+    final weekColor = weekChange <= 0 ? AppColors.success : AppColors.error;
 
     return AppGlassCard(
       child: Column(
@@ -1053,14 +1033,14 @@ class _BasketAbandonmentCard extends StatelessWidget {
               _StatBox(
                 label: 'Abandonment Rate',
                 value: '${b.abandonmentRate.toStringAsFixed(1)}%',
-                color: b.abandonmentRate > 50 ? Colors.redAccent
-                    : b.abandonmentRate > 30 ? Colors.amber.shade400
-                    : Colors.greenAccent,
+                color: b.abandonmentRate > 50 ? AppColors.error
+                    : b.abandonmentRate > 30 ? AppColors.warning
+                    : AppColors.success,
               ),
               const SizedBox(width: 8),
               _StatBox(label: 'Conversion Rate',
                   value: '${b.conversionRate.toStringAsFixed(1)}%',
-                  color: Colors.greenAccent),
+                  color: AppColors.success),
               const SizedBox(width: 8),
               _StatBox(label: 'Total Checks', value: '${b.totalChecks}',
                   color: AppTheme.primary),
@@ -1078,10 +1058,10 @@ class _BasketAbandonmentCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               _StatBox(label: 'Abandoned', value: '${b.abandonedChecks}',
-                  color: Colors.redAccent),
+                  color: AppColors.error),
               const SizedBox(width: 8),
               _StatBox(label: 'Converted', value: '${b.convertedChecks}',
-                  color: Colors.teal.shade300),
+                  color: AppColors.info),
             ],
           ),
         ],
@@ -1112,7 +1092,7 @@ class _CustomerLTVCard extends StatelessWidget {
             children: [
               _StatBox(label: 'Avg Revenue / Customer',
                   value: _lfmt(ltv.avgRevenuePerCustomer),
-                  color: Colors.greenAccent),
+                  color: AppColors.success),
               const SizedBox(width: 8),
               _StatBox(
                 label: 'Projected Monthly LTV',
@@ -1127,24 +1107,23 @@ class _CustomerLTVCard extends StatelessWidget {
             children: [
               _StatBox(label: 'Avg Orders / Customer',
                   value: ltv.avgOrdersPerCustomer.toStringAsFixed(1),
-                  color: Colors.blue.shade400),
+                  color: AppColors.info),
               const SizedBox(width: 8),
               _StatBox(
                 label: 'Avg Days Active',
                 value: ltv.avgDaysActive != null
                     ? '${ltv.avgDaysActive!.toStringAsFixed(0)} days' : '—',
-                color: Colors.purple.shade300,
+                color: AppColors.primary,
               ),
               const SizedBox(width: 8),
               _StatBox(label: 'Total Customers', value: '${ltv.totalCustomers}',
-                  color: Colors.teal.shade300),
+                  color: AppColors.info),
             ],
           ),
           if (ltv.topCustomers.isNotEmpty) ...[
             const SizedBox(height: 12),
             const Text('Top Customers',
-                style: TextStyle(color: AppTheme.textSecondary,
-                    fontSize: 11, fontWeight: FontWeight.w600)),
+                style: AppTypography.captionBold),
             const SizedBox(height: 8),
             ...ltv.topCustomers.take(5).toList().asMap().entries.map((entry) {
               final i = entry.key;
@@ -1164,16 +1143,17 @@ class _CustomerLTVCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(cu.name,
-                        style: const TextStyle(
-                            color: AppTheme.textPrimary, fontSize: 12),
+                        style: AppTypography.label
+                            .copyWith(color: AppTheme.textPrimary),
                         maxLines: 1, overflow: TextOverflow.ellipsis)),
                     Text('${cu.totalOrders} orders',
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 10)),
-                    const SizedBox(width: 8),
+                        style: AppTypography.caption
+                            .copyWith(fontSize: 10)),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(_lfmt(cu.totalSpend),
-                        style: const TextStyle(color: Colors.greenAccent,
-                            fontSize: 12, fontWeight: FontWeight.bold)),
+                        style: AppTypography.label.copyWith(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.bold)),
                   ],
                 ),
               );
@@ -1257,10 +1237,10 @@ class _StaffPerformanceListState extends State<_StaffPerformanceList> {
 
   Widget _buildCard(StaffPerformanceStatEntity s) {
     final cancColor = s.cancellationRate > 20
-        ? Colors.redAccent
+        ? AppColors.error
         : s.cancellationRate > 10
-            ? Colors.amber.shade400
-            : Colors.greenAccent;
+            ? AppColors.warning
+            : AppColors.success;
     return AppGlassCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -1283,13 +1263,13 @@ class _StaffPerformanceListState extends State<_StaffPerformanceList> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(s.staffName,
-                        style: const TextStyle(color: AppTheme.textPrimary,
-                            fontWeight: FontWeight.w600, fontSize: 13),
+                        style: AppTypography.bodySmall
+                            .copyWith(fontWeight: FontWeight.w600),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis),
                     Text('${s.totalOrdersHandled} orders handled',
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 10)),
+                        style: AppTypography.caption
+                            .copyWith(fontSize: 10)),
                   ],
                 ),
               ),
@@ -1298,13 +1278,13 @@ class _StaffPerformanceListState extends State<_StaffPerformanceList> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade400.withValues(alpha: 0.12),
+                    color: AppColors.info.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                       '⚡ ${s.avgFulfillmentTime!.toStringAsFixed(0)}m avg',
-                      style: TextStyle(color: Colors.blue.shade400,
-                          fontSize: 10, fontWeight: FontWeight.w600)),
+                      style: AppTypography.caption.copyWith(
+                          color: AppColors.info, fontWeight: FontWeight.w600)),
                 ),
             ],
           ),
@@ -1312,14 +1292,14 @@ class _StaffPerformanceListState extends State<_StaffPerformanceList> {
           Row(
             children: [
               _StatBox(label: 'Completed', value: '${s.ordersCompleted}',
-                  color: Colors.greenAccent),
+                  color: AppColors.success),
               const SizedBox(width: 6),
               _StatBox(label: 'Cancelled', value: '${s.ordersCancelled}',
                   color: cancColor),
               const SizedBox(width: 6),
               _StatBox(label: 'Flags Raised', value: '${s.flagsRaised}',
                   color: s.flagsRaised > 0
-                      ? Colors.orange.shade400 : Colors.greenAccent),
+                      ? AppColors.warning : AppColors.success),
               const SizedBox(width: 6),
               _StatBox(label: 'Cancel Rate',
                   value: '${s.cancellationRate.toStringAsFixed(0)}%',
@@ -1366,20 +1346,21 @@ class _StatBox extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(value,
-                      style: TextStyle(color: color, fontSize: 14,
-                          fontWeight: FontWeight.bold),
+                      style: AppTypography.body.copyWith(
+                          color: color, fontWeight: FontWeight.bold),
                       maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
                 if (suffix != null)
                   Text(suffix!,
-                      style: TextStyle(color: suffixColor ?? color,
-                          fontSize: 9, fontWeight: FontWeight.w600)),
+                      style: AppTypography.caption.copyWith(
+                          color: suffixColor ?? color,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 2),
             Text(label,
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 9),
+                style: AppTypography.caption.copyWith(fontSize: 9),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),
@@ -1418,18 +1399,14 @@ class _LockedFeatureBody extends StatelessWidget {
                 style: AppTypography.titleMedium
                     .copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(description,
                 style: AppTypography.body
                     .copyWith(color: AppTheme.textSecondary, height: 1.5),
                 textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.lg),
             ElevatedButton.icon(
-              onPressed: () => Get.to(
-                () => const PlansPage(),
-                binding: PlansBinding(),
-                transition: Transition.rightToLeft,
-              ),
+              onPressed: () => Get.toNamed(AppRoutes.plans),
               icon: const Icon(Icons.workspace_premium_rounded, size: 16),
               label: const Text('View Plans',
                   style: TextStyle(fontWeight: FontWeight.bold)),
@@ -1437,7 +1414,7 @@ class _LockedFeatureBody extends StatelessWidget {
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg, vertical: 12),
+                    horizontal: AppSpacing.lg, vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSizes.radiusMd)),
               ),

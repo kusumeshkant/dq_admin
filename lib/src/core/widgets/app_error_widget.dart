@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../responsive/app_spacing.dart';
-import '../responsive/app_typography.dart';
+import 'package:dq_admin/design_system/design_system.dart';
 import '../../theme/app_theme.dart';
 
 /// Standardized error + retry widget used across all screens.

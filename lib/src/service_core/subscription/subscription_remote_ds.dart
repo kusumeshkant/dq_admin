@@ -42,7 +42,7 @@ class SubscriptionRemoteDs {
         usageCounters {
           staffCount
           ordersThisMonth
-          storeCount
+          # storeCount — re-enable after UAT backend is deployed
         }
       }
     }
@@ -159,7 +159,7 @@ class SubscriptionRemoteDs {
           displayName
           limits { maxStaff maxOrdersPerMonth maxStores }
         }
-        usageCounters { staffCount ordersThisMonth storeCount }
+        usageCounters { staffCount ordersThisMonth } # storeCount — re-enable after UAT backend deployed
       }
     }
   ''';

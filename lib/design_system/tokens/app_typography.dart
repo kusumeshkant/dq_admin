@@ -1,26 +1,21 @@
 import 'package:flutter/material.dart';
-import '../../../src/theme/app_theme.dart';
+import 'app_colors.dart';
 
-/// Typography tokens — all text styles in one place.
+/// Typography tokens for DQ Admin — single source of truth.
 ///
-/// Styles scale subtly across breakpoints but are device-agnostic by default.
-/// For responsive variants, use the BuildContext extension in app_responsive.dart
-/// or pass [scale] manually.
-///
-/// Usage:
-///   style: AppTypography.titleLarge
-///   style: AppTypography.body
+/// Uses Material 3 type scale naming with additional admin-specific variants.
+/// All TextStyles are const. Override [color] at call-site when needed.
 abstract class AppTypography {
   // ── Display ───────────────────────────────────────────────
   static const TextStyle displayLarge = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 32,
     fontWeight: FontWeight.bold,
     height: 1.2,
   );
 
   static const TextStyle displayMedium = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 28,
     fontWeight: FontWeight.bold,
     height: 1.2,
@@ -28,66 +23,78 @@ abstract class AppTypography {
 
   // ── Title ─────────────────────────────────────────────────
   static const TextStyle titleLarge = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 20,
     fontWeight: FontWeight.bold,
   );
 
   static const TextStyle titleMedium = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 18,
     fontWeight: FontWeight.bold,
   );
 
   static const TextStyle titleSmall = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 16,
     fontWeight: FontWeight.w600,
   );
 
   // ── Body ──────────────────────────────────────────────────
   static const TextStyle bodyLarge = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 15,
     fontWeight: FontWeight.normal,
+    height: 1.5,
   );
 
   static const TextStyle body = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 14,
     fontWeight: FontWeight.normal,
+    height: 1.5,
   );
 
   static const TextStyle bodySmall = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 13,
     fontWeight: FontWeight.normal,
+    height: 1.4,
   );
 
   // ── Label ─────────────────────────────────────────────────
   static const TextStyle labelLarge = TextStyle(
-    color: AppTheme.textSecondary,
+    color: AppColors.textSecondary,
     fontSize: 13,
     fontWeight: FontWeight.w500,
   );
 
   static const TextStyle label = TextStyle(
-    color: AppTheme.textSecondary,
+    color: AppColors.textSecondary,
     fontSize: 12,
     fontWeight: FontWeight.normal,
   );
 
   static const TextStyle labelSmall = TextStyle(
-    color: AppTheme.textSecondary,
+    color: AppColors.textSecondary,
     fontSize: 11,
     fontWeight: FontWeight.normal,
+    letterSpacing: 0.3,
   );
 
-  // ── Caption / hint ────────────────────────────────────────
+  // ── Caption ───────────────────────────────────────────────
   static const TextStyle caption = TextStyle(
-    color: AppTheme.textSecondary,
+    color: AppColors.textSecondary,
     fontSize: 11,
     fontWeight: FontWeight.normal,
+    height: 1.4,
+  );
+
+  static const TextStyle captionBold = TextStyle(
+    color: AppColors.textSecondary,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.3,
   );
 
   // ── Button ────────────────────────────────────────────────
@@ -98,29 +105,47 @@ abstract class AppTypography {
     letterSpacing: 0.3,
   );
 
+  static const TextStyle buttonSmall = TextStyle(
+    color: Colors.white,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.3,
+  );
+
   // ── Stat / KPI numbers ────────────────────────────────────
   static const TextStyle statLarge = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 28,
     fontWeight: FontWeight.bold,
+    height: 1.1,
   );
 
   static const TextStyle statMedium = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 20,
     fontWeight: FontWeight.bold,
+    height: 1.1,
   );
 
   static const TextStyle statSmall = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 17,
     fontWeight: FontWeight.bold,
+    height: 1.1,
   );
 
   // ── App bar ───────────────────────────────────────────────
   static const TextStyle appBar = TextStyle(
-    color: AppTheme.textPrimary,
+    color: AppColors.textPrimary,
     fontSize: 18,
     fontWeight: FontWeight.bold,
+  );
+
+  // ── Badge / tag ───────────────────────────────────────────
+  static const TextStyle badge = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.3,
+    height: 1.2,
   );
 }
