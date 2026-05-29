@@ -23,6 +23,6 @@ class AppConfig {
 
   // ── Contact emails ─────────────────────────────────────────────────────────
   // Change these when moving to branded addresses (e.g. enterprise@dqstore.in).
-  static const String enterpriseContactEmail = 'kushumeshkantsharma@gmail.com';
-  static const String supportEmail           = 'kushumeshkantsharma@gmail.com';
+  static const String enterpriseContactEmail = 'enterprise@dqstore.in';
+  static const String supportEmail           = 'support@dqstore.in';
 }
