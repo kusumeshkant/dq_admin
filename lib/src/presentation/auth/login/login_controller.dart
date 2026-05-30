@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../domain/repo/auth_repository.dart';
@@ -57,7 +58,15 @@ class LoginController extends GetxController {
       // AuthRouter is the single source of truth for routing — it also loads
       // the subscription before navigating to Dashboard.
       AuthRouter.navigateAfterLogin(user, email);
+    } on FirebaseAuthException catch (e) {
+      // Firebase never created a session — no cleanup needed.
+      errorMessage.value = _friendlyError(e.toString());
     } catch (e) {
+      // loginWithEmail succeeded (Firebase session created) but backend
+      // validation failed. Clear the dangling Firebase session so a future
+      // cold start doesn't bypass the login screen.
+      try { await FirebaseAuth.instance.signOut(); } catch (_) {}
+      GraphQLClientProvider.reset();
       errorMessage.value = _friendlyError(e.toString());
     } finally {
       isLoading.value = false;

@@ -65,6 +65,11 @@ class SignupController extends GetxController {
         AppLogger.auth('signup: signing out stale Firebase session before creating new account');
         try { await FirebaseAuth.instance.signOut(); } catch (_) {}
       }
+      // Clear any stale SharedPreferences profile cache from a previous session.
+      // Without this, a cold start that hits a network error mid-signup could
+      // fall back to old cached name/phone and route to onboarding, skipping
+      // profile setup for the new account.
+      await Get.find<SessionManager>().clearCache();
 
       AppLogger.auth('signup: creating Firebase account for $email');
       final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
