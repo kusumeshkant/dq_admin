@@ -9,6 +9,9 @@
 /flutter_bootstrap.js
   Cache-Control: no-cache, no-store, must-revalidate
 
+/flutter_service_worker.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /flutter.js
   Cache-Control: no-cache, no-store, must-revalidate
 

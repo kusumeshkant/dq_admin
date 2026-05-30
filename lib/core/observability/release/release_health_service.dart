@@ -18,7 +18,7 @@ class ReleaseHealthService extends GetxService {
     super.onInit();
     _initMs = DateTime.now().millisecondsSinceEpoch;
     sessionId = CorrelationIdService.generate();
-    if (!AppConfig.isDev) _tagCrashlytics();
+    if (!AppConfig.isDev && !kIsWeb) _tagCrashlytics();
   }
 
   @override

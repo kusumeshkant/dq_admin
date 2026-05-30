@@ -82,12 +82,11 @@ class SignupController extends GetxController {
       final userData = await _registerAdminWithRetry();
 
       if (userData == null) {
-        // All attempts failed — roll back Firebase to keep state consistent.
+        // All retryable attempts failed — roll back Firebase.
         AppLogger.auth('signup: registerAdmin failed after all retries — rolling back Firebase user');
         await _rollbackFirebase(firebaseUser);
         errorMessage.value =
-            'Account setup failed. The server took too long to respond. '
-            'Please tap "Create Account" to try again.';
+            'Account setup failed. Please tap "Create Account" to try again.';
         return;
       }
 
@@ -99,17 +98,21 @@ class SignupController extends GetxController {
     } on FirebaseAuthException catch (e) {
       // Firebase errors are clean — no backend state to roll back.
       errorMessage.value = _firebaseError(e.code);
+    } on _ServerError catch (e) {
+      // Definitive server rejection (FORBIDDEN, etc.) — roll back Firebase
+      // and show the server's message directly.
+      AppLogger.auth('signup: non-retryable server error — ${e.message}');
+      await _rollbackFirebase(firebaseUser);
+      errorMessage.value = e.message;
     } catch (e) {
       AppLogger.auth('signup: unexpected error — $e');
-      // Roll back Firebase if it was already created.
       if (firebaseUser != null) await _rollbackFirebase(firebaseUser);
       final isNetworkIssue = e.toString().toLowerCase().contains('network') ||
           e.toString().toLowerCase().contains('socket') ||
           e.toString().toLowerCase().contains('connection');
       errorMessage.value = isNetworkIssue
           ? 'No internet connection. Please check your network and try again.'
-          : 'Account setup failed. The server took too long to respond. '
-            'Please tap "Create Account" to try again.';
+          : 'Account setup failed. Please tap "Create Account" to try again.';
     } finally {
       isLoading.value = false;
     }
@@ -117,11 +120,15 @@ class SignupController extends GetxController {
 
   // ── registerAdmin with retries (handles Vercel cold-start + token propagation)
   //
-  // 3 attempts with progressive back-off: 3 s, then 6 s.
-  // Total worst-case wait before giving up: ~9 s, enough for Vercel cold-starts
-  // and Firebase token propagation delays on brand-new accounts.
+  // 3 attempts with progressive back-off: 5 s, then 10 s.
+  // Only retries on network/timeout/UNAUTHENTICATED errors.
+  // Non-retryable server errors (FORBIDDEN, BAD_USER_INPUT) are thrown
+  // immediately so the caller can surface the server's message directly.
 
-  static const _retryDelays = [3, 6]; // seconds before attempt 2, then attempt 3
+  static const _retryDelays = [5, 10]; // seconds before attempt 2, then attempt 3
+
+  // Error codes that should never be retried — the server's response is definitive.
+  static const _nonRetryableCodes = {'FORBIDDEN', 'BAD_USER_INPUT', 'NOT_FOUND'};
 
   Future<Map<String, dynamic>?> _registerAdminWithRetry() async {
     for (int attempt = 1; attempt <= 3; attempt++) {
@@ -133,9 +140,15 @@ class SignupController extends GetxController {
         );
 
         if (result.hasException) {
-          final msg = result.exception?.graphqlErrors.firstOrNull?.message
-              ?? result.exception.toString();
-          AppLogger.auth('signup: attempt $attempt error — $msg');
+          final firstError = result.exception?.graphqlErrors.firstOrNull;
+          final code = firstError?.extensions?['code'] as String?;
+          final msg = firstError?.message ?? result.exception.toString();
+          AppLogger.auth('signup: attempt $attempt error — code=$code msg=$msg');
+
+          // Non-retryable: throw so signUp() shows the server message directly.
+          if (code != null && _nonRetryableCodes.contains(code)) {
+            throw _ServerError(msg);
+          }
 
           if (attempt < 3) {
             await Future.delayed(Duration(seconds: _retryDelays[attempt - 1]));
@@ -148,6 +161,8 @@ class SignupController extends GetxController {
         final data = result.data?['registerAdmin'] as Map<String, dynamic>?;
         AppLogger.auth('signup: registerAdmin attempt $attempt succeeded');
         return data;
+      } on _ServerError {
+        rethrow; // surface immediately, no retry
       } catch (e) {
         AppLogger.auth('signup: attempt $attempt threw — $e');
         if (attempt < 3) {
@@ -201,4 +216,11 @@ class SignupController extends GetxController {
     confirmCtrl.dispose();
     super.onClose();
   }
+}
+
+// Carries the server's error message out of _registerAdminWithRetry without
+// being caught and retried by the generic catch block.
+class _ServerError implements Exception {
+  final String message;
+  const _ServerError(this.message);
 }
