@@ -19,7 +19,7 @@ class AppConfig {
               : _backendProvider == 'render'
                   ? 'https://dq-backend-uat.onrender.com/graphql'
                   : 'https://ca-dq-uat.ashysea-f5376b70.centralindia.azurecontainerapps.io/graphql')
-          : 'https://ca-dq-backend.ashysea-f5376b70.centralindia.azurecontainerapps.io/graphql';
+          : 'https://de-backend-iota.vercel.app/graphql';
 
   // ── Contact emails ─────────────────────────────────────────────────────────
   // Change these when moving to branded addresses (e.g. enterprise@dqstore.in).
