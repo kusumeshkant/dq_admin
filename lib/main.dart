@@ -1,5 +1,10 @@
 import 'dart:async';
 
+// usePathUrlStrategy is web-only; import it only on web targets.
+// ignore: uri_does_not_exist
+import 'url_strategy_stub.dart'
+    if (dart.library.html) 'url_strategy_web.dart';
+
 import 'package:dq_admin/core/observability/observability.dart';
 import 'package:dq_admin/src/data/datasources/remote/auth_remote_ds.dart';
 import 'package:dq_admin/src/data/repo_impl/auth_repository_impl.dart';
@@ -16,7 +21,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'firebase_options.dart';

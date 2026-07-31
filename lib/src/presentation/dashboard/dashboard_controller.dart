@@ -50,11 +50,32 @@ class DashboardController extends GetxController {
       }
     } catch (e, st) {
       AppLogger.error('DashboardController.loadStats', e, st);
-      errorMessage.value = e.toString();
+      final msg = e.toString();
+      if (_isForbidden(msg)) {
+        // Permissions revoked or session invalid — force re-login.
+        await logout();
+      } else {
+        // Network or other transient error — keep stale stats (if loaded before),
+        // surface a human-readable message so the UI can show a banner.
+        errorMessage.value = _isNetworkError(msg)
+            ? 'Cannot connect to server. Check your connection.'
+            : msg;
+      }
     } finally {
       isLoading.value = false;
     }
   }
+
+  bool _isForbidden(String msg) =>
+      msg.contains('FORBIDDEN') ||
+      msg.contains('Insufficient permissions') ||
+      msg.contains('Not authorized');
+
+  bool _isNetworkError(String msg) =>
+      msg.contains('Network error') ||
+      msg.contains('SocketException') ||
+      msg.contains('network') ||
+      msg.contains('Connection refused');
 
   Future<void> logout() async {
     try {

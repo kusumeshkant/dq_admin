@@ -26,6 +26,7 @@ import '../presentation/stores/stores_page.dart';
 import '../presentation/subscription/subscription_binding.dart';
 import '../presentation/subscription/subscription_page.dart';
 import 'app_routes.dart';
+import 'auth_middleware.dart';
 
 abstract class AppPages {
   static final routes = <GetPage>[
@@ -44,59 +45,70 @@ abstract class AppPages {
       name: AppRoutes.profileSetup,
       page: () => const ProfileSetupPage(),
       binding: ProfileSetupBinding(),
+      middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),
     GetPage(
       name: AppRoutes.onboarding,
       page: () => const OnboardingPage(),
       binding: OnboardingBinding(),
+      middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),
     GetPage(
       name: AppRoutes.dashboard,
       page: () => const DashboardPage(),
       binding: DashboardBinding(),
+      middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),
     GetPage(
       name: AppRoutes.stores,
       page: () => const StoresPage(),
       binding: StoresBinding(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: AppRoutes.orders,
       page: () => const OrdersPage(),
       binding: OrdersBinding(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: AppRoutes.analytics,
       page: () => const AnalyticsPage(),
       binding: AnalyticsBinding(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: AppRoutes.staff,
       page: () => const StaffPage(),
       binding: StaffBinding(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: AppRoutes.staffManagement,
       page: () => const StaffManagementPage(),
       binding: StaffManagementBinding(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: AppRoutes.permissions,
       page: () => const PermissionsPage(),
       binding: PermissionsBinding(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: AppRoutes.subscription,
       page: () => const SubscriptionPage(),
       binding: SubscriptionBinding(),
+      middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: AppRoutes.plans,
       page: () => const PlansPage(),
       binding: PlansBinding(),
+      middlewares: [AuthMiddleware()],
       transition: Transition.rightToLeft,
     ),
   ];

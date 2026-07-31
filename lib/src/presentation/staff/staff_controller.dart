@@ -96,7 +96,7 @@ class StaffController extends PaginatedController<UserEntity> {
             const Text('Role', style: TextStyle(color: Color(0xFFCDB4DB), fontSize: 12)),
             const SizedBox(height: 6),
             Obx(() => DropdownButtonFormField<String>(
-                  value: selectedRole.value,
+                  initialValue: selectedRole.value,
                   dropdownColor: const Color(0xFF1E1040),
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
@@ -114,7 +114,7 @@ class StaffController extends PaginatedController<UserEntity> {
             const Text('Assigned Store', style: TextStyle(color: Color(0xFFCDB4DB), fontSize: 12)),
             const SizedBox(height: 6),
             Obx(() => DropdownButtonFormField<String?>(
-                  value: selectedStoreId.value,
+                  initialValue: selectedStoreId.value,
                   dropdownColor: const Color(0xFF1E1040),
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(

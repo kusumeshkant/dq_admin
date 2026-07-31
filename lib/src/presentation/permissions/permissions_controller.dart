@@ -280,7 +280,7 @@ class PermissionsController extends GetxController {
             const Text('Permission type to revoke:', style: TextStyle(color: Colors.white70, fontSize: 12)),
             const SizedBox(height: 6),
             Obx(() => DropdownButtonFormField<String>(
-              value: selectedType.value,
+              initialValue: selectedType.value,
               dropdownColor: const Color(0xFF1E1040),
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(

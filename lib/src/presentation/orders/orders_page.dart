@@ -32,7 +32,7 @@ class OrdersPage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: c.selectedStoreId.value,
+                          initialValue: c.selectedStoreId.value,
                           dropdownColor: AppTheme.surface,
                           style: AppTypography.bodySmall,
                           decoration: _dropdownDecoration,
@@ -56,7 +56,7 @@ class OrdersPage extends StatelessWidget {
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: c.selectedStatus.value ?? 'All',
+                          initialValue: c.selectedStatus.value ?? 'All',
                           dropdownColor: AppTheme.surface,
                           style: AppTypography.bodySmall,
                           decoration: _dropdownDecoration,
